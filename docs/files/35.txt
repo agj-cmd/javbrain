@@ -1,5 +1,7 @@
-Pho hiep hoa
+Sababa
 
-ttt: Restaurant
-nnn: Good value. The satay one v spicy
-rrr: 🟢good
+ttt: Jewish, Restaurant
+nnn: Israeli place, good flavor, tiny portions, overpriced
+rrr: Bad🔴
+
+Israeli place, good flavor, tiny portions, overpriced
