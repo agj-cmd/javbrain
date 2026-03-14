@@ -1,1545 +1,607 @@
+
+
 ==== extension.js ====
 
-const vscode = require('vscode');
-const fs = require('fs');
-const path = require('path');
-function parseJsonc(text) {
-    const stripped = text.replace(/\/\/.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, '');
-    return JSON.parse(stripped);
-}
-const { mdToJav } = require('./mdToJav');
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.deactivate = exports.activate = void 0;
 
-const INDENT_STR = '\u2001';
+const vscode = require("vscode");
 
-let hiddenDecorationType;
-let curlyQuoteDecorationType;
-let readTimeDecorationType;
-let lineNumberDecorationType;
-let enabled = true;
-let transformTimeout;
-let isApplyingEdits = false;
-let statusBarItem;
-let dialogColor = null;
+const SET_CONTEXT = "setContext";
+const IS_ACTIVE_CONTEXT = "quickFind.isActive";
+const FIND_LIMIT = 20000;
 
-// ─────────────────────────────────────────────
-// Cache layer
-// ─────────────────────────────────────────────
-
-let cacheDocVersion = -1;
-let cacheDocUri = null;
-let cachedHeaders = null;
-let cachedHeaderEnds = null;        // Map<headerLine, endLine>
-let cachedHiddenRanges = null;      // all collapse-char ranges (no cursor filter)
-let cachedCurlyRanges = null;       // all curly-quote ranges (no cursor filter)
-let cachedReadTimeRanges = null;    // all read-time ranges
-let cachedNumberRanges = null;      // all line number ranges
-let prevCursorLine = -1;
-let prevCursorChar = -1;
-
-function invalidateCache() {
-    cacheDocVersion = -1;
-    cacheDocUri = null;
-    cachedHeaders = null;
-    cachedHeaderEnds = null;
-    cachedHiddenRanges = null;
-    cachedCurlyRanges = null;
-    cachedReadTimeRanges = null;
-    cachedNumberRanges = null;
+class QuickFind {
+    constructor() {
+    this.index = 0;
+    this.matches = [];
+    this.initialPosition = null;
+    this.initialVisibleRange = null;
+    this.cancelFlag = true;
+    this.bookmarkPosition = null;
+    this.bookmarkDecorationType = null;
+    this.dimDecorationType = null;
+    this.findOptions = { matchCase: false, wholeWord: false, visibleOnly: false };
+    this.reset();
 }
 
-function ensureCache(document) {
-    const uri = document.uri.toString();
-    if (cacheDocVersion === document.version && cacheDocUri === uri) return;
-    cacheDocVersion = document.version;
-    cacheDocUri = uri;
-    cachedHeaders = null;
-    cachedHeaderEnds = null;
-    cachedHiddenRanges = null;
-    cachedCurlyRanges = null;
-    cachedReadTimeRanges = null;
-    cachedNumberRanges = null;
+    expandToWord(range) {
+    if (!this.editor) return range;
+    const doc = this.editor.document;
+    const wordRange = doc.getWordRangeAtPosition(range.start);
+    if (wordRange && wordRange.contains(range)) {
+        return wordRange;
+    }
+    return range;
 }
 
-function getHeaders(document) {
-    ensureCache(document);
-    if (!cachedHeaders) cachedHeaders = parseHeaders(document);
-    return cachedHeaders;
-}
-
-function getHeaderEnd(document, headerLine) {
-    ensureCache(document);
-    if (!cachedHeaderEnds) {
-        cachedHeaderEnds = new Map();
-        for (const h of getHeaders(document)) {
-            cachedHeaderEnds.set(h.line, findHeaderEnd(document, h.line));
+    hide(cursorPosition = undefined) {
+        this.exitMode = cursorPosition;
+        if (cursorPosition) {
+            this.cancelFlag = false;
+        }
+        if (this.inputBox) {
+            this.inputBox.hide();
         }
     }
-    return cachedHeaderEnds.get(headerLine);
-}
 
-// ─────────────────────────────────────────────
-// Theme resolver
-// ─────────────────────────────────────────────
+onHide() {
+    console.log('onHide called, cancelFlag:', this.cancelFlag, 'initialPosition:', this.initialPosition);
 
-const READ_TIME_RE = /\s*\{[^}]*\}\s*$/;
-const HEADER_RE = /^(\t*)(.+?)\s*\[$/;
+    if (this.editor && this.cancelFlag && this.initialPosition) {
+        console.log('Restoring to initial position:', this.initialPosition);
+        this.editor.selections = [new vscode.Selection(this.initialPosition, this.initialPosition)];
 
-function findThemeFile() {
-    const themeId = vscode.workspace.getConfiguration('workbench').get('colorTheme');
-    if (!themeId) return null;
-
-    for (const ext of vscode.extensions.all) {
-        const pkgPath = path.join(ext.extensionPath, 'package.json');
-        if (!fs.existsSync(pkgPath)) continue;
-
-        let pkg;
-        try { pkg = parseJsonc(fs.readFileSync(pkgPath, 'utf8')); }
-        catch { continue; }
-
-        const themes = pkg.contributes?.themes;
-        if (!Array.isArray(themes)) continue;
-
-        for (const t of themes) {
-            if (t.id === themeId || t.label === themeId) {
-                const themePath = path.resolve(ext.extensionPath, t.path);
-                if (fs.existsSync(themePath)) return themePath;
+        // Only center if position is outside visible bounds
+        const range = new vscode.Range(this.initialPosition, this.initialPosition);
+        let isVisible = false;
+        for (const visibleRange of this.editor.visibleRanges) {
+            if (visibleRange.contains(range)) {
+                isVisible = true;
+                break;
             }
         }
-    }
-    return null;
-}
 
-function loadThemeTokenColors(themePath) {
-    if (!themePath || !fs.existsSync(themePath)) return [];
-
-    let theme;
-    try {
-        const content = fs.readFileSync(themePath, 'utf8');
-        theme = parseJsonc(content);
-    }
-    catch { return []; }
-
-    let tokenColors = theme.tokenColors || [];
-
-    if (theme.include) {
-        const parentPath = path.resolve(path.dirname(themePath), theme.include);
-        const parentColors = loadThemeTokenColors(parentPath);
-        tokenColors = [...parentColors, ...tokenColors];
-    }
-
-    return tokenColors;
-}
-
-function getColorForScope(targetScope) {
-    const themePath = findThemeFile();
-    if (!themePath) return null;
-
-    const tokenColors = loadThemeTokenColors(themePath);
-    let bestColor = null;
-
-    for (const rule of tokenColors) {
-        if (!rule.scope || !rule.settings?.foreground) continue;
-
-        const scopes = Array.isArray(rule.scope)
-            ? rule.scope
-            : rule.scope.split(/\s*,\s*/);
-
-        for (const scope of scopes) {
-            if (targetScope === scope || targetScope.startsWith(scope + '.')) {
-                bestColor = rule.settings.foreground;
-            }
+        if (!isVisible) {
+            this.editor.revealRange(range, vscode.TextEditorRevealType.InCenter);
         }
+    } else if (this.editor && this.exitMode && this.exitMode !== 'cancel') {
+        console.log('Setting cursor to', this.exitMode);
+        const pos = this.exitMode === "left"
+            ? this.editor.selections[0].start
+            : this.editor.selections[0].end;
+        this.editor.selections = [new vscode.Selection(pos, pos)];
     }
 
-    const customColors = vscode.workspace
-        .getConfiguration('editor')
-        .get('tokenColorCustomizations');
+    vscode.commands.executeCommand(SET_CONTEXT, IS_ACTIVE_CONTEXT, false);
+    this.cancelFlag = true;
+    this.exitMode = undefined;
+    this.removeDim();
+    this.reset();
+}
 
-    if (customColors?.textMateRules) {
-        for (const rule of customColors.textMateRules) {
-            if (!rule.scope || !rule.settings?.foreground) continue;
-            const scopes = Array.isArray(rule.scope)
-                ? rule.scope
-                : rule.scope.split(/\s*,\s*/);
-            for (const scope of scopes) {
-                if (targetScope === scope || targetScope.startsWith(scope + '.')) {
-                    bestColor = rule.settings.foreground;
-                }
-            }
-        }
+    dispose() {
+        this.inputBox?.dispose();
+        this.matchDecorationType?.dispose();
+        this.activeMatchDecorationType?.dispose();
+        this.bookmarkDecorationType?.dispose();
+        this.dimDecorationType?.dispose();
     }
 
-    return bestColor;
-}
-
-// ─────────────────────────────────────────────
-// Curly quote helpers
-// ─────────────────────────────────────────────
-
-function distanceToWhitespace(str, pos, direction) {
-    let distance = 0;
-    let i = pos + direction;
-    while (i >= 0 && i < str.length && !/\s/.test(str[i])) {
-        distance++;
-        i += direction;
-    }
-    if (i < 0 || i >= str.length) distance++;
-    return distance;
-}
-
-function curlyForDouble(text, index) {
-    const leftDist = distanceToWhitespace(text, index, -1);
-    const rightDist = distanceToWhitespace(text, index, 1);
-    if (leftDist < rightDist) return '\u201C';
-    if (rightDist < leftDist) return '\u201D';
-    return '\u201C';
-}
-
-function curlyForSingle(text, index) {
-    const leftChar = index > 0 ? text[index - 1] : ' ';
-    const rightChar = index < text.length - 1 ? text[index + 1] : ' ';
-    if (/[a-zA-Z]/.test(leftChar) && /[a-zA-Z]/.test(rightChar)) {
-        return '\u2019';
-    }
-    const leftDist = distanceToWhitespace(text, index, -1);
-    const rightDist = distanceToWhitespace(text, index, 1);
-    if (leftDist < rightDist) return '\u2018';
-    if (rightDist < leftDist) return '\u2019';
-    return '\u2018';
-}
-
-// ─────────────────────────────────────────────
-// Config
-// ─────────────────────────────────────────────
-
-function getConfig() {
-    const config = vscode.workspace.getConfiguration('jav');
-    return {
-        collapseChars: config.get('collapseChars') || ['*'],
-        uppercaseHeaders: config.get('uppercaseHeaders') !== false,
-        uppercaseDebounce: config.get('uppercaseDebounce') || 500,
-        readTime: config.get('readTime') !== false,
-        readTimeWpm: config.get('readTimeWpm') || 240,
-        curlyQuotes: config.get('curlyQuotes') || false,
-        lineNumbers: config.get('lineNumbers') || false
-    };
-}
-
-function isActiveFor(document) {
-    return document.languageId === 'jav';
-}
-
-// ─────────────────────────────────────────────
-// Header parsing (bracket-based)
-// ─────────────────────────────────────────────
-
-function parseHeaders(document) {
-    const headers = [];
-    for (let i = 0; i < document.lineCount; i++) {
-        const text = document.lineAt(i).text;
-        const match = text.match(HEADER_RE);
-        if (match) {
-            const level = match[1].length + 1;
-            const title = match[2].replace(READ_TIME_RE, '').trim();
-            headers.push({ line: i, level, title });
-        }
-    }
-    return headers;
-}
-
-function findHeaderEnd(document, headerLine) {
-    let depth = 1;
-    for (let i = headerLine + 1; i < document.lineCount; i++) {
-        const line = document.lineAt(i).text;
-        for (const ch of line) {
-            if (ch === '[') depth++;
-            if (ch === ']') depth--;
-            if (depth === 0) return i;
-        }
-    }
-    return document.lineCount - 1;
-}
-
-// ─────────────────────────────────────────────
-// Read time
-// ─────────────────────────────────────────────
-
-function formatTime(minutes) {
-    const h = Math.floor(minutes / 60);
-    const m = Math.round(minutes % 60);
-    if (h > 0) return `${h}h ${m}m`;
-    return `${m}m`;
-}
-
-function countWordsInRange(document, startLine, endLine) {
-    let count = 0;
-    for (let i = startLine; i < endLine; i++) {
-        let lineText = document.lineAt(i).text;
-        lineText = lineText.replace(HEADER_RE, '').replace(READ_TIME_RE, '');
-        const trimmed = lineText.trim();
-        if (trimmed.length > 0) {
-            count += trimmed.split(/\s+/).length;
-        }
-    }
-    return count;
-}
-
-// ─────────────────────────────────────────────
-// Line number decorations
-// ─────────────────────────────────────────────
-
-function buildNumberDecorations(document) {
-    const headers = getHeaders(document);
-    if (headers.length === 0) return [];
-
-    const numberRanges = [];
-
-    // Assign hierarchical numbers to headers by sibling position
-    const headerNumbers = new Map();
-    const counters = [0]; // stack tracking sibling count per depth
-
-    for (const header of headers) {
-        while (counters.length > header.level) counters.pop();
-        while (counters.length < header.level) counters.push(0);
-        counters[counters.length - 1]++;
-        headerNumbers.set(header.line, counters.join('.'));
+    reset() {
+        this.index = 0;
+        this.matches = [];
+        this.editor?.setDecorations(this.matchDecorationType, []);
+        this.editor?.setDecorations(this.activeMatchDecorationType, []);
     }
 
-    // Decorate each header and its direct content lines
-    for (const header of headers) {
-        const endLine = getHeaderEnd(document, header.line);
-        const headerNum = headerNumbers.get(header.line);
+    applyDim() {
+        this.dimDecorationType?.dispose();
 
-        // Header line decoration
-        numberRanges.push({
-            range: new vscode.Range(header.line, 0, header.line, 0),
-            renderOptions: {
-                before: {
-                    contentText: `${headerNum} `,
-                    color: '#888888',
-                }
-            }
+        const config = vscode.workspace.getConfiguration('quickFind');
+        const opacity = config.get('dimOpacity', 0.3);
+
+        if (!this.editor || opacity >= 1) return;
+
+        this.dimDecorationType = vscode.window.createTextEditorDecorationType({
+            opacity: `${opacity}`
         });
 
-        // Collect ranges of all nested child headers to exclude
-        const childRanges = [];
-        for (const h of headers) {
-            if (h.line > header.line && h.line <= endLine) {
-                childRanges.push({
-                    start: h.line,
-                    end: getHeaderEnd(document, h.line)
-                });
-            }
-        }
-
-        // Number direct content lines sequentially
-        let contentCounter = 0;
-        for (let i = header.line + 1; i <= endLine; i++) {
-            // Skip lines inside nested headers
-            let inChild = false;
-            for (const cr of childRanges) {
-                if (i >= cr.start && i <= cr.end) { inChild = true; break; }
-            }
-            if (inChild) continue;
-
-            const text = document.lineAt(i).text;
-            const trimmed = text.trim();
-            if (!trimmed || trimmed === ']') continue;
-
-            contentCounter++;
-            numberRanges.push({
-                range: new vscode.Range(i, 0, i, 0),
-                renderOptions: {
-                    before: {
-                        contentText: `${headerNum}.${contentCounter} `,
-                        color: '#888888',
-                    }
-                }
-            });
-        }
+        const fullRange = new vscode.Range(
+            this.editor.document.positionAt(0),
+            this.editor.document.positionAt(this.editor.document.getText().length)
+        );
+        this.editor.setDecorations(this.dimDecorationType, [fullRange]);
     }
 
-    return numberRanges;
-}
-
-// ─────────────────────────────────────────────
-// Content decoration cache builders
-// ─────────────────────────────────────────────
-
-function buildContentDecorations(document, config) {
-    ensureCache(document);
-
-    const hiddenRanges = [];
-    const curlyRanges = [];
-
-    for (let i = 0; i < document.lineCount; i++) {
-        const text = document.lineAt(i).text;
-
-        // Collapse chars and curly quotes — store ALL positions
-        for (let col = 0; col < text.length; col++) {
-            const ch = text[col];
-
-            if (config.collapseChars.includes(ch)) {
-                hiddenRanges.push({
-                    range: new vscode.Range(i, col, i, col + 1),
-                    _line: i,
-                    _col: col,
-                });
-            }
-
-            if (config.curlyQuotes) {
-                let replacement = null;
-                if (ch === '"') replacement = curlyForDouble(text, col);
-                else if (ch === "'") replacement = curlyForSingle(text, col);
-
-                if (replacement) {
-                    curlyRanges.push({
-                        range: new vscode.Range(i, col, i, col + 1),
-                        renderOptions: {
-                            after: {
-                                contentText: replacement,
-                                color: dialogColor
-                            }
-                        },
-                        _line: i,
-                        _col: col,
-                    });
-                }
-            }
-        }
+    removeDim() {
+        this.dimDecorationType?.dispose();
+        this.dimDecorationType = null;
     }
 
-    return { hiddenRanges, curlyRanges };
-}
+    setBookmark(position) {
+        this.bookmarkPosition = position;
+        this.bookmarkDecorationType?.dispose();
 
-function buildReadTimeDecorations(document, config) {
-    const readTimeRanges = [];
-    if (!config.readTime) return readTimeRanges;
+        if (!this.editor) return;
 
-    const headers = getHeaders(document);
-    for (const header of headers) {
-        const endLine = getHeaderEnd(document, header.line);
-        const words = countWordsInRange(document, header.line + 1, endLine);
-        const minutes = words / config.readTimeWpm;
-        const timeStr = minutes >= 0.5 ? formatTime(minutes) : '<1m';
+        this.bookmarkDecorationType = vscode.window.createTextEditorDecorationType({
+            gutterIconPath: vscode.Uri.parse(
+                'data:image/svg+xml,' + encodeURIComponent(
+                    '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><circle cx="8" cy="8" r="4" fill="#007acc"/></svg>'
+                )
+            ),
+            gutterIconSize: 'contain',
+            overviewRulerLane: vscode.OverviewRulerLane.Full,
+            overviewRulerColor: new vscode.ThemeColor("editor.wordHighlightStrongBorder")
+        });
 
-        const lineText = document.lineAt(header.line).text;
-        const bracketPos = lineText.lastIndexOf('[');
-
-        if (bracketPos > 0) {
-            readTimeRanges.push({
-                range: new vscode.Range(header.line, bracketPos, header.line, bracketPos),
-                renderOptions: {
-                    before: {
-                        contentText: `${timeStr} `,
-                        color: '#888888'
-                    }
-                }
-            });
-        }
+        const range = new vscode.Range(position, position);
+        this.editor.setDecorations(this.bookmarkDecorationType, [range]);
     }
 
-    return readTimeRanges;
-}
+    jumpToBookmark() {
+        if (!this.bookmarkPosition || !this.editor) return;
 
-// ─────────────────────────────────────────────
-// Cached content decoration accessors
-// ─────────────────────────────────────────────
-
-function ensureContentDecorations(document, config) {
-    ensureCache(document);
-    if (!cachedHiddenRanges) {
-        const result = buildContentDecorations(document, config);
-        cachedHiddenRanges = result.hiddenRanges;
-        cachedCurlyRanges = result.curlyRanges;
-    }
-    if (!cachedReadTimeRanges) {
-        cachedReadTimeRanges = buildReadTimeDecorations(document, config);
-    }
-    if (!cachedNumberRanges) {
-        cachedNumberRanges = config.lineNumbers
-            ? buildNumberDecorations(document)
-            : [];
-    }
-}
-
-// ─────────────────────────────────────────────
-// Cursor-aware filtering
-// ─────────────────────────────────────────────
-
-function isCursorAdjacent(line, col, cursorLine, cursorChar) {
-    return line === cursorLine && cursorChar >= col && cursorChar <= col + 1;
-}
-
-function filterCursorRanges(ranges, cursorLine, cursorChar) {
-    const result = [];
-    for (let i = 0; i < ranges.length; i++) {
-        const r = ranges[i];
-        if (!isCursorAdjacent(r._line, r._col, cursorLine, cursorChar)) {
-            result.push(r);
-        }
-    }
-    return result;
-}
-
-// ─────────────────────────────────────────────
-// Paragraph indent helpers
-// ─────────────────────────────────────────────
-
-const INDENT_RE = new RegExp('^(\t*)' + INDENT_STR);
-const LIST_RE = /^[-•]|\d+\./;
-
-function lineNeedsIndent(text, config) {
-    const afterTabs = text.replace(/^\t*/, '');
-    const trimmed = afterTabs.replace(new RegExp('^' + INDENT_STR), '').trimStart();
-    if (!trimmed || trimmed === ']') return false;
-    if (HEADER_RE.test(text.replace(INDENT_STR, ''))) return false;
-    if (LIST_RE.test(trimmed)) return false;
-    if (config.lineNumbers) return false;
-    return true;
-}
-
-function lineHasIndent(text) {
-    return INDENT_RE.test(text);
-}
-
-async function stripAllIndents(editor) {
-    const document = editor.document;
-    const edit = new vscode.WorkspaceEdit();
-    let hasChanges = false;
-
-    for (let i = 0; i < document.lineCount; i++) {
-        const text = document.lineAt(i).text;
-        const match = text.match(INDENT_RE);
-        if (match) {
-            const tabLen = match[1].length;
-            edit.delete(document.uri, new vscode.Range(i, tabLen, i, tabLen + INDENT_STR.length));
-            hasChanges = true;
-        }
+        this.editor.selections = [new vscode.Selection(this.bookmarkPosition, this.bookmarkPosition)];
+        this.editor.revealRange(
+            new vscode.Range(this.bookmarkPosition, this.bookmarkPosition),
+            vscode.TextEditorRevealType.InCenter
+        );
     }
 
-    if (hasChanges) {
-        isApplyingEdits = true;
-        await vscode.workspace.applyEdit(edit);
-        isApplyingEdits = false;
-    }
-}
+    setMatches(matches, navigate = true) {
+        this.matches = matches;
+        const ranges = matches.map(m => m.range);
+        this.editor?.setDecorations(this.matchDecorationType, ranges);
 
-// ─────────────────────────────────────────────
-// Decorations
-// ─────────────────────────────────────────────
-
-function applyDecorations(editor) {
-    if (!editor || !enabled) {
-        if (editor) {
-            editor.setDecorations(hiddenDecorationType, []);
-            editor.setDecorations(curlyQuoteDecorationType, []);
-            editor.setDecorations(readTimeDecorationType, []);
-            editor.setDecorations(lineNumberDecorationType, []);
-        }
-        return;
-    }
-
-    const config = getConfig();
-
-    if (!isActiveFor(editor.document)) {
-        editor.setDecorations(hiddenDecorationType, []);
-        editor.setDecorations(curlyQuoteDecorationType, []);
-        editor.setDecorations(readTimeDecorationType, []);
-        editor.setDecorations(lineNumberDecorationType, []);
-        return;
-    }
-
-    const document = editor.document;
-    const cursorLine = editor.selection.active.line;
-    const cursorChar = editor.selection.active.character;
-
-    // Build/reuse cached content decorations
-    ensureContentDecorations(document, config);
-
-    // Apply read time + line numbers as-is (not cursor-dependent)
-    editor.setDecorations(readTimeDecorationType, cachedReadTimeRanges);
-    editor.setDecorations(lineNumberDecorationType, cachedNumberRanges);
-
-    // Filter collapse chars and curly quotes near cursor
-    const filteredHidden = filterCursorRanges(cachedHiddenRanges, cursorLine, cursorChar);
-    const filteredCurly = filterCursorRanges(cachedCurlyRanges, cursorLine, cursorChar);
-
-    editor.setDecorations(hiddenDecorationType, filteredHidden);
-    editor.setDecorations(curlyQuoteDecorationType, filteredCurly);
-}
-
-function updateStatusBar(editor) {
-    if (!editor || !enabled) {
-        statusBarItem.hide();
-        return;
-    }
-
-    const config = getConfig();
-    if (!config.readTime || !isActiveFor(editor.document)) {
-        statusBarItem.hide();
-        return;
-    }
-
-    const document = editor.document;
-    const headers = getHeaders(document);
-
-    if (headers.length === 0) {
-        statusBarItem.hide();
-        return;
-    }
-
-    const totalWords = countWordsInRange(document, 0, document.lineCount);
-    const totalMin = totalWords / config.readTimeWpm;
-    const totalStr = totalMin >= 0.5 ? formatTime(totalMin) : '<1m';
-
-    const cursorLine = editor.selection.active.line;
-    const wordsBefore = countWordsInRange(document, 0, cursorLine);
-    const cursorMin = wordsBefore / config.readTimeWpm;
-    const cursorStr = cursorMin >= 0.5 ? formatTime(cursorMin) : '<1m';
-
-    statusBarItem.text = `🕮 ${cursorStr} / ${totalStr}`;
-    statusBarItem.show();
-}
-
-// ─────────────────────────────────────────────
-// Uppercase + indent transforms
-// ─────────────────────────────────────────────
-
-async function applyTransforms(editor) {
-    if (!editor || !enabled || isApplyingEdits) return;
-
-    const config = getConfig();
-    if (!isActiveFor(editor.document)) return;
-
-    const document = editor.document;
-    const edit = new vscode.WorkspaceEdit();
-    let hasChanges = false;
-
-    for (let i = 0; i < document.lineCount; i++) {
-        const line = document.lineAt(i);
-        const text = line.text;
-
-        // Uppercase headers
-        if (config.uppercaseHeaders) {
-            const match = text.match(/^(\t*)(.+?)\s*\[$/);
-            if (match) {
-                const indent = match[1];
-                const title = match[2];
-                const upper = title.toUpperCase();
-                if (title !== upper) {
-                    const newText = `${indent}${upper} [`;
-                    edit.replace(document.uri, line.range, newText);
-                    hasChanges = true;
-                    continue; // header line, skip indent logic
-                }
-            }
-        }
-
-        // Paragraph indent: insert or remove em quads
-        const needs = lineNeedsIndent(text, config);
-        const has = lineHasIndent(text);
-
-        if (needs && !has) {
-            const tabLen = text.match(/^\t*/)[0].length;
-            edit.insert(document.uri, new vscode.Position(i, tabLen), INDENT_STR);
-            hasChanges = true;
-        } else if (!needs && has) {
-            const match = text.match(INDENT_RE);
-            if (match) {
-                const tabLen = match[1].length;
-                edit.delete(document.uri, new vscode.Range(i, tabLen, i, tabLen + INDENT_STR.length));
-                hasChanges = true;
-            }
-        }
-    }
-
-    if (hasChanges) {
-        isApplyingEdits = true;
-        await vscode.workspace.applyEdit(edit);
-        isApplyingEdits = false;
-    }
-}
-
-// ─────────────────────────────────────────────
-// Format command
-// ─────────────────────────────────────────────
-
-function formatJav(text) {
-    const lines = text.split('\n').map(l => l.replace(/\r$/, ''));
-    const result = [];
-    let currentIndent = 0;
-    const maxIndent = 5;
-
-    const listPattern = /^[-•]|\d+\./;
-
-  for (let i = 0; i < lines.length; i++) {
-    let line = lines[i].replace(/^[\t ]+/, '').replace(/[\t ]+$/, '');
-    if (line === '') continue;
-
-    if (line === ']') {
-      currentIndent = Math.max(0, currentIndent - 1);
-      result.push('\t'.repeat(currentIndent) + ']');
-      continue;
-    }
-
-    const headerMatch = line.match(/^(.+?)\s*(\{[^}]*\})?\s*\[$/);
-    if (headerMatch) {
-      const title = headerMatch[1].trim();
-      result.push('\t'.repeat(currentIndent) + title + ' [');
-      currentIndent = Math.min(currentIndent + 1, maxIndent);
-      continue;
-    }
-
-    const isListItem = listPattern.test(line);
-    if (isListItem) {
-      const originalLine = lines[i];
-      const leadingTabs = originalLine.match(/^\t*/)[0].length;
-      const strippedContent = originalLine.replace(/^[\t ]+/, '');
-      const indent = Math.max(leadingTabs, currentIndent);
-      result.push('\t'.repeat(indent) + strippedContent);
-      continue;
-    }
-
-    line = line.replace(/[ \t]+/g, ' ');
-    result.push('\t'.repeat(currentIndent) + line);
-    }
-
-    return result.join('\n');
-}
-
-// ─────────────────────────────────────────────
-// Symbol/Folding providers
-// ─────────────────────────────────────────────
-
-const symbolProvider = {
-    provideDocumentSymbols(document) {
-        const symbols = [];
-        const headers = getHeaders(document);
-        const nodeStack = [];
-
-        for (let i = 0; i < headers.length; i++) {
-            const header = headers[i];
-            const endLine = getHeaderEnd(document, header.line);
-
-            const fullRange = new vscode.Range(
-                header.line, 0,
-                endLine, document.lineAt(endLine).text.length
-            );
-            const selectionRange = document.lineAt(header.line).range;
-
-            const numeral = ['🟢', '🟡', '🔴', '🩷', '🟣', '🔵'][header.level - 1] || '🟢';
-            const symbol = new vscode.DocumentSymbol(
-                `${numeral} ${header.title}`,
-                '',
-                vscode.SymbolKind.File,
-                fullRange,
-                selectionRange
-            );
-
-            while (nodeStack.length > 0 && nodeStack[nodeStack.length - 1].level >= header.level) {
-                nodeStack.pop();
-            }
-
-            if (nodeStack.length > 0) {
-                nodeStack[nodeStack.length - 1].symbol.children.push(symbol);
+        if (!matches.length) {
+            if (navigate) {
+                this.setIndex(0);
             } else {
-                symbols.push(symbol);
+                this.index = 0;
+                this.editor?.setDecorations(this.activeMatchDecorationType, []);
+                if (this.inputBox) {
+                    this.inputBox.prompt = this.inputBox.value ? "No results" : "Empty Lines  │  ⏎ type to search";
+                }
             }
-
-            nodeStack.push({ level: header.level, symbol });
+            return;
         }
 
-        return symbols;
-    }
-};
+        const active = this.editor.selections[0];
+        if (!active) {
+            if (navigate) { this.setIndex(0); } else { this.index = 0; }
+            return;
+        }
 
-const foldingProvider = {
-    provideFoldingRanges(document) {
-        const ranges = [];
-        const headers = getHeaders(document);
+        const cursorPos = active.start;
 
-        for (const header of headers) {
-            let endLine = getHeaderEnd(document, header.line);
+        let nearestIdx = 0;
+        let minDistance = Infinity;
 
-            while (endLine > header.line && document.lineAt(endLine).isEmptyOrWhitespace) {
-                endLine--;
+        for (let i = 0; i < matches.length; i++) {
+            const match = matches[i];
+            const matchStart = match.range.start;
+
+            let distance;
+            if (matchStart.line === cursorPos.line) {
+                distance = Math.abs(matchStart.character - cursorPos.character);
+            } else {
+                distance = Math.abs(matchStart.line - cursorPos.line) * 10000 +
+                           Math.abs(matchStart.character - cursorPos.character);
             }
 
-            if (endLine > header.line) {
-                ranges.push(new vscode.FoldingRange(
-                    header.line,
-                    endLine,
-                    vscode.FoldingRangeKind.Region
-                ));
+            if (distance < minDistance) {
+                minDistance = distance;
+                nearestIdx = i;
             }
         }
 
-        return ranges;
+        if (navigate) {
+            this.setIndex(nearestIdx);
+        } else {
+            this.index = nearestIdx;
+            this.editor?.setDecorations(this.activeMatchDecorationType, []);
+            const suffix = matches.length >= FIND_LIMIT ? "+" : "";
+            if (this.inputBox) {
+                this.inputBox.prompt = `${this.index + 1}/${this.matches.length}${suffix}  │  Empty Lines  │  ↑↓ to navigate`;
+            }
+        }
     }
-};
 
-// ─────────────────────────────────────────────
-// Activation
-// ─────────────────────────────────────────────
+    setIndex(i) {
+        if (!this.inputBox) return;
+        this.index = (i + this.matches.length) % this.matches.length;
+        this.update();
+    }
+
+    goTop()    { this.matches.length && this.setIndex(0); }
+    goBottom() { this.matches.length && this.setIndex(-1); }
+    next()     { this.matches.length && this.setIndex(this.index + 1); }
+    prev()     { this.matches.length && this.setIndex(this.index - 1); }
+
+update() {
+    if (!this.inputBox || !this.editor) return;
+    if (this.matches.length === 0) {
+        this.editor.setDecorations(this.activeMatchDecorationType, []);
+        this.inputBox.prompt = this.inputBox.value ? "No results" : "Empty Lines  │  ⏎ type to search";
+        return;
+    }
+
+    const cur = this.matches[this.index];
+    const suffix = this.matches.length >= FIND_LIMIT ? "+" : "";
+
+    const isEmptyLineMode = !this.inputBox.value;
+
+    const caseFlag = this.findOptions.matchCase ? "🟢 Aa" : "🔴 Aa";
+    const wordFlag = this.findOptions.wholeWord ? "🟢 W" : "🔴 W";
+    const visFlag = this.findOptions.visibleOnly ? "🟢 Vis" : "🔴 Vis";
+
+    if (isEmptyLineMode) {
+        this.inputBox.prompt = `${this.index + 1}/${this.matches.length}${suffix}  │  Empty Lines`;
+    } else {
+        this.inputBox.prompt = `${this.index + 1}/${this.matches.length}${suffix}  │  ${caseFlag}  ${wordFlag}  ${visFlag}`;
+    }
+
+    this.editor.setDecorations(this.activeMatchDecorationType, [cur.range]);
+
+    const sel = new vscode.Selection(cur.range.start, cur.range.end);
+    this.editor.selections = [sel];
+
+    const visibleRanges = this.editor.visibleRanges;
+    let isVisible = false;
+    for (const visibleRange of visibleRanges) {
+        if (visibleRange.contains(cur.range)) {
+            isVisible = true;
+            break;
+        }
+    }
+
+    if (!isVisible) {
+        this.editor.revealRange(cur.range, vscode.TextEditorRevealType.InCenter);
+    }
+}
+
+    findEmptyLines() {
+        if (!this.editor) return [];
+        const doc = this.editor.document;
+        const out = [];
+        const lineCount = doc.lineCount;
+
+        for (let i = 0; i < lineCount && out.length < FIND_LIMIT; i++) {
+            const line = doc.lineAt(i);
+            if (line.text.trim() === '') {
+                out.push({ value: '', range: line.range });
+            }
+        }
+        return out;
+    }
+
+    async quickFind() {
+    const editor = vscode.window.activeTextEditor;
+    if (!editor) return;
+    this.editor = editor;
+
+    this.initialPosition = editor.selection.active;
+    this.initialVisibleRange = editor.visibleRanges[0];
+    this.cancelFlag = true;
+
+    this.setBookmark(this.initialPosition);
+
+    const sel = editor.selection;
+    let seed = '';
+    let selectSeed = false;
+
+    if (!sel.isEmpty) {
+        seed = editor.document.getText(sel);
+    } else {
+        const wordRange = editor.document.getWordRangeAtPosition(editor.selection.active);
+        if (wordRange) {
+            seed = editor.document.getText(wordRange);
+            selectSeed = true;
+        }
+    }
+
+    this.matchDecorationType?.dispose();
+    this.activeMatchDecorationType?.dispose();
+    const bg  = new vscode.ThemeColor("editor.findMatchBackground");
+    const bd  = new vscode.ThemeColor("editor.findMatchBorder");
+    const hbg = new vscode.ThemeColor("editor.findMatchHighlightBackground");
+    this.matchDecorationType = vscode.window.createTextEditorDecorationType({
+        backgroundColor: hbg,
+        opacity: "1",
+        overviewRulerLane: vscode.OverviewRulerLane.Full,
+        overviewRulerColor: hbg,
+        gutterIconPath: vscode.Uri.parse(
+        'data:image/svg+xml,' + encodeURIComponent(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"><circle cx="8" cy="8" r="3" fill="#007acc"/></svg>'
+        )
+    ),
+    gutterIconSize: 'contain',
+    });
+this.activeMatchDecorationType = vscode.window.createTextEditorDecorationType({
+    backgroundColor: bg,
+    border: `2px solid ${bd}`,
+    borderRadius: '3px',
+    opacity: "1",
+});
+
+    this.applyDim();
+
+    this.inputBox = this.createInputBox(seed, "Quick Find in File");
+
+    if (selectSeed && seed) {
+        this.inputBox.valueSelection = [0, seed.length];
+    }
+
+    this.inputBox.show();
+    vscode.commands.executeCommand(SET_CONTEXT, IS_ACTIVE_CONTEXT, true);
+
+    if (seed) {
+        const matches = this.find(seed);
+        this.setMatches(matches);
+    } else {
+        const matches = this.findEmptyLines();
+        this.setMatches(matches, false);
+    }
+}
+
+    createInputBox(initialValue = '', promptText = '') {
+        const ib = vscode.window.createInputBox();
+        ib.placeholder = 'Quick Find';
+        ib.prompt = promptText;
+        ib.value = initialValue;
+        ib.onDidChangeValue(v => {
+            if (v) {
+                const matches = this.find(v);
+                this.setMatches(matches);
+            } else {
+                const matches = this.findEmptyLines();
+                this.setMatches(matches, false);
+            }
+        });
+        ib.onDidAccept(() => {
+    this.cancelFlag = false;
+
+    // Expand selection to whole word if configured
+    const config = vscode.workspace.getConfiguration('quickFind');
+    if (config.get('selectWholeWord', false) && this.matches.length > 0) {
+        const cur = this.matches[this.index];
+        const expandedRange = this.expandToWord(cur.range);
+        this.editor.selections = [new vscode.Selection(expandedRange.start, expandedRange.end)];
+    }
+
+    ib.hide();
+});;
+        ib.onDidHide(() => this.onHide());
+        return ib;
+    }
+
+    find(text) {
+        if (!this.editor) return [];
+        let pat = this.escapeRegExp(text);
+        if (this.findOptions.wholeWord) {
+            pat = `\\b${pat}\\b`;
+        }
+        const flags = this.findOptions.matchCase ? 'g' : 'gi';
+        const re = new RegExp(pat, flags);
+
+        const visibleOnly = this.findOptions.visibleOnly;
+
+        const doc = this.editor.document;
+        const out = [];
+        let cnt = 0;
+
+        if (visibleOnly) {
+            for (const visibleRange of this.editor.visibleRanges) {
+                const startOffset = doc.offsetAt(visibleRange.start);
+                const endOffset = doc.offsetAt(visibleRange.end);
+                const visibleText = doc.getText(visibleRange);
+                let m;
+                while (++cnt <= FIND_LIMIT && (m = re.exec(visibleText))) {
+                    const r = new vscode.Range(
+                        doc.positionAt(startOffset + m.index),
+                        doc.positionAt(startOffset + m.index + m[0].length)
+                    );
+                    out.push({ value: m[0], range: r });
+                }
+            }
+        } else {
+            const fullText = doc.getText();
+            let m;
+            while (++cnt <= FIND_LIMIT && (m = re.exec(fullText))) {
+                const r = new vscode.Range(
+                    doc.positionAt(m.index),
+                    doc.positionAt(m.index + m[0].length)
+                );
+                out.push({ value: m[0], range: r });
+            }
+        }
+        return out;
+    }
+
+    escapeRegExp(str) {
+        return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }
+}
+
+const quickFind = new QuickFind();
 
 function activate(context) {
-    hiddenDecorationType = vscode.window.createTextEditorDecorationType({
-        letterSpacing: '-1em',
-        opacity: '0',
-        textDecoration: 'none; font-size: 0;'
-    });
-
-    curlyQuoteDecorationType = vscode.window.createTextEditorDecorationType({
-        letterSpacing: '-1em',
-        opacity: '0',
-        textDecoration: 'none; font-size: 0;'
-    });
-
-    readTimeDecorationType = vscode.window.createTextEditorDecorationType({});
-    lineNumberDecorationType = vscode.window.createTextEditorDecorationType({});
-
-    statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
-    statusBarItem.tooltip = 'Jav: Read time';
-
-    dialogColor = getColorForScope('dialog') || '#ce9178';
+    console.log('JavQuickFind extension is now active!');
 
     context.subscriptions.push(
-        hiddenDecorationType,
-        curlyQuoteDecorationType,
-        readTimeDecorationType,
-        lineNumberDecorationType,
-        statusBarItem
+        vscode.commands.registerCommand('quickFind.toggleMatchCase', () => {
+            quickFind.findOptions.matchCase = !quickFind.findOptions.matchCase;
+            const matches = quickFind.find(quickFind.inputBox.value);
+            quickFind.setMatches(matches);
+        }),
+        vscode.commands.registerCommand('quickFind.toggleWholeWord', () => {
+            quickFind.findOptions.wholeWord = !quickFind.findOptions.wholeWord;
+            const matches = quickFind.find(quickFind.inputBox.value);
+            quickFind.setMatches(matches);
+        }),
+        vscode.commands.registerCommand('quickFind.toggleVisibleLinesOnly', () => {
+            quickFind.findOptions.visibleOnly = !quickFind.findOptions.visibleOnly;
+            const matches = quickFind.find(quickFind.inputBox.value);
+            quickFind.setMatches(matches);
+        }),
+        vscode.commands.registerCommand('quickFind.find', () => {
+            quickFind.quickFind();
+        }),
+        vscode.commands.registerCommand('quickFind.next', () => quickFind.next()),
+        vscode.commands.registerCommand('quickFind.prev', () => quickFind.prev()),
+        vscode.commands.registerCommand('quickFind.goTop', () => quickFind.goTop()),
+        vscode.commands.registerCommand('quickFind.goBottom', () => quickFind.goBottom()),
+        vscode.commands.registerCommand('quickFind.hide', () => quickFind.hide('cancel')),
+        vscode.commands.registerCommand('quickFind.hideAndLeft', () => quickFind.hide('left')),
+        vscode.commands.registerCommand('quickFind.hideAndRight', () => quickFind.hide('right')),
+        vscode.commands.registerCommand('quickFind.jumpToBookmark', () => quickFind.jumpToBookmark())
     );
 
-    // Selection change: only re-filter cached decorations for cursor, no rebuild
-    context.subscriptions.push(
-        vscode.window.onDidChangeTextEditorSelection(e => {
-            const cursorLine = e.textEditor.selection.active.line;
-            const cursorChar = e.textEditor.selection.active.character;
-
-            // Only reapply if cursor actually moved
-            if (cursorLine !== prevCursorLine || cursorChar !== prevCursorChar) {
-                prevCursorLine = cursorLine;
-                prevCursorChar = cursorChar;
-                applyDecorations(e.textEditor);
-                updateStatusBar(e.textEditor);
-            }
-        })
-    );
-
-    // Visible range change: reapply (cached data, cheap)
-    context.subscriptions.push(
-        vscode.window.onDidChangeTextEditorVisibleRanges(e => {
-            applyDecorations(e.textEditor);
-        })
-    );
-
-    // Text change: invalidate cache, rebuild
-    context.subscriptions.push(
-        vscode.workspace.onDidChangeTextDocument(e => {
-            if (isApplyingEdits) return;
-
-            const editor = vscode.window.activeTextEditor;
-            if (editor && e.document === editor.document) {
-                invalidateCache();
-                applyDecorations(editor);
-                updateStatusBar(editor);
-
-                const config = getConfig();
-                clearTimeout(transformTimeout);
-                transformTimeout = setTimeout(() => {
-                    applyTransforms(editor);
-                }, config.uppercaseDebounce);
-            }
-        })
-    );
-
-    context.subscriptions.push(
-        vscode.window.onDidChangeActiveTextEditor(editor => {
-            if (editor) {
-                invalidateCache();
-                applyDecorations(editor);
-                updateStatusBar(editor);
-                applyTransforms(editor);
-            } else {
-                statusBarItem.hide();
-            }
-        })
-    );
-
-    context.subscriptions.push(
-        vscode.workspace.onDidChangeConfiguration(e => {
-            if (e.affectsConfiguration('jav')) {
-                invalidateCache();
-                const editor = vscode.window.activeTextEditor;
-                if (editor) {
-                    applyDecorations(editor);
-                    updateStatusBar(editor);
-                    applyTransforms(editor);
-                }
-            }
-            if (e.affectsConfiguration('workbench.colorTheme') ||
-                e.affectsConfiguration('editor.tokenColorCustomizations')) {
-                dialogColor = getColorForScope('dialog') || '#ce9178';
-                invalidateCache();
-                const editor = vscode.window.activeTextEditor;
-                if (editor) applyDecorations(editor);
-            }
-        })
-    );
-
-    // Commands
-    context.subscriptions.push(
-        vscode.commands.registerCommand('jav.format', () => {
-            const editor = vscode.window.activeTextEditor;
-            if (!editor) return;
-
-            const document = editor.document;
-            if (document.languageId !== 'jav') {
-                vscode.window.showInformationMessage('Jav format only works with .jav files');
-                return;
-            }
-
-            const selection = editor.selection;
-            const text = selection.isEmpty
-                ? document.getText()
-                : document.getText(selection);
-
-            const formatted = formatJav(text);
-
-            editor.edit(editBuilder => {
-                if (selection.isEmpty) {
-                    const fullRange = new vscode.Range(
-                        document.positionAt(0),
-                        document.positionAt(document.getText().length)
-                    );
-                    editBuilder.replace(fullRange, formatted);
-                } else {
-                    editBuilder.replace(selection, formatted);
-                }
-            });
-        })
-    );
-
-    context.subscriptions.push(
-        vscode.commands.registerCommand('jav.toggle', async () => {
-            enabled = !enabled;
-            const editor = vscode.window.activeTextEditor;
-            if (editor) {
-                if (!enabled) {
-                    await stripAllIndents(editor);
-                }
-                applyDecorations(editor);
-                updateStatusBar(editor);
-                if (enabled) {
-                    await applyTransforms(editor);
-                }
-            }
-        })
-    );
-
-    context.subscriptions.push(
-        vscode.commands.registerCommand('jav.convertMd', () => {
-            const editor = vscode.window.activeTextEditor;
-            if (!editor) return;
-
-            const document = editor.document;
-            const selection = editor.selection;
-            const text = selection.isEmpty
-                ? document.getText()
-                : document.getText(selection);
-
-            const converted = mdToJav(text);
-            console.log('mdToJav input length:', text.length, 'output length:', converted.length);
-            console.log('changed:', text !== converted);
-
-            editor.edit(editBuilder => {
-                if (selection.isEmpty) {
-                    const fullRange = new vscode.Range(
-                        document.positionAt(0),
-                        document.positionAt(document.getText().length)
-                    );
-                    editBuilder.replace(fullRange, converted);
-                } else {
-                    editBuilder.replace(selection, converted);
-                }
-            });
-        })
-    );
-
-    context.subscriptions.push(
-        vscode.commands.registerCommand('jav.splitToFiles', async () => {
-            const editor = vscode.window.activeTextEditor;
-            if (!editor) return;
-
-            const document = editor.document;
-            if (document.languageId !== 'jav') {
-                vscode.window.showInformationMessage('Split only works with .jav files');
-                return;
-            }
-
-            const text = document.getText();
-            const lines = text.split('\n').map(l => l.replace(/\r$/, ''));
-
-            // Find all level-1 headers (no leading tabs)
-            const sections = [];
-            for (let i = 0; i < lines.length; i++) {
-                const match = lines[i].match(/^([^\t\n].+?)\s*(?:\{[^}]*\})?\s*\[$/);
-                if (match) {
-                    const title = match[1].trim();
-                    const startLine = i;
-                    // Walk forward to find matching close bracket
-                    let depth = 1;
-                    let endLine = i;
-                    for (let j = i + 1; j < lines.length; j++) {
-                        for (const ch of lines[j]) {
-                            if (ch === '[') depth++;
-                            if (ch === ']') depth--;
-                            if (depth === 0) { endLine = j; break; }
-                        }
-                        if (depth === 0) break;
-                    }
-                    sections.push({
-                        title,
-                        content: lines.slice(startLine, endLine + 1).join('\n')
-                    });
-                }
-            }
-
-            if (sections.length === 0) {
-                vscode.window.showInformationMessage('No level-1 headers found');
-                return;
-            }
-
-            // Prompt for output folder
-            const folderUri = await vscode.window.showOpenDialog({
-                canSelectFolders: true,
-                canSelectFiles: false,
-                canSelectMany: false,
-                openLabel: 'Select output folder'
-            });
-
-            if (!folderUri || folderUri.length === 0) return;
-
-            const outputDir = folderUri[0].fsPath;
-            let written = 0;
-
-            for (const section of sections) {
-                // Sanitize filename
-                const safeName = section.title
-                    .replace(/[<>:"/\\|?*]/g, '_')
-                    .replace(/\s+/g, ' ')
-                    .trim();
-                const filePath = path.join(outputDir, safeName + '.jav');
-                try {
-                    fs.writeFileSync(filePath, section.content, 'utf8');
-                    written++;
-                } catch (err) {
-                    vscode.window.showErrorMessage(`Failed to write ${safeName}.jav: ${err.message}`);
-                }
-            }
-
-            vscode.window.showInformationMessage(`Split ${written} section(s) to ${outputDir}`);
-        })
-    );
-
-    // Providers
-    context.subscriptions.push(
-        vscode.languages.registerDocumentSymbolProvider({ language: 'jav' }, symbolProvider),
-        vscode.languages.registerFoldingRangeProvider({ language: 'jav' }, foldingProvider)
-    );
-
-    // Initial update
-    if (vscode.window.activeTextEditor) {
-        applyDecorations(vscode.window.activeTextEditor);
-        updateStatusBar(vscode.window.activeTextEditor);
-        applyTransforms(vscode.window.activeTextEditor);
-    }
 }
+exports.activate = activate;
 
 function deactivate() {
-    if (transformTimeout) clearTimeout(transformTimeout);
-    if (statusBarItem) statusBarItem.dispose();
+    quickFind.dispose();
+    console.log('JavQuickFind extension is now deactivated!');
 }
-
-module.exports = { activate, deactivate };
-
-==== language-configuration.json ====
-
-{
-  "brackets": [
-    ["{", "}"],
-    ["[", "]"],
-    ["(", ")"],
-    ["<", ">"],
-    ["\"", "\""],
-    ["\\", "\\"],
-    ["\\\\", "\\\\"]
-  ],
-  "autoClosingPairs": [
-    { "open": "{", "close": "}" },
-    { "open": "[", "close": "]" },
-    { "open": "(", "close": ")" },
-    {"open": "<","close": ">"},
-    { "open": "\"", "close": "\"" },
-    { "open": "'", "close": "'" },
-    { "open": "*", "close": "*" },
-    { "open": "\\", "close": "\\" },
-    { "open": "\\\\", "close": "\\\\" }
-  ],
-  "surroundingPairs": [
-    { "open": "{", "close": "}" },
-    { "open": "[", "close": "]" },
-    {"open": "<","close": ">"},
-    { "open": "(", "close": ")" },
-    { "open": "\"", "close": "\"" },
-    { "open": "'", "close": "'" },
-    { "open": "*", "close": "*" },
-    { "open": "\\", "close": "\\" },
-    { "open": "\\\\", "close": "\\\\" }
-  ],
-  "folding": {
-    "markers": {
-      "start": "\\[\\s*$",
-      "end": "^\\s*\\]"
-    }
-  },
-  "indentationRules": {
-    "increaseIndentPattern": "\\[\\s*$",
-    "decreaseIndentPattern": "^\\s*\\]"
-  }
-}
-
-==== mdToJav.js ====
-
-/**
- * Converts markdown-style # headers into .jav bracketed structure.
- * Only touches header lines. All other content passes through unchanged.
- */
-function mdToJav(text) {
-    const lines = text.split('\n').map(l => l.replace(/\r$/, ''));
-    const result = [];
-    const openLevels = []; // stack of heading depths currently open
-
-    for (let i = 0; i < lines.length; i++) {
-        const line = lines[i];
-        const headerMatch = line.match(/^(#{1,6})\s+(.+)$/);
-
-        if (headerMatch) {
-            const level = headerMatch[1].length; // 1-6
-            const title = headerMatch[2].trim();
-
-            // Close any sections at same or deeper level
-            while (openLevels.length > 0 && openLevels[openLevels.length - 1] >= level) {
-                openLevels.pop();
-                const indent = '\t'.repeat(openLevels.length);
-                result.push(indent + ']');
-            }
-
-            // Blank line before header (unless start of file)
-            if (result.length > 0 && result[result.length - 1] !== '') {
-                result.push('');
-            }
-
-            const indent = '\t'.repeat(openLevels.length);
-            result.push(indent + title + ' [');
-            openLevels.push(level);
-        } else {
-            // Non-header line: indent to current depth, pass through as-is
-            if (openLevels.length > 0) {
-                const indent = '\t'.repeat(openLevels.length);
-                // Preserve blank lines without adding trailing whitespace
-                if (line.trim() === '') {
-                    result.push('');
-                } else {
-                    result.push(indent + line.trim());
-                }
-            } else {
-                result.push(line);
-            }
-        }
-    }
-
-    // Close all remaining open sections
-    while (openLevels.length > 0) {
-        openLevels.pop();
-        const indent = '\t'.repeat(openLevels.length);
-        result.push(indent + ']');
-    }
-
-    return result.join('\n');
-}
-
-module.exports = { mdToJav };
+exports.deactivate = deactivate;
 
 ==== package.json ====
 
 {
-	"name": "JavWritersSuite",
-	"displayName": "JavWritersSuite",
-	"description": "Syntax, formatting, and clean view for .jav files",
-	"version": "1.0.0",
-	"publisher": "jav",
+	"name": "javquickfind",
+	"displayName": "JavQuickFind",
+	"description": "Quickly find and jump in document or visible range with case-aware support.",
+	"version": "1.0.2",
 	"engines": {
-		"vscode": "^1.74.0"
+		"vscode": "^1.81.0"
 	},
-	"categories": [
-		"Programming Languages",
-		"Formatters"
-	],
-	"activationEvents": [
-		"onLanguage:jav",
-		"onCommand:jav.convertMd",
-		"onCommand:jav.splitToFiles"
-	],
+	"publisher": "Jav",
+	"activationEvents": [],
 	"main": "./extension.js",
 	"contributes": {
-		"commands": [
-			{
-				"command": "jav.convertMd",
-				"title": "Jav: Convert Markdown to Jav"
-			},
-			{
-				"command": "jav.format",
-				"title": "Jav: Format"
-			},
-			{
-				"command": "jav.toggle",
-				"title": "Jav: Toggle Clean View"
-			},
-			{
-				"command": "jav.toggleHighlights",
-				"title": "Jav: Toggle Section Highlights"
-			},
-			{
-				"command": "jav.splitToFiles",
-				"title": "Jav: Split to Files"
-			}
-		],
-		"languages": [
-			{
-				"id": "jav",
-				"extensions": [
-					".jav"
-				],
-				"aliases": [
-					"Jav"
-				],
-				"configuration": "./language-configuration.json"
-			}
-		],
-		"grammars": [
-			{
-				"language": "jav",
-				"scopeName": "source.jav",
-				"path": "./syntaxes/jav.tmLanguage.json"
-			}
-		],
 		"configuration": {
-			"title": "Jav",
+			"title": "Quick Find",
 			"properties": {
-				"jav.lineNumbers": {
+				"quickFind.dimOpacity": {
+					"type": "number",
+					"default": 0.3,
+					"minimum": 0,
+					"maximum": 1,
+					"description": "Opacity for non-matching text (0 = invisible, 1 = fully visible)"
+				},
+				"quickFind.selectWholeWord": {
 					"type": "boolean",
 					"default": false,
-					"description": "Show hierarchical line numbers as decorations"
-				},
-				"jav.collapseChars": {
-					"type": "array",
-					"default": [
-						"*"
-					],
-					"description": "Characters to collapse visually"
-				},
-				"jav.readTime": {
-					"type": "boolean",
-					"default": true,
-					"description": "Show estimated read time on headers"
-				},
-				"jav.readTimeWpm": {
-					"type": "number",
-					"default": 240,
-					"description": "Words per minute for read time"
-				},
-				"jav.curlyQuotes": {
-					"type": "boolean",
-					"default": false,
-					"description": "Visually render straight quotes as curly quotes"
-				},
-				"jav.uppercaseHeaders": {
-					"type": "boolean",
-					"default": true,
-					"description": "Auto-uppercase header text"
-				},
-				"jav.uppercaseDebounce": {
-					"type": "number",
-					"default": 500,
-					"description": "Debounce delay in ms for transforms"
+					"description": "Select entire word containing match when accepting"
 				}
 			}
-		}
-	},
-	"scripts": {
-		"package": "echo. > LICENSE && vsce package --no-git-tag-version --allow-missing-repository && del LICENSE"
+		},
+		"commands": [
+			{
+				"command": "quickFind.find",
+				"title": "JavQuickFind: Search Entire Document"
+			},
+			{
+				"command": "quickFind.next",
+				"title": "JavQuickFind: Next Match"
+			},
+			{
+				"command": "quickFind.prev",
+				"title": "JavQuickFind: Previous Match"
+			},
+			{
+				"command": "quickFind.goTop",
+				"title": "JavQuickFind: First Match"
+			},
+			{
+				"command": "quickFind.goBottom",
+				"title": "JavQuickFind: Last Match"
+			},
+			{
+				"command": "quickFind.hide",
+				"title": "JavQuickFind: Hide"
+			},
+			{
+				"command": "quickFind.hideAndLeft",
+				"title": "JavQuickFind: Hide and Cursor to Start"
+			},
+			{
+				"command": "quickFind.hideAndRight",
+				"title": "JavQuickFind: Hide and Cursor to End"
+			},
+			{
+				"command": "quickFind.toggleMatchCase",
+				"title": "JavQuickFind: Toggle Match Case"
+			},
+			{
+				"command": "quickFind.toggleWholeWord",
+				"title": "JavQuickFind: Toggle Whole Word"
+			},
+			{
+				"command": "quickFind.toggleVisibleLinesOnly",
+				"title": "JavQuickFind: Toggle Visible Lines Only"
+			}
+		],
+		"keybindings": [
+			{
+				"key": "down",
+				"command": "quickFind.next",
+				"when": "quickFind.isActive"
+			},
+			{
+				"key": "up",
+				"command": "quickFind.prev",
+				"when": "quickFind.isActive"
+			},
+			{
+				"key": "home",
+				"command": "quickFind.goTop",
+				"when": "quickFind.isActive"
+			},
+			{
+				"key": "end",
+				"command": "quickFind.goBottom",
+				"when": "quickFind.isActive"
+			},
+			{
+				"key": "escape",
+				"command": "quickFind.hide",
+				"when": "quickFind.isActive"
+			},
+			{
+				"key": "left",
+				"command": "quickFind.hideAndLeft",
+				"when": "quickFind.isActive"
+			},
+			{
+				"key": "right",
+				"command": "quickFind.hideAndRight",
+				"when": "quickFind.isActive"
+			},
+			{
+				"key": "alt+c",
+				"command": "quickFind.toggleMatchCase",
+				"when": "quickFind.isActive"
+			},
+			{
+				"key": "alt+w",
+				"command": "quickFind.toggleWholeWord",
+				"when": "quickFind.isActive"
+			},
+			{
+				"key": "alt+t",
+				"command": "quickFind.toggleVisibleLinesOnly",
+				"when": "quickFind.isActive"
+			}
+		]
 	},
 	"__metadata": {
-		"installedTimestamp": 1773064918750,
+		"installedTimestamp": 1772569418483,
 		"targetPlatform": "undefined",
-		"size": 56867
+		"size": 21339
 	}
-}
-
-==== syntaxes\jav.tmLanguage.json ====
-
-{
-  "name": "jav",
-  "scopeName": "source.jav",
-  "fileTypes": ["jav"],
-  "patterns": [
-    { "include": "#header" },
-    { "include": "#content" }
-  ],
-  "repository": {
-    "header": {
-      "name": "meta.header.jav",
-      "begin": "^(\\s*)(.+?)\\s*(\\{[^}]*\\})?\\s*(\\[)\\s*$",
-      "beginCaptures": {
-        "2": { "name": "entity.name.section header1" },
-        "3": { "name": "comment.block readtime" },
-        "4": { "name": "punctuation.section.block.begin" }
-      },
-      "end": "^(\\s*)(\\])\\s*$",
-      "endCaptures": {
-        "2": { "name": "punctuation.section.block.end" }
-      },
-      "patterns": [
-        { "include": "#nested-header-2" },
-        { "include": "#content" }
-      ]
-    },
-    "nested-header-2": {
-      "name": "meta.header.jav",
-      "begin": "^(\\s*)(.+?)\\s*(\\{[^}]*\\})?\\s*(\\[)\\s*$",
-      "beginCaptures": {
-        "2": { "name": "entity.name.section header2" },
-        "3": { "name": "comment.block readtime" },
-        "4": { "name": "punctuation.section.block.begin" }
-      },
-      "end": "^(\\s*)(\\])\\s*$",
-      "endCaptures": {
-        "2": { "name": "punctuation.section.block.end" }
-      },
-      "patterns": [
-        { "include": "#nested-header-3" },
-        { "include": "#content" }
-      ]
-    },
-    "nested-header-3": {
-      "name": "meta.header.jav",
-      "begin": "^(\\s*)(.+?)\\s*(\\{[^}]*\\})?\\s*(\\[)\\s*$",
-      "beginCaptures": {
-        "2": { "name": "entity.name.section header3" },
-        "3": { "name": "comment.block readtime" },
-        "4": { "name": "punctuation.section.block.begin" }
-      },
-      "end": "^(\\s*)(\\])\\s*$",
-      "endCaptures": {
-        "2": { "name": "punctuation.section.block.end" }
-      },
-      "patterns": [
-        { "include": "#nested-header-4" },
-        { "include": "#content" }
-      ]
-    },
-    "nested-header-4": {
-      "name": "meta.header.jav",
-      "begin": "^(\\s*)(.+?)\\s*(\\{[^}]*\\})?\\s*(\\[)\\s*$",
-      "beginCaptures": {
-        "2": { "name": "entity.name.section header4" },
-        "3": { "name": "comment.block readtime" },
-        "4": { "name": "punctuation.section.block.begin" }
-      },
-      "end": "^(\\s*)(\\])\\s*$",
-      "endCaptures": {
-        "2": { "name": "punctuation.section.block.end" }
-      },
-      "patterns": [
-        { "include": "#nested-header-5" },
-        { "include": "#content" }
-      ]
-    },
-    "nested-header-5": {
-      "name": "meta.header.jav",
-      "begin": "^(\\s*)(.+?)\\s*(\\{[^}]*\\})?\\s*(\\[)\\s*$",
-      "beginCaptures": {
-        "2": { "name": "entity.name.section header5" },
-        "3": { "name": "comment.block readtime" },
-        "4": { "name": "punctuation.section.block.begin" }
-      },
-      "end": "^(\\s*)(\\])\\s*$",
-      "endCaptures": {
-        "2": { "name": "punctuation.section.block.end" }
-      },
-      "patterns": [
-        { "include": "#nested-header-6" },
-        { "include": "#content" }
-      ]
-    },
-    "nested-header-6": {
-      "name": "meta.header.jav",
-      "begin": "^(\\s*)(.+?)\\s*(\\{[^}]*\\})?\\s*(\\[)\\s*$",
-      "beginCaptures": {
-        "2": { "name": "entity.name.section header6" },
-        "3": { "name": "comment.block readtime" },
-        "4": { "name": "punctuation.section.block.begin" }
-      },
-      "end": "^(\\s*)(\\])\\s*$",
-      "endCaptures": {
-        "2": { "name": "punctuation.section.block.end" }
-      },
-      "patterns": [
-        { "include": "#content" }
-      ]
-    },
-    "content": {
-      "patterns": [
-        { "include": "#cut-line" },
-        { "include": "#definition-pair" },
-        { "include": "#list-unordered" },
-        { "include": "#list-ordered" },
-        { "include": "#italic-dialog" },
-        { "include": "#dialog" },
-        { "include": "#inline-formatting" },
-        { "include": "#annotations" },
-        { "include": "#cut-inline" }
-      ]
-    },
-    "definition-pair": {
-      "name": "meta.definition-pair",
-      "match": "^(.+?)(::)\\s*(.+)$",
-      "captures": {
-        "1": { "name": "keyword" },
-        "2": { "name": "punctuation.separator.definition" },
-        "3": {
-          "name": "definition",
-          "patterns": [{ "include": "#text-content" }]
-        }
-      }
-    },
-    "cut-line": {
-      "name": "markup.deleted cut",
-      "match": "^.+--\\s*$"
-    },
-    "cut-inline": {
-      "name": "markup.deleted cut",
-      "match": "<[^>]+>"
-    },
-    "annotations": {
-      "patterns": [
-        {
-          "name": "comment.block altNotes",
-          "begin": "\\\\\\\\",
-          "end": "\\\\\\\\"
-        },
-        {
-          "name": "comment.block notes",
-          "begin": "\\\\",
-          "end": "\\\\"
-        }
-      ]
-    },
-    "inline-formatting": {
-      "patterns": [
-        {
-          "name": "markup.bold bold",
-          "match": "\\*\\*[^*\\n]+?\\*\\*"
-        },
-        {
-          "name": "markup.italic italics",
-          "match": "\\*[^*\\n]+\\*"
-        }
-      ]
-    },
-    "dialog-content": {
-      "patterns": [
-        { "include": "#cut-inline" },
-        {
-          "name": "markup.bold bold",
-          "match": "\\*\\*[^*\\n]+?\\*\\*"
-        },
-        {
-          "name": "markup.italic italics",
-          "match": "\\*[^*\\n]+\\*"
-        },
-        { "include": "#annotations" }
-      ]
-    },
-    "italic-dialog-content": {
-      "patterns": [
-        { "include": "#cut-inline" },
-        {
-          "name": "markup.bold bold",
-          "match": "\\*\\*[^*\\n]+?\\*\\*"
-        },
-        { "include": "#annotations" }
-      ]
-    },
-    "list-unordered": {
-      "name": "markup.list.unnumbered listItem",
-      "match": "^\\s*([-•])\\s+(.+)$",
-      "captures": {
-        "1": { "name": "punctuation.definition.list" },
-        "2": {
-          "name": "meta.list.content",
-          "patterns": [{ "include": "#text-content" }]
-        }
-      }
-    },
-    "list-ordered": {
-      "name": "markup.list.numbered numberedList",
-      "match": "^\\s*(\\d+\\.)\\s+(.+)$",
-      "captures": {
-        "1": { "name": "punctuation.definition.list" },
-        "2": {
-          "name": "meta.list.content",
-          "patterns": [{ "include": "#text-content" }]
-        }
-      }
-    },
-    "italic-dialog": {
-      "name": "string.quoted.double markup.italic italicDialog",
-      "begin": "\\*[\"\u201c]",
-      "beginCaptures": {
-        "0": { "name": "punctuation.definition.string.begin italicDialog" }
-      },
-      "end": "[\"\u201d]\\*",
-      "endCaptures": {
-        "0": { "name": "punctuation.definition.string.end italicDialog" }
-      },
-      "contentName": "string.quoted.double markup.italic italicDialog",
-      "patterns": [{ "include": "#italic-dialog-content" }]
-    },
-    "dialog": {
-      "name": "string.quoted.double dialog",
-      "begin": "[\"\u201c]",
-      "beginCaptures": {
-        "0": { "name": "punctuation.definition.string.begin dialog" }
-      },
-      "end": "[\"\u201d]",
-      "endCaptures": {
-        "0": { "name": "punctuation.definition.string.end dialog" }
-      },
-      "contentName": "string.quoted.double dialog",
-      "patterns": [{ "include": "#dialog-content" }]
-    },
-    "text-content": {
-      "patterns": [
-        { "include": "#cut-inline" },
-        { "include": "#italic-dialog" },
-        { "include": "#dialog" },
-        { "include": "#inline-formatting" },
-        { "include": "#annotations" }
-      ]
-    }
-  }
 }
