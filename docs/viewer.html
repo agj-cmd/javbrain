@@ -224,8 +224,8 @@ pre.txt-content {
 .flat-section pre {
   margin: 0;
   padding: 4px 8px;
-  white-space: pre-wrap;
-  word-wrap: break-word;
+  white-space: pre;
+  overflow-x: auto;
   font-family: inherit;
   font-size: inherit;
   line-height: inherit;
@@ -294,7 +294,7 @@ mark { background: var(--highlight-bg); color: var(--highlight-text); padding: 0
       content = await res.text();
     } catch(e) { document.getElementById('loading').textContent = 'Failed to load file.'; return; }
 
-    if (meta.ext === '.txt' && /^====/.test(content)) {
+    if (meta.ext === '.txt' && /^====.+/m.test(content)) {
       viewerEl.innerHTML = renderFlatDelimited(content);
       buildFlatToc();
     } else if (meta.ext === '.txt') {
@@ -347,6 +347,7 @@ mark { background: var(--highlight-bg); color: var(--highlight-text); padding: 0
     let currentLines = [];
 
     function flushSection() {
+      if (!currentLabel && currentLines.join('').trim() === '') return;
       if (currentLabel || currentLines.length > 0) {
         html += '<div class="flat-section" id="FS' + sectionIdx + '">';
         if (currentLabel) {
@@ -393,7 +394,7 @@ mark { background: var(--highlight-bg); color: var(--highlight-text); padding: 0
     });
 
     renderToc();
-    tocEl.innerHTML += '<div class="toc-hint">[Space] focus</div>';
+    tocEl.innerHTML += '<div class="toc-hint">[Space] focus · [Enter] copy · [Right-click] copy</div>';
   }
 
   function highlightSearchTerms(container, query) {
@@ -579,7 +580,7 @@ mark { background: var(--highlight-bg); color: var(--highlight-text); padding: 0
     });
 
     renderToc();
-    tocEl.innerHTML += '<div class="toc-hint">[Space] focus</div>';
+    tocEl.innerHTML += '<div class="toc-hint">[Space] focus · [Enter] copy · [Right-click] copy</div>';
   }
 
   function renderToc() {
@@ -720,6 +721,39 @@ mark { background: var(--highlight-bg); color: var(--highlight-text); padding: 0
       tocNav(e.key, e.ctrlKey);
       return;
     }
+
+    if (tocFocused && e.key === 'Enter') {
+      e.preventDefault();
+      const t = tocItems[tocSelected];
+      if (!t) return;
+      const el = document.getElementById(t.id);
+      if (!el) return;
+      const text = el.innerText || el.textContent;
+      function doCopyEnter(str) {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          return navigator.clipboard.writeText(str).catch(() => fallbackCopyEnter(str));
+        }
+        return fallbackCopyEnter(str);
+      }
+      function fallbackCopyEnter(str) {
+        const ta = document.createElement('textarea');
+        ta.value = str;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+      }
+      doCopyEnter(text);
+      const selItem = tocEl.querySelector('.toc-item.selected');
+      if (selItem) {
+        const orig = selItem.innerHTML;
+        selItem.innerHTML = '<span style="opacity:0.5">copied</span>';
+        setTimeout(() => { selItem.innerHTML = orig; }, 800);
+      }
+      return;
+    }
   });
 
   // Click on TOC items
@@ -732,6 +766,40 @@ mark { background: var(--highlight-bg); color: var(--highlight-text); padding: 0
     tocEl.classList.add('focused');
     renderToc();
     scrollToBlock(tocItems[idx].id);
+  });
+
+  tocEl.addEventListener('contextmenu', function(e) {
+    const item = e.target.closest('.toc-item');
+    if (!item) return;
+    e.preventDefault();
+    const idx = parseInt(item.dataset.idx);
+    const t = tocItems[idx];
+    const el = document.getElementById(t.id);
+    if (!el) return;
+    const text = el.innerText || el.textContent;
+
+    // Copy with fallback
+    function doCopy(str) {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        return navigator.clipboard.writeText(str).catch(() => fallbackCopy(str));
+      }
+      return fallbackCopy(str);
+    }
+    function fallbackCopy(str) {
+      const ta = document.createElement('textarea');
+      ta.value = str;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+    }
+
+    doCopy(text);
+    const orig = item.innerHTML;
+    item.innerHTML = '<span style="opacity:0.5">copied</span>';
+    setTimeout(() => { item.innerHTML = orig; }, 800);
   });
 
   loadAndRender();

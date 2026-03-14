@@ -1,6 +1,6 @@
 
 
-==== extensions\undefined_publisher.keyboard-autocorrect-0.1.0\extension.js ====
+==== extension.js ====
 
 const vscode = require('vscode');
 const fs = require('fs');
@@ -584,7 +584,7 @@ function deactivate() {}
 
 module.exports = { activate, deactivate };
 
-==== extensions\undefined_publisher.keyboard-autocorrect-0.1.0\package.json ====
+==== package.json ====
 
 {
 	"name": "keyboard-autocorrect",
@@ -772,7 +772,7 @@ module.exports = { activate, deactivate };
 	}
 }
 
-==== extensions\undefined_publisher.keyboard-autocorrect-0.1.0\prediction.js ====
+==== prediction.js ====
 
 const vscode = require('vscode');
 const fs = require('fs');

@@ -1,6 +1,6 @@
 
 
-==== extensions\jav.jav-themes-1.0.0\package.json ====
+==== package.json ====
 
 {
 	"name": "Jav-themes",
@@ -56,7 +56,7 @@
 	}
 }
 
-==== extensions\jav.jav-themes-1.0.0\themes\JavNeutral.json ====
+==== themes\JavNeutral.json ====
 
 {
   "name": "JavNeutral",
@@ -302,7 +302,7 @@
  ]
 }
 
-==== extensions\jav.jav-themes-1.0.0\themes\JavNeutralDark.json ====
+==== themes\JavNeutralDark.json ====
 
 {
   "name": "JavNeutralDark",
@@ -546,7 +546,7 @@
  ]
 }
 
-==== extensions\jav.jav-themes-1.0.0\themes\JavNeutralLightHighContrast.json ====
+==== themes\JavNeutralLightHighContrast.json ====
 
 {
   "name": "JavNeutral",
@@ -797,7 +797,7 @@
  ]
 }
 
-==== extensions\jav.jav-themes-1.0.0\themes\JavThemeDark.json ====
+==== themes\JavThemeDark.json ====
 
 {
   "name": "notion-theme-dark",
@@ -967,7 +967,7 @@
   ]
 }
 
-==== extensions\jav.jav-themes-1.0.0\themes\JavThemeLight.json ====
+==== themes\JavThemeLight.json ====
 
 {
   "name": "Night Owl Light",

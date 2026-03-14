@@ -1,6 +1,4 @@
-
-
-==== extensions\jav.javeditorhelper-1.0.0\package.json ====
+==== package.json ====
 
 {
 	"name": "JavEditorHelper",
@@ -158,7 +156,7 @@
 	}
 }
 
-==== extensions\jav.javeditorhelper-1.0.0\src\commands\convertQuotes.js ====
+==== src\commands\convertQuotes.js ====
 
 const vscode = require('vscode');
 
@@ -272,7 +270,7 @@ module.exports = {
     convertToStraightQuotation
 };
 
-==== extensions\jav.javeditorhelper-1.0.0\src\commands\editDialog.js ====
+==== src\commands\editDialog.js ====
 
 const vscode = require('vscode');
 
@@ -368,7 +366,7 @@ function editDialog() {
 module.exports = { editDialog };
 
 
-==== extensions\jav.javeditorhelper-1.0.0\src\commands\insertSpace.js ====
+==== src\commands\insertSpace.js ====
 
 const vscode = require('vscode');
 
@@ -391,7 +389,7 @@ function insertSpace() {
 module.exports = { insertSpace };
 
 
-==== extensions\jav.javeditorhelper-1.0.0\src\commands\joinLines.js ====
+==== src\commands\joinLines.js ====
 
 const vscode = require('vscode');
 
@@ -509,7 +507,7 @@ function joinLineBelow() {
 
 module.exports = { joinLineAbove, joinLineBelow };
 
-==== extensions\jav.javeditorhelper-1.0.0\src\commands\SmartDelete.js ====
+==== src\commands\SmartDelete.js ====
 
 const vscode = require('vscode');
 
@@ -742,7 +740,7 @@ async function smartDelete() {
 
 module.exports = { smartDelete };
 
-==== extensions\jav.javeditorhelper-1.0.0\src\commands\smartSelect.js ====
+==== src\commands\smartSelect.js ====
 
 const vscode = require('vscode');
 
@@ -958,7 +956,7 @@ async function smartSelect() {
 module.exports = { smartSelect };
 
 
-==== extensions\jav.javeditorhelper-1.0.0\src\commands\surroundingPairs.js ====
+==== src\commands\surroundingPairs.js ====
 
 const vscode = require('vscode');
 
@@ -1142,7 +1140,7 @@ function pairToSelection(pair) {
 
 module.exports = { selectSurround, removeSurround };
 
-==== extensions\jav.javeditorhelper-1.0.0\src\commands\textCleanup.js ====
+==== src\commands\textCleanup.js ====
 
 // src/commands/textCleanup.js
 const vscode = require('vscode');
@@ -1396,7 +1394,7 @@ if (applied) {
 
 module.exports = { textCleanup };
 
-==== extensions\jav.javeditorhelper-1.0.0\src\commands\toggleCase.js ====
+==== src\commands\toggleCase.js ====
 
 const vscode = require('vscode');
 
@@ -1473,7 +1471,7 @@ function toTitleCase(str) {
 
 module.exports = { toggleCase };
 
-==== extensions\jav.javeditorhelper-1.0.0\src\config.js ====
+==== src\config.js ====
 
 const vscode = require('vscode');
 const { loadList, resolvePath } = require('./utils/fileLoader');
@@ -1609,7 +1607,7 @@ module.exports = {
   getPunctuationCharacters
 };
 
-==== extensions\jav.javeditorhelper-1.0.0\src\extension.js ====
+==== src\extension.js ====
 
 const vscode = require('vscode');
 const { capListKey, glossaryCacheInvalidate, watchersSetup } = require('./config');
@@ -1660,7 +1658,7 @@ function deactivate() {}
 
 module.exports = { activate, deactivate };
 
-==== extensions\jav.javeditorhelper-1.0.0\src\utils\fileLoader.js ====
+==== src\utils\fileLoader.js ====
 
 // fileLoader.js
 const fs = require('fs');

@@ -1,6 +1,6 @@
 
 
-==== extensions\jav.javnavigation-2.1.0\package.json ====
+==== package.json ====
 
 {
 	"name": "javnavigation",
@@ -280,7 +280,7 @@
 	}
 }
 
-==== extensions\jav.javnavigation-2.1.0\src\extension.js ====
+==== src\extension.js ====
 
 // JavNavigation - Combined Extension
 'use strict';
