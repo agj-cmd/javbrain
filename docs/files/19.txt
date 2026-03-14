@@ -1,33 +1,32 @@
-Korean Beef [
-	About [
-		**Prep:** 10 minutes | **Cook:** 10 minutes | **Servings:** 6
+Homemade Hamburger Helper Recipe [
+	Tags [
+		Recipe. Good.
 	]
-	Notes [
-				•  Use lean ground beef or substitute turkey/chicken
-				•  Serve over rice (white, brown, jasmine, or cauliflower)
-				•  Add cooked vegetables for fiber
-				•  Verify amounts when using recipe multiplier
+	Ingredients: [
+		• 1 pound extra lean ground beef
+		• 1/2 medium onion, chopped
+		• 2 heaping tablespoons tomato paste
+		• 1/2 teaspoon garlic powder
+		• 1/2 teaspoon chili powder
+		• 3 cups beef broth
+		• 1 cup uncooked elbow macaroni
+		• 2 cups freshly grated cheddar cheese
+		• Salt & pepper to taste
 	]
-	Ingredients [
-				•  ½ cup soy sauce
-				•  ⅓ cup brown sugar
-				•  2 teaspoons sesame oil
-				•  2 tablespoons rice vinegar
-				•  2 ½ teaspoons corn starch
-				•  2 pounds ground beef
-				•  salt and pepper, to taste
-				•  3 garlic cloves, minced
-				•  1 ½ knob fresh ginger, peeled and minced
-				•  ½ cup green onion, sliced
-				•  sesame seeds (optional, for garnish)
+	Instructions: [
+		1. Add ground beef and onions to a soup pot. Cook over medium-high heat, breaking the meat up as it browns (7-10 minutes). Drain excess fat if needed.
+		2. Stir in tomato paste, garlic powder, and chili powder.
+		3. Add beef broth and bring to a boil. Stir in the macaroni.
+		4. Reduce heat to a rapid simmer. Cook uncovered, stirring occasionally, until the pasta is tender and most of the liquid is absorbed (13-15 minutes).
+		5. Grate cheddar cheese while the pasta cooks.
+		6. Remove the pot from heat and stir in cheese. Season with salt & pepper to taste. Let sit for a few minutes to absorb flavors before serving.
 	]
-	Instructions [
-				1. Heat large skillet over medium heat.
-				2. Mix soy sauce, brown sugar, sesame oil, rice vinegar, and cornstarch in bowl. Set aside.
-				3. Add ground beef to skillet. Season with salt and pepper. Cook 5-7 minutes until no pink remains. Drain excess fat.
-				4. Add garlic and ginger. Cook 1 minute.
-				5. Reduce heat to low. Add sauce. Stir until thickened and mixed with beef.
-				6. Stir in green onions.
-				7. Serve and garnish.
+	Tips: [
+		• Add extra broth (1/2 cup at a time) if needed to prevent sticking.
+		• Customize seasonings or add vegetables like spinach or bell peppers.
+		• Substitute ground turkey or chicken if desired.
+	]
+	Storage: [
+		• Store leftovers in an airtight container in the fridge for 3-4 days. Reheat on low heat with a splash of broth if needed. Not recommended for freezing due to pasta texture changes.
 	]
 ]

@@ -1,53 +1,57 @@
-Hamantaschen [
-	Tags [
-		Recipe. Cookie. Dessert. Good. Best. Favorite.
-	]
-	About [
-		•  Prep Time 35 minutes
-		•  Cook Time 15 minutes
-		•  Chill Time 1 hour
-					•  Total Time 1 hour 50 minutes
-		•  Servings: 30 cookies
-	]
-	Notes [
-		• **Don’t overfill the cookies.** It’s tempting to add as much jam as possible, but the filling will spread to fill the cookie as they bake. Add more than a rounded teaspoon and it will boil over.
-		• **Add an egg wash if needed.** You can moisten the dough edges before adding the jam, if necessary. Brushing a very small amount of the egg wash over the dough can help it stay together. **Don’t cover the center of the cookies.**
-		• Make sure as you lift up the 3 sides and pinch the corners together, they don’t completely cover the filling. You want the center of the filling exposed.
-		• **Keep a close eye on baking time.** If your dough was rolled quite thin, it’ll bake quickly. I recommend checking them at 12 minutes and watching them carefully – especially if your oven runs hot.
-	]
+Curried Skate Wings with Tomato-Masala Chutney [
+	Recipe
 	Ingredients [
-		•  3/4 cup unsalted butter , room temperature
-		•  3/4 cup powdered sugar
-		•  1 large egg , room temperature
-		•  1 teaspoon vanilla
-		•  1 teaspoon grated orange or lemon zest
-		•  almond extract
-		• 2 & 1/4 Cups flour, spooned and leveled. Unenriched.
-		•  1/4 teaspoon salt
-		•  5 tablespoons raspberry jam
-		•  poppy seed
-		•  5 tablespoons apricot jam
-		•  nutella
+		Skate Wings [
+			• 1 pound skate wings, skinned, trimmed, and cut into 2–3 ounce medallions
+			• 8 ounces thai yellow curry sauce, divided
+			• 1 tablespoon yellow curry powder
+			• ¼ – ½ cup of flour (if desired)
+			• 1 teaspoon kosher salt
+			• 1–2 ounces cooking oil
+			• 4 ounces coconut milk
+			• 2 ounces unsalted butter
+		]
+		Sticky Coconut Rice [
+			• ½ vidalia onion, ¼ -inch diced
+			• 1–2 ounces cooking oil
+			• 16 ounces coconut milk
+			• 1 cup rice (sticky or sushi rice is ideal, but Jasmine works too)
+			• 1 tablespoon salt
+			• 1 teaspoon granulated sugar
+			• 1 teaspoon fresh coriander
+		]
+		Tomato-Masala Chutney [
+			• ½ Vidalia onion, julienned
+			• 2 cloves garlic, peeled and julienned
+			• 4 ounces canned tomatoes, peeled and diced
+			• 1 teaspoon Thai chili paste (if desired)
+			• 3 teaspoons garam masala spice (ground)
+			• 1 teaspoon granulated sugar
+			• 1 teaspoon cumin
+			• 1 teaspoon coriander
+			• 1 tablespoon kosher salt
+		]
 	]
-	Setup [
-			•  Cut the room temperature butter into cubes and place in a large mixing bowl. Add in the powdered sugar and cream together with an electric mixer until light and fluffy, about 2 minutes. Add in the egg, vanilla, and orange zest; beat until thoroughly combined.
-			•  Sift the flour and salt into the bowl.
-			•  Blend until the dough forms large clumps. (To test, take a little bit of the dough and press it together with your fingers; if it holds together, it’s good to go. If it feels crumbly, add water, 1-2 teaspoons at a time only if necessary. Be careful – too much water will require more flour, which will make the pastry tough.)
-			•  Using your hands, begin to knead dough until it comes together into a smooth soft ball. (Try not to overwork the dough. It should be slightly tacky, but not at all sticky, with a good texture for rolling.)
-			•  Flatten the ball of dough into a disk and wrap in plastic wrap. Place in the refrigerator for 1 hour or overnight.
-	]
-	Making the cookies [
-			•  Line 2 baking sheets with parchment paper and have your jam ready to go.
-			•  Unwrap the dough and place on a clean work surface that's lightly dusted with flour.
-			•  Using a heavy rolling pin dusted with flour, roll the dough between 1/8 to 1/4-inch thick. The chilled dough will be firm and initially a bit tough to roll out. Let it sit for a couple minutes to soften. (Don't worry if the dough breaks along the edges as you're rolling, since you will be re-rolling the scraps.) Lightly re-flour the rolling pin occasionally to prevent sticking, if necessary.
-			•  Using a 3-inch cookie cutter or glass with a 3-inch rim, cut as many circles out of the dough as you can.
-			•  Collect the scraps of dough, re-roll, and cut more circles. Repeat this process until you can't make any more circles from the dough. You should end up with about 30 circles (the thickness of your dough will determine how many you get.)
-			•  Using a thin spatula, gently slide under each circle to release it from the work surface and transfer to the prepared baking sheets, • 1 inch apart.
-			•  Put 1 rounded teaspoon of jam in the center of each circle, then fold up the edges to form a triangle, pinching the 3 corners together gently but very well to secure the shape and prevent filling from leaking while baking. (Use the warmth of your fingers to smooth out where the dough has been joined or if there are any cracks.)
-			•  Transfer baking sheets to the refrigerator to chill while you preheat the oven to 350 degrees F.
-	]
-	Cooking [
-			•  Place in the oven and bake for about 15 minutes or until the cookies are just starting to brown around the edges. (Because the thickness of the dough can vary and can cook quite fast if rolled thin, start checking them at 12 minutes and watch them carefully, especially if your oven runs hot.)
-			•  Remove from oven and let cool on the baking sheets for 5 minutes, then transfer to a cooling rack to cool completely. They'll firm up as they cool.
+	Directions [
+		Skate Wings [
+			• Marinate the skate wings in some of the Thai yellow curry sauce for at least 1 hour, and no more than 6 hours.
+			• Remove the fish from the marinade and scrape off the excess.
+			• Flatten the wings and sprinkle both sides with salt and then the yellow curry powder (to taste). Shake off excess seasoning and dredge in the flour (if desired).
+			• Preheat a skillet over medium-high heat; add a few ounces of your favorite cooking oil; heat until the oil shimmers.
+			• Shake off excess flour and carefully lay a skate wing in the hot oil. Repeat as necessary but do not overcrowd the pan; leave space between the wings so excess moisture has room to evaporate.
+			• Fry the wings for 1 to 2 minutes or until a golden brown crust forms and then flip carefully with a spatula or tongs. Fry the second side for about 2 minutes or until the fish appears fully cooked (white, not transparent).
+			• Remove the fish from the pan and discard the oil. Using the same pan, head up coconut milk with the remaining Thai curry sauce. Salt to taste and fold in the butter. Spoon the sauce over the fish; reserve some for plating.
+		]
+		Sticky Coconut Rice [
+			• In a sauce pot, add a small amount of cooking oil and the diced onion and cook over medium-low heat, stirring occasionally, until the onions become translucent.
+			• Add in the coconut oil and bring to a boil over high heat. Add in salt and sugar to taste, then stir in the coriander.
+			• Slowly stir in the rice and return the pot to a boil. Then remove from heat and cover tightly, letting the rice steep for about 10 minutes. Stir well and re-cover for an additional 10 minutes. Serve warm or allow to cool.
+		]
+		Tomato-Masala Chutney [
+			• In a saucepan, add cooking oil and julienned onions and cook over medium-low heat until the onions are translucent.
+			• Add in the garlic and ginger (along with cumin and coriander if you're using whole seed spices). Cook for a few minutes, until fragrant.
+			• Add in the tomatoes, ground sources, salt, and sugar then bring to a low simmer and cover.
+			• Cook covered, stirring occasionally for about 10 minutes. Remove the cover and continue to simmer until all excess moisture has evaporated. Remove from head and serve on top of curried skate wings.
+		]
 	]
 ]

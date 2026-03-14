@@ -39,6 +39,17 @@
   --text-line-height: 1.6;
   --highlight-bg: #fff3a8;
   --highlight-text: #1a1a1a;
+  --depth-0: #4E8F6B;
+  --depth-1: #CB9434;
+  --depth-2: #CD5048;
+  --depth-3: #C04C89;
+  --depth-4: #9A6BB4;
+  --depth-5: #387DC9;
+  --depth-bg-mix: 10%;
+  --depth-border-mix: 25%;
+  --depth-rule-mix: 15%;
+  --callout-bg: #2a1f00;
+  --callout-border: #b8960e;
   --toc-width: 260px;
 }
 
@@ -151,23 +162,27 @@ pre.txt-content {
   letter-spacing: 0.03em; margin-bottom: 2px;
 }
 
+
+/* Depth-based tinting — 6 colors from theme, repeating */
+.jav-block[data-depth="0"] > .jav-block-body { --dc: var(--depth-0); }
+.jav-block[data-depth="1"] > .jav-block-body { --dc: var(--depth-1); margin-left: 8px; }
+.jav-block[data-depth="2"] > .jav-block-body { --dc: var(--depth-2); margin-left: 8px; }
+.jav-block[data-depth="3"] > .jav-block-body { --dc: var(--depth-3); margin-left: 8px; }
+.jav-block[data-depth="4"] > .jav-block-body { --dc: var(--depth-4); margin-left: 8px; }
+.jav-block[data-depth="5"] > .jav-block-body { --dc: var(--depth-5); margin-left: 8px; }
+.jav-block[data-depth="6"] > .jav-block-body { --dc: var(--depth-0); margin-left: 8px; }
+.jav-block[data-depth="7"] > .jav-block-body { --dc: var(--depth-1); margin-left: 8px; }
+.jav-block[data-depth="8"] > .jav-block-body { --dc: var(--depth-2); margin-left: 8px; }
+.jav-block[data-depth="9"] > .jav-block-body { --dc: var(--depth-3); margin-left: 8px; }
+.jav-block[data-depth="10"] > .jav-block-body { --dc: var(--depth-4); margin-left: 8px; }
+.jav-block[data-depth="11"] > .jav-block-body { --dc: var(--depth-5); margin-left: 8px; }
+
 .jav-block-body {
   padding: 8px 12px; border-radius: 2px;
+  background: color-mix(in srgb, var(--dc) var(--depth-bg-mix), transparent);
+  border: 1px solid color-mix(in srgb, var(--dc) var(--depth-border-mix), transparent);
+  --rule-color: color-mix(in srgb, var(--dc) var(--depth-rule-mix), transparent);
 }
-
-/* Depth-based tinting — 6 colors, repeating */
-.jav-block[data-depth="0"] > .jav-block-body { background: rgba(78,143,107,0.06); border: 1px solid rgba(78,143,107,0.2); --rule-color: rgba(78,143,107,0.15); }
-.jav-block[data-depth="1"] > .jav-block-body { background: rgba(203,148,52,0.06); border: 1px solid rgba(203,148,52,0.2); --rule-color: rgba(203,148,52,0.15); margin-left: 8px; }
-.jav-block[data-depth="2"] > .jav-block-body { background: rgba(205,80,72,0.06); border: 1px solid rgba(205,80,72,0.2); --rule-color: rgba(205,80,72,0.15); margin-left: 8px; }
-.jav-block[data-depth="3"] > .jav-block-body { background: rgba(192,76,137,0.06); border: 1px solid rgba(192,76,137,0.2); --rule-color: rgba(192,76,137,0.15); margin-left: 8px; }
-.jav-block[data-depth="4"] > .jav-block-body { background: rgba(154,107,180,0.06); border: 1px solid rgba(154,107,180,0.2); --rule-color: rgba(154,107,180,0.15); margin-left: 8px; }
-.jav-block[data-depth="5"] > .jav-block-body { background: rgba(56,125,201,0.06); border: 1px solid rgba(56,125,201,0.2); --rule-color: rgba(56,125,201,0.15); margin-left: 8px; }
-.jav-block[data-depth="6"] > .jav-block-body { background: rgba(78,143,107,0.06); border: 1px solid rgba(78,143,107,0.2); --rule-color: rgba(78,143,107,0.15); margin-left: 8px; }
-.jav-block[data-depth="7"] > .jav-block-body { background: rgba(203,148,52,0.06); border: 1px solid rgba(203,148,52,0.2); --rule-color: rgba(203,148,52,0.15); margin-left: 8px; }
-.jav-block[data-depth="8"] > .jav-block-body { background: rgba(205,80,72,0.06); border: 1px solid rgba(205,80,72,0.2); --rule-color: rgba(205,80,72,0.15); margin-left: 8px; }
-.jav-block[data-depth="9"] > .jav-block-body { background: rgba(192,76,137,0.06); border: 1px solid rgba(192,76,137,0.2); --rule-color: rgba(192,76,137,0.15); margin-left: 8px; }
-.jav-block[data-depth="10"] > .jav-block-body { background: rgba(154,107,180,0.06); border: 1px solid rgba(154,107,180,0.2); --rule-color: rgba(154,107,180,0.15); margin-left: 8px; }
-.jav-block[data-depth="11"] > .jav-block-body { background: rgba(56,125,201,0.06); border: 1px solid rgba(56,125,201,0.2); --rule-color: rgba(56,125,201,0.15); margin-left: 8px; }
 
 /* Ruled lines on each text element inside blocks */
 .jav-block-body > .jav-para,
@@ -192,8 +207,8 @@ pre.txt-content {
 .jav-bold { font-weight: 700; }
 .jav-note { color: var(--text-muted); font-size: calc(var(--font-size) - 1px); }
 .jav-callout {
-  display: block; background: var(--bg-secondary);
-  border-left: 3px solid var(--border-color);
+  display: block; background: var(--callout-bg);
+  border-left: 3px solid var(--callout-border);
   padding: 4px 10px; margin: 6px 0;
   color: var(--text-primary); font-size: calc(var(--font-size) - 1px);
 }
@@ -259,23 +274,42 @@ mark { background: var(--highlight-bg); color: var(--highlight-text); padding: 0
   const searchQuery = hashParts[2] ? decodeURIComponent(hashParts.slice(2).join(':')) : null;
 
   // TOC state
-  let tocItems = [];    // flat list: {id, title, depth, parentIdx, children:[], collapsed}
+  let tocItems = [];
   let tocSelected = 0;
   let tocFocused = false;
+
+  // Theme state
+  let themes = {};
+  let themeKeys = [];
+  let currentTheme = localStorage.getItem('jb-theme') || 'dark';
 
   const tocEl = document.getElementById('toc');
   const viewerEl = document.getElementById('viewer');
 
-  async function applySettings() {
-    const themeKey = localStorage.getItem('jb-theme') || 'dark';
+  async function loadThemes() {
     try {
       const res = await vfetch('themes.json');
-      const themes = await res.json();
-      const t = themes[themeKey];
-      if (t) {
-        for (const [k, v] of Object.entries(t.vars)) document.documentElement.style.setProperty(k, v);
-      }
+      themes = await res.json();
+      themeKeys = Object.keys(themes);
+      if (!themes[currentTheme]) currentTheme = themeKeys[0];
     } catch(e) {}
+  }
+
+  function applyTheme() {
+    const t = themes[currentTheme];
+    if (!t) return;
+    for (const [k, v] of Object.entries(t.vars)) document.documentElement.style.setProperty(k, v);
+    localStorage.setItem('jb-theme', currentTheme);
+  }
+
+  function cycleTheme() {
+    currentTheme = themeKeys[(themeKeys.indexOf(currentTheme) + 1) % themeKeys.length];
+    applyTheme();
+  }
+
+  async function applySettings() {
+    await loadThemes();
+    applyTheme();
   }
 
   async function loadAndRender() {
@@ -757,6 +791,13 @@ mark { background: var(--highlight-bg); color: var(--highlight-text); padding: 0
       }
       return;
     }
+
+    // Theme toggle (when TOC not focused)
+    if (!tocFocused && e.key.toLowerCase() === 't' && !e.ctrlKey && !e.metaKey) {
+      e.preventDefault();
+      cycleTheme();
+      return;
+    }
   });
 
   // Click on TOC items
@@ -805,7 +846,7 @@ mark { background: var(--highlight-bg); color: var(--highlight-text); padding: 0
     setTimeout(() => { item.innerHTML = orig; }, 800);
   });
 
-  loadAndRender();
+  loadAndRender().then(() => { viewerEl.focus(); });
 })();
 </script>
 </body>

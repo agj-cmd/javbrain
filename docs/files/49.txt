@@ -1,1716 +1,912 @@
-==== package.json ====
-
-{
-	"name": "JavEditorHelper",
-	"publisher": "Jav",
-	"displayName": "Jav Editor Helper",
-	"description": "Combined dialog editing, curly/straight quotes conversion, text cleanup, smart delete, smart select, and auto-capitalization.",
-	"version": "1.0.0",
-	"engines": {
-		"vscode": "^1.85.0"
-	},
-	"activationEvents": [
-		"onStartupFinished"
-	],
-	"main": "./src/extension.js",
-	"contributes": {
-		"commands": [
-			{
-				"command": "JavEditorHelper.toggleCase",
-				"title": "Jav: Toggle Case"
-			},
-			{
-				"command": "JavEditorHelper.editDialog",
-				"title": "Jav: Edit Dialog Quotes"
-			},
-			{
-				"command": "JavEditorHelper.convertToCurlyQuotation",
-				"title": "Jav: Curly Quotation"
-			},
-			{
-				"command": "JavEditorHelper.convertToStraightQuotation",
-				"title": "Jav: Straight Quotation"
-			},
-			{
-				"command": "JavEditorHelper.textCleanup",
-				"title": "Jav: Text Cleanup"
-			},
-			{
-				"command": "JavEditorHelper.insertSpace",
-				"title": "Jav: Insert Space"
-			},
-			{
-				"command": "JavEditorHelper.joinLineAbove",
-				"title": "Jav: Join Line Above"
-			},
-			{
-				"command": "JavEditorHelper.joinLineBelow",
-				"title": "Jav: Join Line Below"
-			},
-			{
-				"command": "JavEditorHelper.smartDelete",
-				"title": "Jav: Smart Delete",
-				"category": "Edit"
-			},
-			{
-				"command": "JavEditorHelper.smartSelect",
-				"title": "Jav: Smart Select Expand"
-			},
-			{
-				"command": "JavEditorHelper.selectSurround",
-				"title": "Jav: Select Inside Surrounding Pairs"
-			},
-			{
-				"command": "JavEditorHelper.removeSurround",
-				"title": "Jav: Remove Surrounding Pairs"
-			}
-		],
-		"configuration": {
-			"title": "JavEditorHelper",
-			"properties": {
-				"JavEditorHelper.capitalizationFilePaths": {
-					"type": "array",
-					"items": {
-						"type": "string"
-					},
-					"default": [],
-					"description": "Array of absolute paths to .txt files containing words/phrases to force-capitalize, one per line."
-				},
-				"smartDelete.suffixes": {
-					"type": "array",
-					"items": {
-						"type": "string"
-					},
-					"default": [
-						"s",
-						"es",
-						"ed",
-						"ing",
-						"er",
-						"est",
-						"ly",
-						"ion",
-						"tion",
-						"ation",
-						"ment",
-						"ness",
-						"ity",
-						"al",
-						"able",
-						"ible",
-						"ship",
-						"ous",
-						"ful",
-						"less",
-						"ish",
-						"ive",
-						"ize",
-						"ise",
-						"ance",
-						"ence",
-						"y"
-					],
-					"description": "Word suffixes stripped one at a time when cursor is at end-of-word. Longest match wins."
-				},
-				"JavEditorHelper.surroundingPairs": {
-					"type": "array",
-					"default": [
-						[
-							"[",
-							"]"
-						],
-						[
-							"{",
-							"}"
-						],
-						[
-							"(",
-							")"
-						],
-						[
-							"'",
-							"'"
-						],
-						[
-							"\"",
-							"\""
-						],
-						[
-							"*",
-							"*"
-						],
-						[
-							"<",
-							">"
-						]
-					],
-					"description": "Character pairs to recognize as surrounding delimiters."
-				}
-			}
-		}
-	},
-	"__metadata": {
-		"installedTimestamp": 1773255429007,
-		"targetPlatform": "undefined",
-		"size": 54891
-	}
-}
-
-==== src\commands\convertQuotes.js ====
-
-const vscode = require('vscode');
-
-// Convert straight quotes to curly quotes
-function smartCurly(text) {
-    // normalize so re-curly always applies
-    text = text.replace(/[\u201C\u201D]/g, '"').replace(/[\u2018\u2019]/g, "'");
-
-    // Find distance to nearest whitespace in a direction
-    function distanceToWhitespace(str, pos, direction) {
-        let distance = 0;
-        let i = pos + direction;
-
-        while (i >= 0 && i < str.length && !/\s/.test(str[i])) {
-            distance++;
-            i += direction;
-        }
-
-        // If we hit string boundary, treat as whitespace at distance+1
-        if (i < 0 || i >= str.length) distance++;
-
-        return distance;
-    }
-
-    // double quotes - point away from nearest whitespace
-    text = text.replace(/"/g, (m, i, s) => {
-        const leftDistance = distanceToWhitespace(s, i, -1);
-        const rightDistance = distanceToWhitespace(s, i, 1);
-
-        if (leftDistance < rightDistance) return '\u201C'; // " opening (points away from left)
-        if (rightDistance < leftDistance) return '\u201D'; // " closing (points away from right)
-
-        // Equal distance - default to opening
-        return '\u201C'; // "
-    });
-
-    // single quotes - handle contractions first, then point away from nearest whitespace
-    text = text.replace(/'/g, (m, i, s) => {
-        const leftChar = i > 0 ? s[i - 1] : ' ';
-        const rightChar = i < s.length - 1 ? s[i + 1] : ' ';
-
-        // Special case: contractions (letter-apostrophe-letter)
-        if (/[a-zA-Z]/.test(leftChar) && /[a-zA-Z]/.test(rightChar)) {
-            return '\u2019'; // ' always apostrophe for contractions like i'd, don't
-        }
-
-        const leftDistance = distanceToWhitespace(s, i, -1);
-        const rightDistance = distanceToWhitespace(s, i, 1);
-
-        if (leftDistance < rightDistance) return '\u2018'; // ' opening (points away from left)
-        if (rightDistance < leftDistance) return '\u2019'; // ' closing (points away from right)
-
-        // Equal distance - default to opening
-        return '\u2018'; // '
-    });
-
-
-    return text;
-}
-
-// Convert curly quotes to straight quotes
-function toStraight(text) {
-    return text
-        .replace(/[\u201C\u201D]/g, '"')  // " and " to "
-        .replace(/[\u2018\u2019]/g, "'")  // ' and ' to '
-}
-
-// VS Code integration function
-async function run(conversionFunction) {
-    const editor = vscode.window.activeTextEditor;
-    if (!editor) {
-        vscode.window.showErrorMessage('No active text editor found');
-        return;
-    }
-
-    try {
-        await editor.edit(builder => {
-            for (const selection of editor.selections) {
-                const range = selection.isEmpty
-                    ? new vscode.Range(
-                        editor.document.positionAt(0),
-                        editor.document.positionAt(editor.document.getText().length)
-                    )
-                    : selection;
-
-                const originalText = editor.document.getText(range);
-                const convertedText = conversionFunction(originalText);
-
-                console.log('Original:', originalText.substring(0, 100));
-                console.log('Converted:', convertedText.substring(0, 100));
-
-                builder.replace(range, convertedText);
-            }
-        });
-    } catch (error) {
-        vscode.window.showErrorMessage(`Conversion failed: ${error.message}`);
-    }
-}
-
-// Exported functions for VS Code commands
-async function convertToCurlyQuotation() {
-    await run(smartCurly);
-}
-
-async function convertToStraightQuotation() {
-    await run(toStraight);
-}
-
-module.exports = {
-    convertToCurlyQuotation,
-    convertToStraightQuotation
-};
-
-==== src\commands\editDialog.js ====
-
-const vscode = require('vscode');
-
-function editDialog() {
-  const editor = vscode.window.activeTextEditor;
-  if (!editor) return;
-  const doc = editor.document;
-  const pos = editor.selection.active;
-  const line = doc.lineAt(pos.line).text;
-  const regex = /["“”‘’]/g;
-  const quoteIndices = [];
-  let m;
-  while ((m = regex.exec(line))) quoteIndices.push(m.index);
-
-  if (quoteIndices.length === 0) {
-    const mm = line.match(/^(\s*)(\d{4}:\s)?(.*)$/);
-    const indent = mm ? mm[1] || '' : '';
-    const prefix = mm ? mm[2] || '' : '';
-    const rest = mm ? mm[3] : line;
-    const wrapped = indent + prefix + '"' + rest.trimEnd() + '"';
-    editor.edit(b => b.replace(doc.lineAt(pos.line).range, wrapped)).then(() => {
-      const end = new vscode.Position(pos.line, wrapped.length);
-      editor.selection = new vscode.Selection(end, end);
-    });
-    return;
-  }
-
-  if (quoteIndices.length === 2) {
-    const [open, close] = quoteIndices;
-    if (!(open < pos.character && pos.character < close)) {
-      const nl = line.replace(regex, '');
-      const removedLeft = quoteIndices.filter(i => i < pos.character).length;
-      editor.edit(b => b.replace(doc.lineAt(pos.line).range, nl)).then(() => {
-        const nc = Math.max(0, pos.character - removedLeft);
-        const np = new vscode.Position(pos.line, nc);
-        editor.selection = new vscode.Selection(np, np);
-      });
-      return;
-    }
-  }
-
-  const pairs = [];
-  for (let i = 0; i + 1 < quoteIndices.length; i += 2) {
-    pairs.push({ open: quoteIndices[i], close: quoteIndices[i+1] });
-  }
-
-  for (let i = 0; i + 1 < pairs.length; i++) {
-    const f = pairs[i], s = pairs[i+1];
-    if (f.close < pos.character && pos.character < s.open) {
-      const r1 = line.substring(f.open+1, f.close);
-      const r2 = line.substring(s.open+1, s.close);
-      const t1 = r1.trim().replace(/[\.,!?;:]+$/, '');
-      const jp = /[\.,!?;:]$/.test(r1.trim()) ? r1.trim().slice(-1) : ',';
-      const t2 = r2.trim();
-      const pfx = line.slice(0, f.open);
-      const sfx = line.slice(s.close+1);
-      const joined = '"' + t1 + jp + ' ' + t2 + '"';
-      const nl = pfx + joined + sfx;
-      editor.edit(b => b.replace(doc.lineAt(pos.line).range, nl)).then(() => {
-        const col = pfx.length + 1 + t1.length + 1;
-        const cp = new vscode.Position(pos.line, col);
-        editor.selection = new vscode.Selection(cp, cp);
-      });
-      return;
-    }
-  }
-
-  for (const {open, close} of pairs) {
-    if (open < pos.character && pos.character < close) {
-      const bef = line.substring(0, pos.character);
-      const aft = line.substring(pos.character);
-      const tb = bef.trimEnd();
-      const needC = !/[\.,!?;:]$/.test(tb);
-      const left = tb + (needC ? ',"' : '"');
-      const right = ' "' + aft.trimStart();
-      const nl = left + right;
-      editor.edit(b => b.replace(doc.lineAt(pos.line).range, nl)).then(() => {
-        const np = new vscode.Position(pos.line, left.length+1);
-        editor.selection = new vscode.Selection(np, np);
-      });
-      return;
-    }
-  }
-
-  vscode.window.showInformationMessage('No dialog action available');
-}
-
-
-
-
-
-
-module.exports = { editDialog };
-
-
-==== src\commands\insertSpace.js ====
-
-const vscode = require('vscode');
-
-function insertSpace() {
-  const editor = vscode.window.activeTextEditor;
-  if (!editor) return;
-
-  const originalSelections = editor.selections.map(sel => sel.active);
-
-  editor.edit(editBuilder => {
-    for (const pos of originalSelections) {
-      editBuilder.insert(pos, ' ');
-    }
-  }).then(() => {
-    // Reset cursor to original position(s)
-    editor.selections = originalSelections.map(pos => new vscode.Selection(pos, pos));
-  });
-}
-
-module.exports = { insertSpace };
-
-
-==== src\commands\joinLines.js ====
-
-const vscode = require('vscode');
-
-const reUnicodeWS =
-  /[\t \u00A0\u1680\u2000-\u200A\u2028\u2029\u202F\u205F\u3000\uFEFF]+/g;
-const reLeadingWS =
-  /^[\t \u00A0\u1680\u2000-\u200A\u2028\u2029\u202F\u205F\u3000\uFEFF]+/;
-
-function clean(text) {
-  return text.replace(reLeadingWS, '').trimEnd().replace(reUnicodeWS, ' ');
-}
-
-/**
- * Collect line ranges from all selections, expanding single-line cursors
- * in the given direction, then merge overlapping/adjacent ranges.
- *
- * @param {'above'|'below'|null} direction  — expand direction for cursors
- *        (null means only multiline selections get joined, cursors are skipped)
- */
-function collectRanges(editor, direction) {
-  const doc = editor.document;
-  const lastLine = doc.lineCount - 1;
-  const raw = [];
-
-  for (const sel of editor.selections) {
-    const top = Math.min(sel.anchor.line, sel.active.line);
-    const bot = Math.max(sel.anchor.line, sel.active.line);
-
-    if (top !== bot) {
-      // Multiline selection — always join all lines regardless of direction.
-      raw.push({ start: top, end: bot });
-    } else if (direction === 'above' && top > 0) {
-      raw.push({ start: top - 1, end: top });
-    } else if (direction === 'below' && top < lastLine) {
-      raw.push({ start: top, end: top + 1 });
-    }
-  }
-
-  if (raw.length === 0) return [];
-
-  // Sort ascending, then merge overlapping / adjacent.
-  raw.sort((a, b) => a.start - b.start || a.end - b.end);
-  const merged = [{ ...raw[0] }];
-  for (let i = 1; i < raw.length; i++) {
-    const prev = merged[merged.length - 1];
-    if (raw[i].start <= prev.end) {          // overlapping or touching
-      prev.end = Math.max(prev.end, raw[i].end);
-    } else {
-      merged.push({ ...raw[i] });
-    }
-  }
-  return merged;
-}
-
-/**
- * Run the join for a set of merged line ranges (bottom-up to keep indices stable).
- */
-function executeJoin(editor, ranges) {
-  const doc = editor.document;
-
-  // Process bottom-up.
-  const sorted = [...ranges].sort((a, b) => b.start - a.start);
-
-  const edits = sorted.map(r => {
-    const indent = doc.lineAt(r.start).text.match(reLeadingWS)?.[0] ?? '';
-    const parts = [];
-    for (let i = r.start; i <= r.end; i++) {
-      parts.push(clean(doc.lineAt(i).text));
-    }
-    const text = indent + parts.join(' ');
-    return {
-      range: new vscode.Range(
-        doc.lineAt(r.start).range.start,
-        doc.lineAt(r.end).range.end
-      ),
-      text,
-      resultLine: r.start,
-      linesRemoved: r.end - r.start,
-      cursorCol: indent.length + parts[0].length + (parts.length > 1 ? 1 : 0),
-    };
-  });
-
-  editor.edit(
-    eb => { for (const e of edits) eb.replace(e.range, e.text); },
-    { undoStopBefore: true, undoStopAfter: true }
-  ).then(ok => {
-    if (!ok) return;
-
-    // Walk ascending, accumulating line-shift from earlier joins.
-    const ascending = [...edits].reverse();
-    let shift = 0;
-    const positions = ascending.map(e => {
-      const pos = new vscode.Position(e.resultLine - shift, e.cursorCol);
-      shift += e.linesRemoved;
-      return pos;
-    });
-
-    editor.selections = positions.map(p => new vscode.Selection(p, p));
-  });
-}
-
-function joinLineAbove() {
-  const editor = vscode.window.activeTextEditor;
-  if (!editor) return;
-  const ranges = collectRanges(editor, 'above');
-  if (ranges.length) executeJoin(editor, ranges);
-}
-
-function joinLineBelow() {
-  const editor = vscode.window.activeTextEditor;
-  if (!editor) return;
-  const ranges = collectRanges(editor, 'below');
-  if (ranges.length) executeJoin(editor, ranges);
-}
-
-module.exports = { joinLineAbove, joinLineBelow };
-
-==== src\commands\SmartDelete.js ====
-
-const vscode = require('vscode');
-
-// Decoration for flash animation
-const flashDecoration = vscode.window.createTextEditorDecorationType({
-  backgroundColor: 'rgba(255,0,0,0.3)'
-});
-
-/**
- * Flash a range red, then delete it.
- */
-async function flashThenDelete(editor, range) {
-  editor.setDecorations(flashDecoration, [range]);
-  await new Promise(resolve => setTimeout(resolve, 50));
-  editor.setDecorations(flashDecoration, []);
-  await editor.edit(e => e.delete(range));
-}
-
-/**
- * Collapse multiple adjacent spaces around cursor to one.
- */
-async function normalizeWhitespace(editor) {
-  const doc = editor.document;
-  const pos = editor.selection.active;
-  const lineText = doc.lineAt(pos.line).text;
-
-  let wsStart = pos.character;
-  while (wsStart > 0 && lineText[wsStart - 1] === ' ') wsStart--;
-  let wsEnd = pos.character;
-  while (wsEnd < lineText.length && lineText[wsEnd] === ' ') wsEnd++;
-
-  if (wsEnd - wsStart > 1) {
-    const range = new vscode.Range(pos.line, wsStart, pos.line, wsEnd);
-    await editor.edit(edit => edit.replace(range, ' '));
-    const newPos = new vscode.Position(pos.line, wsStart + 1);
-    editor.selection = new vscode.Selection(newPos, newPos);
-  }
-}
-
-/**
- * Collapse adjacent punctuation run around cursor to single leftmost char.
- */
-async function normalizePunctuation(editor) {
-  const doc = editor.document;
-  const pos = editor.selection.active;
-  const lineText = doc.lineAt(pos.line).text;
-
-  let start = pos.character;
-  while (start > 0 && /[^\w\s]/.test(lineText[start - 1])) start--;
-  let end = pos.character;
-  while (end < lineText.length && /[^\w\s]/.test(lineText[end])) end++;
-
-  if (end - start > 1) {
-    const keep = lineText[start];
-    const range = new vscode.Range(pos.line, start, pos.line, end);
-    await editor.edit(edit => edit.replace(range, keep));
-    const newPos = new vscode.Position(pos.line, start + 1);
-    editor.selection = new vscode.Selection(newPos, newPos);
-  }
-}
-
-/**
- * SmartDelete command.
- *
- * Cases:
- * 1. Selection or multi-cursor → default delete, then normalize
- * 2. Empty line at col 0 → join with next line (skip indentation)
- * 3. Cursor inside a word → delete whole word
- * 4. Cursor at end-of-word →
- *      (a) strip trailing punctuation from token, check suffix on alpha core first
- *      (b) if no suffix match, delete one trailing punctuation char
- *      (c) else delete whole word left + leftward whitespace
- * 5. Cursor at start-of-word → delete word-right + one whitespace
- * 6. Cursor on whitespace / EOL → delete contiguous whitespace toward nearest word
- * 7. Fallback → nothing to delete
- */
-async function smartDelete() {
-  const editor = vscode.window.activeTextEditor;
-  if (!editor) return;
-  const doc = editor.document;
-  const selections = editor.selections;
-  const nothing = () => vscode.window.showInformationMessage('Nothing to delete');
-
-  // 1. Selection or multi-cursor → default delete
-  if (selections.length > 1 || !selections[0].isEmpty) {
-    await vscode.commands.executeCommand('deleteRight');
-    await normalizeWhitespace(editor);
-    await normalizeWhitespace(editor);
-    await normalizePunctuation(editor);
-    return;
-  }
-
-  const sel = selections[0];
-  const pos = sel.active;
-  const line = doc.lineAt(pos.line);
-  const text = line.text;
-  const offset = pos.character;
-
-  // 2. Empty line at col 0 → join lines
-  if (offset === 0 && text.length === 0 && pos.line < doc.lineCount - 1) {
-    const nextLine = doc.lineAt(pos.line + 1);
-    const indentEnd = nextLine.firstNonWhitespaceCharacterIndex;
-    const range = new vscode.Range(
-      new vscode.Position(pos.line, 0),
-      new vscode.Position(pos.line + 1, indentEnd)
-    );
-    await flashThenDelete(editor, range);
-    return;
-  }
-
-  // Compute word boundaries (whitespace-delimited token)
-  let start = offset;
-  while (start > 0 && !/\s/.test(text[start - 1])) start--;
-  let end = offset;
-  while (end < text.length && !/\s/.test(text[end])) end++;
-
-  const atStart = offset === start;
-  const atEnd = offset === end;
-  const inside = offset > start && offset < end;
-
-  // 3. Inside a word → delete whole word
-  if (inside) {
-    const range = new vscode.Range(pos.line, start, pos.line, end);
-    await flashThenDelete(editor, range);
-    return;
-  }
-
-  // 4. At end-of-word → suffix first, then punctuation, then whole-word-left
-  if (atEnd && offset > start) {
-    const token = text.slice(start, end);
-
-    // Find where trailing punctuation begins
-    let alphaEnd = end;
-    while (alphaEnd > start && /[^\w]/.test(text[alphaEnd - 1])) alphaEnd--;
-    const alphaCore = text.slice(start, alphaEnd);
-    const hasTrailingPunct = alphaEnd < end;
-
-    // (a) Suffix check — test against alpha core (ignoring trailing punctuation)
-    if (alphaCore.length > 0) {
-      const cfg = vscode.workspace.getConfiguration('smartDelete');
-      const suffixes = (cfg.get('suffixes') || [])
-        .slice().sort((a, b) => b.length - a.length);
-      const lowerCore = alphaCore.toLowerCase();
-
-      for (const suf of suffixes) {
-        if (lowerCore.endsWith(suf.toLowerCase()) && suf.length < alphaCore.length) {
-          // Delete the suffix portion (between alphaEnd - suf.length and alphaEnd)
-          const range = new vscode.Range(pos.line, alphaEnd - suf.length, pos.line, alphaEnd);
-          await flashThenDelete(editor, range);
-          return;
-        }
-      }
-    }
-
-    // (b) Punctuation — delete one trailing punctuation char
-    if (hasTrailingPunct) {
-      const charBefore = text[offset - 1];
-      if (/[^\w\s]/.test(charBefore)) {
-        const range = new vscode.Range(pos.line, offset - 1, pos.line, offset);
-        await flashThenDelete(editor, range);
-        return;
-      }
-    }
-
-    // Also handle punctuation when cursor is right after it (no trailing punct scenario)
-    const charBefore = text[offset - 1];
-    if (/[^\w\s]/.test(charBefore)) {
-      const range = new vscode.Range(pos.line, offset - 1, pos.line, offset);
-      await flashThenDelete(editor, range);
-      return;
-    }
-
-    // (c) Whole-word-left + leftward whitespace
-    let wsStart = start;
-    while (wsStart > 0 && text[wsStart - 1] === ' ') wsStart--;
-    const range = new vscode.Range(pos.line, wsStart, pos.line, offset);
-    await flashThenDelete(editor, range);
-    return;
-  }
-
-  // 5. At start-of-word → delete word-right + one whitespace
-  if (atStart && offset < end) {
-    const includeWS = (end < text.length && /\s/.test(text[end])) ? 1 : 0;
-    const range = new vscode.Range(pos.line, start, pos.line, end + includeWS);
-    await flashThenDelete(editor, range);
-    return;
-  }
-
-  // 6. Cursor on whitespace or at EOL → delete contiguous whitespace toward nearest word
-  if (/\s/.test(text[offset] || '') || offset === text.length) {
-    let wsStart = offset;
-    while (wsStart > 0 && /\s/.test(text[wsStart - 1])) wsStart--;
-    let wsEnd = offset;
-    while (wsEnd < text.length && /\s/.test(text[wsEnd])) wsEnd++;
-
-    // EOL: include next-line indent
-    if (offset === text.length && pos.line < doc.lineCount - 1) {
-      const nextLine = doc.lineAt(pos.line + 1);
-      const indentEnd = nextLine.firstNonWhitespaceCharacterIndex;
-      const range = new vscode.Range(
-        new vscode.Position(pos.line, wsStart),
-        new vscode.Position(pos.line + 1, indentEnd)
-      );
-      await flashThenDelete(editor, range);
-      return;
-    }
-
-    const distLeft = offset - wsStart;
-    const distRight = wsEnd - offset;
-
-    if (wsStart < offset && distLeft <= distRight) {
-      const range = new vscode.Range(pos.line, wsStart, pos.line, offset);
-      await flashThenDelete(editor, range);
-      return;
-    }
-    if (wsEnd > offset) {
-      const range = new vscode.Range(pos.line, offset, pos.line, wsEnd);
-      await flashThenDelete(editor, range);
-      return;
-    }
-    nothing();
-    return;
-  }
-
-  // 7. Fallback
-  nothing();
-
-  await normalizeWhitespace(editor);
-}
-
-module.exports = { smartDelete };
-
-==== src\commands\smartSelect.js ====
-
-const vscode = require('vscode');
-
-const proseLanguages = new Set(['jav', 'plaintext', 'markdown']);
-
-const clauseChars = new Set(['.', '!', '?', ',', ';', ':', '\u2014', '\u2013', '(', ')', '[', ']', '"', '\u201C', '\u201D']);
-const sentenceChars = new Set(['.', '!', '?']);
-
-// ── Line parser ──────────────────────────────────────────────────────
-
-function parseLine(lineText) {
-  const words = parseWords(lineText);
-  const clauses = splitAt(lineText, clauseChars);
-  const sentences = splitAt(lineText, sentenceChars);
-  return { words, clauses, sentences };
-}
-
-function parseWords(lineText) {
-  const words = [];
-  const re = /\w+/g;
-  let m;
-  while ((m = re.exec(lineText)) !== null) {
-    words.push({ start: m.index, end: m.index + m[0].length });
-  }
-  return words;
-}
-
-function splitAt(lineText, boundarySet) {
-  const segs = [];
-  let segStart = 0;
-  for (let i = 0; i < lineText.length; i++) {
-    if (boundarySet.has(lineText[i])) {
-      segs.push({ start: segStart, end: i + 1 });
-      segStart = i + 1;
-    }
-  }
-  if (segStart < lineText.length) {
-    segs.push({ start: segStart, end: lineText.length });
-  }
-  return segs.filter(s => /\S/.test(lineText.slice(s.start, s.end)));
-}
-
-// ── Span helpers ─────────────────────────────────────────────────────
-
-function containingSpan(segments, selStart, selEnd, lineText) {
-  if (segments.length === 0) return null;
-
-  let left = 0;
-  for (let i = 0; i < segments.length; i++) {
-    if (segments[i].end > selStart) { left = i; break; }
-  }
-
-  let right = segments.length - 1;
-  for (let i = segments.length - 1; i >= 0; i--) {
-    if (segments[i].start < selEnd) { right = i; break; }
-  }
-
-  let start = segments[left].start;
-  let end = segments[right].end;
-
-  while (start < selStart && lineText[start] === ' ') start++;
-  while (end > selEnd && lineText[end - 1] === ' ') end--;
-
-  if (start < selStart || end > selEnd) {
-    return { start, end };
-  }
-  return null;
-}
-
-/**
- * Find the word the cursor is in or nearest to (bare word, no whitespace).
- */
-function wordAt(words, col) {
-  if (words.length === 0) return null;
-
-  let best = 0;
-  let bestDist = Infinity;
-  for (let i = 0; i < words.length; i++) {
-    const w = words[i];
-    if (col >= w.start && col <= w.end) {
-      return { start: w.start, end: w.end };
-    }
-    const dist = col < w.start ? w.start - col : col - w.end;
-    if (dist < bestDist) {
-      bestDist = dist;
-      best = i;
-    }
-  }
-  return { start: words[best].start, end: words[best].end };
-}
-
-/**
- * Find the word at/near col, then absorb surrounding whitespace.
- */
-function wordSpanAt(words, col, lineText) {
-  const w = wordAt(words, col);
-  if (!w) return null;
-
-  let start = w.start;
-  let end = w.end;
-  const hasLeft = start > 0 && lineText[start - 1] === ' ';
-  const hasRight = end < lineText.length && lineText[end] === ' ';
-
-  if (hasLeft) {
-    while (start > 0 && lineText[start - 1] === ' ') start--;
-  }
-  if (hasRight && !hasLeft) {
-    while (end < lineText.length && lineText[end] === ' ') end++;
-  }
-
-  return { start, end };
-}
-
-// ── Command ──────────────────────────────────────────────────────────
-
-/**
- * Smart Select: Expand
- *
- * .jav / plaintext / markdown:
- *   No selection → word (bare)
- *   Word selected → word + surrounding whitespace
- *   Then → clause → sentence → trimmed line → full line
- *
- * Other languages → built-in smartSelect.expand
- */
-async function smartSelect() {
-  const editor = vscode.window.activeTextEditor;
-  if (!editor) return;
-
-  if (!proseLanguages.has(editor.document.languageId)) {
-    return vscode.commands.executeCommand('editor.action.smartSelect.expand');
-  }
-
-  const doc = editor.document;
-  const sel = editor.selection;
-  const lineNum = sel.active.line;
-  const lineText = doc.lineAt(lineNum).text;
-  if (lineText.length === 0) return;
-
-  const parsed = parseLine(lineText);
-
-  // ── No selection: pick word only (no whitespace) ──
-  if (sel.isEmpty) {
-    const word = wordAt(parsed.words, sel.active.character);
-    if (word) {
-      editor.selection = new vscode.Selection(
-        new vscode.Position(lineNum, word.start),
-        new vscode.Position(lineNum, word.end)
-      );
-    }
-    return;
-  }
-
-  // ── Has selection: walk up the hierarchy ──
-  const selStart = sel.start.character;
-  const selEnd = sel.end.character;
-
-  // Level 0: word → word + surrounding whitespace
-  // Only applies when selection is exactly a bare word
-  const exactWord = parsed.words.find(w => w.start === selStart && w.end === selEnd);
-  if (exactWord) {
-    const wsSpan = wordSpanAt(parsed.words, selStart, lineText);
-    if (wsSpan && (wsSpan.start < selStart || wsSpan.end > selEnd)) {
-      editor.selection = new vscode.Selection(
-        new vscode.Position(lineNum, wsSpan.start),
-        new vscode.Position(lineNum, wsSpan.end)
-      );
-      return;
-    }
-  }
-
-  // Level 1: clause
-  const clause = containingSpan(parsed.clauses, selStart, selEnd, lineText);
-  if (clause) {
-    editor.selection = new vscode.Selection(
-      new vscode.Position(lineNum, clause.start),
-      new vscode.Position(lineNum, clause.end)
-    );
-    return;
-  }
-
-  // Level 2: sentence
-  const sentence = containingSpan(parsed.sentences, selStart, selEnd, lineText);
-  if (sentence) {
-    editor.selection = new vscode.Selection(
-      new vscode.Position(lineNum, sentence.start),
-      new vscode.Position(lineNum, sentence.end)
-    );
-    return;
-  }
-
-  // Level 3: trimmed line
-  const trimStart = lineText.search(/\S/);
-  let trimEnd = lineText.length;
-  while (trimEnd > 0 && /\s/.test(lineText[trimEnd - 1])) trimEnd--;
-  if (trimStart >= 0 && (trimStart < selStart || trimEnd > selEnd)) {
-    editor.selection = new vscode.Selection(
-      new vscode.Position(lineNum, trimStart),
-      new vscode.Position(lineNum, trimEnd)
-    );
-    return;
-  }
-
-  // Level 4: full line
-  if (selStart > 0 || selEnd < lineText.length) {
-    editor.selection = new vscode.Selection(
-      new vscode.Position(lineNum, 0),
-      new vscode.Position(lineNum, lineText.length)
-    );
+==== all vs code workbench elements  ====
+	{
+  "workbench.colorCustomizations": {
+  "contrastActiveBorder":                                 "#111", // An extra border around active elements to separate them from others for greater contrast.
+  "contrastBorder":                                       "#111", // An extra border around elements to separate them from others for greater contrast.
+  "focusBorder":                                          "#111", // Overall border color for focused elements. ((This color is only used if not overridden by a component.))
+  "foreground":                                           "#111", // Overall foreground color. ((This color is only used if not overridden by a component.))
+  "disabledForeground":                                   "#111", // Overall foreground for disabled elements. ((This color is only used if not overridden by a component.))
+  "widget.border":                                        "#111", // Border color of widgets such as Find/Replace inside the editor.
+  "widget.shadow":                                        "#111", // Shadow color of widgets such as Find/Replace inside the editor.
+  "selection.background":                                 "#111", // Background color of text selections in the workbench (for input fields or text areas, does not apply to selections within the editor and the terminal).
+  "descriptionForeground":                                "#111", // Foreground color for description text providing additional information, for example for a label.
+  "errorForeground":                                      "#111", // Overall foreground color for error messages ((this color is only used if not overridden by a component)).
+  "icon.foreground":                                      "#111", // The default color for icons in the workbench.
+  "sash.hoverBorder":                                     "#111", // The hover border color for draggable sashes.
+  "window.activeBorder":                                  "#111", // Border color for the active (focused) window.
+  "window.inactiveBorder":                                "#111", // Border color for the inactive (unfocused) windows.
+  "textBlockQuote.background":                            "#111", // Background color for block quotes in text.
+  "textBlockQuote.border":                                "#111", // Border color for block quotes in text.
+  "textCodeBlock.background":                             "#111", // Background color for code blocks in text.
+  "textLink.activeForeground":                            "#111", // Foreground color for links in text when clicked on and on mouse hover.
+  "textLink.foreground":                                  "#111", // Foreground color for links in text.
+  "textPreformat.foreground":                             "#111", // Foreground color for preformatted text segments.
+  "textPreformat.background":                             "#111", // Background color for preformatted text segments.
+  "textPreformat.border":                                 "#111", // Border color for preformatted text segments.
+  "textSeparator.foreground":                             "#111", // Color for text separators.
+  "toolbar.hoverBackground":                              "#111", // Toolbar background when hovering over actions using the mouse
+  "toolbar.hoverOutline":                                 "#111", // Toolbar outline when hovering over actions using the mouse
+  "toolbar.activeBackground":                             "#111", // Toolbar background when holding the mouse over actions
+  "editorActionList.background":                          "#111", // Action List background color.
+  "editorActionList.foreground":                          "#111", // Action List foreground color.
+  "editorActionList.focusForeground":                     "#111", // Action List foreground color for the focused item.
+  "editorActionList.focusBackground":                     "#111", // Action List background color for the focused item.
+  "button.background":                                    "#111", // Button background color.
+  "button.foreground":                                    "#111", // Button foreground color.
+  "button.border":                                        "#111", // Button border color.
+  "button.separator":                                     "#111", // Button separator color.
+  "button.hoverBackground":                               "#111", // Button background color when hovering.
+  "button.secondaryForeground":                           "#111", // Secondary button foreground color.
+  "button.secondaryBackground":                           "#111", // Secondary button background color.
+  "button.secondaryHoverBackground":                      "#111", // Secondary button background color when hovering.
+  "button.secondaryBorder":                               "#111", // Secondary button border color.
+  "checkbox.background":                                  "#111", // Background color of checkbox widget.
+  "checkbox.foreground":                                  "#111", // Foreground color of checkbox widget.
+  "checkbox.disabled.background":                         "#111", // Background of a disabled checkbox.
+  "checkbox.disabled.foreground":                         "#111", // Foreground of a disabled checkbox.
+  "checkbox.border":                                      "#111", // Border color of checkbox widget.
+  "checkbox.selectBackground":                            "#111", // Background color of checkbox widget when the element it's in is selected.
+  "checkbox.selectBorder":                                "#111", // Border color of checkbox widget when the element it's in is selected.
+  "radio.activeForeground":                               "#111", // Foreground color of active radio option.
+  "radio.activeBackground":                               "#111", // Background color of active radio option.
+  "radio.activeBorder":                                   "#111", // Border color of the active radio option.
+  "radio.inactiveForeground":                             "#111", // Foreground color of inactive radio option.
+  "radio.inactiveBackground":                             "#111", // Background color of inactive radio option.
+  "radio.inactiveBorder":                                 "#111", // Border color of the inactive radio option.
+  "radio.inactiveHoverBackground":                        "#111", // Background color of inactive active radio option when hovering.
+  "dropdown.background":                                  "#111", // Dropdown background.
+  "dropdown.listBackground":                              "#111", // Dropdown list background.
+  "dropdown.border":                                      "#111", // Dropdown border.
+  "dropdown.foreground":                                  "#111", // Dropdown foreground.
+  "input.background":                                     "#111", // Input box background.
+  "input.border":                                         "#111", // Input box border.
+  "input.foreground":                                     "#111", // Input box foreground.
+  "input.placeholderForeground":                          "#111", // Input box foreground color for placeholder text.
+  "inputOption.activeBackground":                         "#111", // Background color of activated options in input fields.
+  "inputOption.activeBorder":                             "#111", // Border color of activated options in input fields.
+  "inputOption.activeForeground":                         "#111", // Foreground color of activated options in input fields.
+  "inputOption.hoverBackground":                          "#111", // Background color of activated options in input fields.
+  "inputValidation.errorBackground":                      "#111", // Input validation background color for error severity.
+  "inputValidation.errorForeground":                      "#111", // Input validation foreground color for error severity.
+  "inputValidation.errorBorder":                          "#111", // Input validation border color for error severity.
+  "inputValidation.infoBackground":                       "#111", // Input validation background color for information severity.
+  "inputValidation.infoForeground":                       "#111", // Input validation foreground color for information severity.
+  "inputValidation.infoBorder":                           "#111", // Input validation border color for information severity.
+  "inputValidation.warningBackground":                    "#111", // Input validation background color for information warning.
+  "inputValidation.warningForeground":                    "#111", // Input validation foreground color for warning severity.
+  "inputValidation.warningBorder":                        "#111", // Input validation border color for warning severity.
+  "scrollbar.background":                                 "#111", // Scrollbar track background color.
+  "scrollbar.shadow":                                     "#111", // Scrollbar slider shadow to indicate that the view is scrolled.
+  "scrollbarSlider.activeBackground":                     "#111", // Scrollbar slider background color when clicked on.
+  "scrollbarSlider.background":                           "#111", // Scrollbar slider background color.
+  "scrollbarSlider.hoverBackground":                      "#111", // Scrollbar slider background color when hovering.
+  "badge.foreground":                                     "#111", // Badge foreground color.
+  "badge.background":                                     "#111", // Badge background color.
+  "progressBar.background":                               "#111", // Background color of the progress bar shown for long running operations.
+  "list.activeSelectionBackground":                       "#111", // List/Tree background color for the selected item when the list/tree is active.
+  "list.activeSelectionForeground":                       "#111", // List/Tree foreground color for the selected item when the list/tree is active.
+  "list.activeSelectionIconForeground":                   "#111", // List/Tree icon foreground color for the selected item when the list/tree is active. An active list/tree has keyboard focus, an inactive does not.
+  "list.dropBackground":                                  "#111", // List/Tree drag and drop background when moving items around using the mouse.
+  "list.focusBackground":                                 "#111", // List/Tree background color for the focused item when the list/tree is active.
+  "list.focusForeground":                                 "#111", // List/Tree foreground color for the focused item when the list/tree is active. An active list/tree has keyboard focus, an inactive does not.
+  "list.focusHighlightForeground":                        "#111", // List/Tree foreground color of the match highlights on actively focused items when searching inside the list/tree.
+  "list.focusOutline":                                    "#111", // List/Tree outline color for the focused item when the list/tree is active. An active list/tree has keyboard focus, an inactive does not.
+  "list.focusAndSelectionOutline":                        "#111", // List/Tree outline color for the focused item when the list/tree is active and selected. An active list/tree has keyboard focus, an inactive does not.
+  "list.highlightForeground":                             "#111", // List/Tree foreground color of the match highlights when searching inside the list/tree.
+  "list.hoverBackground":                                 "#111", // List/Tree background when hovering over items using the mouse.
+  "list.hoverForeground":                                 "#111", // List/Tree foreground when hovering over items using the mouse.
+  "list.inactiveSelectionBackground":                     "#111", // List/Tree background color for the selected item when the list/tree is inactive.
+  "list.inactiveSelectionForeground":                     "#111", // List/Tree foreground color for the selected item when the list/tree is inactive. An active list/tree has keyboard focus, an inactive does not.
+  "list.inactiveSelectionIconForeground":                 "#111", // List/Tree icon foreground color for the selected item when the list/tree is inactive. An active list/tree has keyboard focus, an inactive does not.
+  "list.inactiveFocusBackground":                         "#111", // List background color for the focused item when the list is inactive. An active list has keyboard focus, an inactive does not. Currently only supported in lists.
+  "list.inactiveFocusOutline":                            "#111", // List/Tree outline color for the focused item when the list/tree is inactive. An active list/tree has keyboard focus, an inactive does not.
+  "list.invalidItemForeground":                           "#111", // List/Tree foreground color for invalid items, for example an unresolved root in explorer.
+  "list.errorForeground":                                 "#111", // Foreground color of list items containing errors.
+  "list.warningForeground":                               "#111", // Foreground color of list items containing warnings.
+  "listFilterWidget.background":                          "#111", // List/Tree Filter background color of typed text when searching inside the list/tree.
+  "listFilterWidget.outline":                             "#111", // List/Tree Filter Widget's outline color of typed text when searching inside the list/tree.
+  "listFilterWidget.noMatchesOutline":                    "#111", // List/Tree Filter Widget's outline color when no match is found of typed text when searching inside the list/tree.
+  "listFilterWidget.shadow":                              "#111", // Shadow color of the type filter widget in lists and tree.
+  "list.filterMatchBackground":                           "#111", // Background color of the filtered matches in lists and trees.
+  "list.filterMatchBorder":                               "#111", // Border color of the filtered matches in lists and trees.
+  "list.deemphasizedForeground":                          "#111", // List/Tree foreground color for items that are deemphasized.
+  "list.dropBetweenBackground":                           "#111", // List/Tree drag and drop border color when moving items between items when using the mouse.
+  "tree.indentGuidesStroke":                              "#111", // Tree Widget's stroke color for indent guides.
+  "tree.inactiveIndentGuidesStroke":                      "#111", // Tree stroke color for the indentation guides that are not active.
+  "tree.tableColumnsBorder":                              "#111", // Tree stroke color for the indentation guides.
+  "tree.tableOddRowsBackground":                          "#111", // Background color for odd table rows.
+  "activityBar.background":                               "#111", // Activity Bar background color.
+  "activityBar.dropBorder":                               "#111", // Drag and drop feedback color for the activity bar items. The activity bar is showing on the far left or right and allows to switch between views of the side bar.
+  "activityBar.foreground":                               "#111", // Activity Bar foreground color (for example used for the icons).
+  "activityBar.inactiveForeground":                       "#111", // Activity Bar item foreground color when it is inactive.
+  "activityBar.border":                                   "#111", // Activity Bar border color with the Side Bar.
+  "activityBarBadge.background":                          "#111", // Activity notification badge background color.
+  "activityBarBadge.foreground":                          "#111", // Activity notification badge foreground color.
+  "activityBar.activeBorder":                             "#111", // Activity Bar active indicator border color.
+  "activityBar.activeBackground":                         "#111", // Activity Bar optional background color for the active element.
+  "activityBar.activeFocusBorder":                        "#111", // Activity bar focus border color for the active item.
+  "activityBarTop.foreground":                            "#111", // Active foreground color of the item in the Activity bar when it is on top. The activity allows to switch between views of the side bar.
+  "activityBarTop.activeBorder":                          "#111", // Focus border color for the active item in the Activity bar when it is on top. The activity allows to switch between views of the side bar.
+  "activityBarTop.inactiveForeground":                    "#111", // Inactive foreground color of the item in the Activity bar when it is on top. The activity allows to switch between views of the side bar.
+  "activityBarTop.dropBorder":                            "#111", // Drag and drop feedback color for the items in the Activity bar when it is on top. The activity allows to switch between views of the side bar.
+  "activityBarTop.background":                            "#111", // Background color of the activity bar when set to top / bottom.
+  "activityBarTop.activeBackground":                      "#111", // Background color for the active item in the Activity bar when it is on top / bottom. The activity allows to switch between views of the side bar.
+  "activityWarningBadge.foreground":                      "#111", // Foreground color of the warning activity badge
+  "activityWarningBadge.background":                      "#111", // Background color of the warning activity badge
+  "activityErrorBadge.foreground":                        "#111", // Foreground color of the error activity badge
+  "activityErrorBadge.background":                        "#111", // Background color of the error activity badge
+  "profileBadge.background":                              "#111", // Profile badge background color. The profile badge shows on top of the settings gear icon in the activity bar.
+  "profileBadge.foreground":                              "#111", // Profile badge foreground color. The profile badge shows on top of the settings gear icon in the activity bar.
+  "profiles.sashBorder":                                  "#111", // The color of the Profiles editor splitview sash border.
+  "sideBar.background":                                   "#111", // Side Bar background color.
+  "sideBar.foreground":                                   "#111", // Side Bar foreground color. The Side Bar is the container for views like Explorer and Search.
+  "sideBar.border":                                       "#111", // Side Bar border color on the side separating the editor.
+  "sideBar.dropBackground":                               "#111", // Drag and drop feedback color for the side bar sections. The color should have transparency so that the side bar sections can still shine through.
+  "sideBarTitle.foreground":                              "#111", // Side Bar title foreground color.
+  "sideBarSectionHeader.background":                      "#111", // Side Bar section header background color.
+  "sideBarSectionHeader.foreground":                      "#111", // Side Bar section header foreground color.
+  "sideBarSectionHeader.border":                          "#111", // Side bar section header border color.
+  "sideBarActivityBarTop.border":                         "#111", // Border color between the activity bar at the top/bottom and the views.
+  "sideBarTitle.background":                              "#111", // Side bar title background color. The side bar is the container for views like explorer and search.
+  "sideBarTitle.border":                                  "#111", // Side bar title border color on the bottom, separating the title from the views. The side bar is the container for views like explorer and search.
+  "sideBarStickyScroll.background":                       "#111", // Background color of sticky scroll in the side bar.
+  "sideBarStickyScroll.border":                           "#111", // Border color of sticky scroll in the side bar.
+  "sideBarStickyScroll.shadow":                           "#111", // Shadow color of sticky scroll in the side bar.
+  "minimap.findMatchHighlight":                           "#111", // Highlight color for matches from search within files.
+  "minimap.selectionHighlight":                           "#111", // Highlight color for the editor selection.
+  "minimap.errorHighlight":                               "#111", // Highlight color for errors within the editor.
+  "minimap.warningHighlight":                             "#111", // Highlight color for warnings within the editor.
+  "minimap.background":                                   "#111", // Minimap background color.
+  "minimap.selectionOccurrenceHighlight":                 "#111", // Minimap marker color for repeating editor selections.
+  "minimap.foregroundOpacity":                            "#111", // "#000000c0" will render the elements with 75% opacity.
+  "minimap.infoHighlight":                                "#111", // Minimap marker color for infos.
+  "minimap.chatEditHighlight":                            "#111", // Color of pending edit regions in the minimap.
+  "minimapSlider.background":                             "#111", // Minimap slider background color.
+  "minimapSlider.hoverBackground":                        "#111", // Minimap slider background color when hovering.
+  "minimapSlider.activeBackground":                       "#111", // Minimap slider background color when clicked on.
+  "minimapGutter.addedBackground":                        "#111", // Minimap gutter color for added content.
+  "minimapGutter.modifiedBackground":                     "#111", // Minimap gutter color for modified content.
+  "minimapGutter.deletedBackground":                      "#111", // Minimap gutter color for deleted content.
+  "editorMinimap.inlineChatInserted":                     "#111", // Minimap marker color for inline chat inserted content.
+  "editorGroup.border":                                   "#111", // Color to separate multiple editor groups from each other.
+  "editorGroup.dropBackground":                           "#111", // Background color when dragging editors around.
+  "editorGroupHeader.noTabsBackground":                   "#111", // Background color of the editor group title header when using single Tab (set "workbench.editor.showTabs": "single").
+  "editorGroupHeader.tabsBackground":                     "#111", // Background color of the Tabs container.
+  "editorGroupHeader.tabsBorder":                         "#111", // Border color below the editor tabs control when tabs are enabled.
+  "editorGroupHeader.border":                             "#111", // Border color between editor group header and editor (below breadcrumbs if enabled).
+  "editorGroup.emptyBackground":                          "#111", // Background color of an empty editor group.
+  "editorGroup.focusedEmptyBorder":                       "#111", // Border color of an empty editor group that is focused.
+  "editorGroup.dropIntoPromptForeground":                 "#111", // Foreground color of text shown over editors when dragging files. This text informs the user that they can hold shift to drop into the editor.
+  "editorGroup.dropIntoPromptBackground":                 "#111", // Background color of text shown over editors when dragging files. This text informs the user that they can hold shift to drop into the editor.
+  "editorGroup.dropIntoPromptBorder":                     "#111", // Border color of text shown over editors when dragging files. This text informs the user that they can hold shift to drop into the editor.
+  "tab.activeBackground":                                 "#111", // Active Tab background color in an active group.
+  "tab.unfocusedActiveBackground":                        "#111", // Active Tab background color in an inactive editor group.
+  "tab.activeForeground":                                 "#111", // Active Tab foreground color in an active group.
+  "tab.border":                                           "#111", // Border to separate Tabs from each other.
+  "tab.activeBorder":                                     "#111", // Bottom border for the active tab.
+  "tab.selectedBorderTop":                                "#111", // Border to the top of a selected tab. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups.
+  "tab.selectedBackground":                               "#111", // Background of a selected tab. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups.
+  "tab.selectedForeground":                               "#111", // Foreground of a selected tab. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups.
+  "tab.dragAndDropBorder":                                "#111", // Border between tabs to indicate that a tab can be inserted between two tabs. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups.
+  "tab.unfocusedActiveBorder":                            "#111", // Bottom border for the active tab in an inactive editor group.
+  "tab.activeBorderTop":                                  "#111", // Top border for the active tab.
+  "tab.unfocusedActiveBorderTop":                         "#111", // Top border for the active tab in an inactive editor group
+  "tab.lastPinnedBorder":                                 "#111", // Border on the right of the last pinned editor to separate from unpinned editors.
+  "tab.inactiveBackground":                               "#111", // Inactive Tab background color.
+  "tab.unfocusedInactiveBackground":                      "#111", // Inactive Tab background color in an unfocused group
+  "tab.inactiveForeground":                               "#111", // Inactive Tab foreground color in an active group.
+  "tab.unfocusedActiveForeground":                        "#111", // Active tab foreground color in an inactive editor group.
+  "tab.unfocusedInactiveForeground":                      "#111", // Inactive tab foreground color in an inactive editor group.
+  "tab.hoverBackground":                                  "#111", // Tab background color when hovering
+  "tab.unfocusedHoverBackground":                         "#111", // Tab background color in an unfocused group when hovering
+  "tab.hoverForeground":                                  "#111", // Tab foreground color when hovering
+  "tab.unfocusedHoverForeground":                         "#111", // Tab foreground color in an unfocused group when hovering
+  "tab.hoverBorder":                                      "#111", // Border to highlight tabs when hovering
+  "tab.unfocusedHoverBorder":                             "#111", // Border to highlight tabs in an unfocused group when hovering
+  "tab.activeModifiedBorder":                             "#111", // Border on the top of modified (dirty) active tabs in an active group.
+  "tab.inactiveModifiedBorder":                           "#111", // Border on the top of modified (dirty) inactive tabs in an active group.
+  "tab.unfocusedActiveModifiedBorder":                    "#111", // Border on the top of modified (dirty) active tabs in an unfocused group.
+  "tab.unfocusedInactiveModifiedBorder":                  "#111", // Border on the top of modified (dirty) inactive tabs in an unfocused group.
+  "editorPane.background":                                "#111", // Background color of the editor pane visible on the left and right side of the centered editor layout.
+  "sideBySideEditor.horizontalBorder":                    "#111", // Color to separate two editors from each other when shown side by side in an editor group from top to bottom.
+  "sideBySideEditor.verticalBorder":                      "#111", // Color to separate two editors from each other when shown side by side in an editor group from left to right.
+  "editor.background":                                    "#111", // Editor background color.
+  "editor.foreground":                                    "#111", // Editor default foreground color.
+  "editorLineNumber.foreground":                          "#111", // Color of editor line numbers.
+  "editorLineNumber.activeForeground":                    "#111", // Color of the active editor line number.
+  "editorLineNumber.dimmedForeground":                    "#111", // Color of the final editor line when editor.renderFinalNewline is set to dimmed.
+  "editorCursor.background":                              "#111", // The background color of the editor cursor. Allows customizing the color of a character overlapped by a block cursor.
+  "editorCursor.foreground":                              "#111", // Color of the editor cursor.
+  "editorMultiCursor.primary.foreground":                 "#111", // Color of the primary editor cursor when multiple cursors are present.
+  "editorMultiCursor.primary.background":                 "#111", // The background color of the primary editor cursor when multiple cursors are present. Allows customizing the color of a character overlapped by a block cursor.
+  "editorMultiCursor.secondary.foreground":               "#111", // Color of secondary editor cursors when multiple cursors are present.
+  "editorMultiCursor.secondary.background":               "#111", // The background color of secondary editor cursors when multiple cursors are present. Allows customizing the color of a character overlapped by a block cursor.
+  "editor.placeholder.foreground":                        "#111", // Foreground color of the placeholder text in the editor.
+  "editor.compositionBorder":                             "#111", // The border color for an IME composition.
+  "editor.selectionBackground":                           "#111", // Color of the editor selection.
+  "editor.selectionForeground":                           "#111", // Color of the selected text for high contrast.
+  "editor.inactiveSelectionBackground":                   "#111", // Color of the selection in an inactive editor. The color must not be opaque so as not to hide underlying decorations.
+  "editor.selectionHighlightBackground":                  "#111", // Color for regions with the same content as the selection. The color must not be opaque so as not to hide underlying decorations.
+  "editor.selectionHighlightBorder":                      "#111", // Border color for regions with the same content as the selection.
+  "editor.wordHighlightBackground":                       "#111", // Background color of a symbol during read-access, for example when reading a variable. The color must not be opaque so as not to hide underlying decorations.
+  "editor.wordHighlightBorder":                           "#111", // Border color of a symbol during read-access, for example when reading a variable.
+  "editor.wordHighlightStrongBackground":                 "#111", // Background color of a symbol during write-access, for example when writing to a variable. The color must not be opaque so as not to hide underlying decorations.
+  "editor.wordHighlightStrongBorder":                     "#111", // Border color of a symbol during write-access, for example when writing to a variable.
+  "editor.wordHighlightTextBackground":                   "#111", // Background color of a textual occurrence for a symbol. The color must not be opaque so as not to hide underlying decorations.
+  "editor.wordHighlightTextBorder":                       "#111", // Border color of a textual occurrence for a symbol.
+  "editor.findMatchBackground":                           "#111", // Color of the current search match.
+  "editor.findMatchForeground":                           "#111", // Text color of the current search match.
+  "editor.findMatchHighlightForeground":                  "#111", // Foreground color of the other search matches.
+  "editor.findMatchHighlightBackground":                  "#111", // Color of the other search matches. The color must not be opaque so as not to hide underlying decorations.
+  "editor.findRangeHighlightBackground":                  "#111", // Color the range limiting the search (Enable 'Find in Selection' in the find widget). The color must not be opaque so as not to hide underlying decorations.
+  "editor.findMatchBorder":                               "#111", // Border color of the current search match.
+  "editor.findMatchHighlightBorder":                      "#111", // Border color of the other search matches.
+  "editor.findRangeHighlightBorder":                      "#111", // Border color the range limiting the search (Enable 'Find in Selection' in the find widget).
+  "search.resultsInfoForeground":                         "#111", // Color of the text in the search viewlet's completion message. For example, this color is used in the text that says "{x} results in {y} files".
+  "searchEditor.findMatchBackground":                     "#111", // Color of the editor's results.
+  "searchEditor.findMatchBorder":                         "#111", // Border color of the editor's results.
+  "searchEditor.textInputBorder":                         "#111", // Search editor text input box border.
+  "editor.hoverHighlightBackground":                      "#111", // Highlight below the word for which a hover is shown. The color must not be opaque so as not to hide underlying decorations.
+  "editor.lineHighlightBackground":                       "#111", // Background color for the highlight of line at the cursor position.
+  "editor.inactiveLineHighlightBackground":               "#111", // Background color for the highlight of line at the cursor position when the editor is not focused.
+  "editor.lineHighlightBorder":                           "#111", // Background color for the border around the line at the cursor position.
+  "editorUnicodeHighlight.border":                        "#111", // Border color used to highlight unicode characters.
+  "editorUnicodeHighlight.background":                    "#111", // Background color used to highlight unicode characters.
+  "editorLink.activeForeground":                          "#111", // Color of active links.
+  "editor.rangeHighlightBackground":                      "#111", // Background color of highlighted ranges, used by Quick Open, Symbol in File and Find features. The color must not be opaque so as not to hide underlying decorations.
+  "editor.rangeHighlightBorder":                          "#111", // Background color of the border around highlighted ranges.
+  "editor.symbolHighlightBackground":                     "#111", // Background color of highlighted symbol. The color must not be opaque so as not to hide underlying decorations.
+  "editor.symbolHighlightBorder":                         "#111", // Background color of the border around highlighted symbols.
+  "editorWhitespace.foreground":                          "#111", // Color of whitespace characters in the editor.
+  "editorIndentGuide.background":                         "#111", // Color of the editor indentation guides.
+  "editorIndentGuide.background1":                        "#111", // Color of the editor indentation guides (1).
+  "editorIndentGuide.background2":                        "#111", // Color of the editor indentation guides (2).
+  "editorIndentGuide.background3":                        "#111", // Color of the editor indentation guides (3).
+  "editorIndentGuide.background4":                        "#111", // Color of the editor indentation guides (4).
+  "editorIndentGuide.background5":                        "#111", // Color of the editor indentation guides (5).
+  "editorIndentGuide.background6":                        "#111", // Color of the editor indentation guides (6).
+  "editorIndentGuide.activeBackground":                   "#111", // Color of the active editor indentation guide.
+  "editorIndentGuide.activeBackground1":                  "#111", // Color of the active editor indentation guides (1).
+  "editorIndentGuide.activeBackground2":                  "#111", // Color of the active editor indentation guides (2).
+  "editorIndentGuide.activeBackground3":                  "#111", // Color of the active editor indentation guides (3).
+  "editorIndentGuide.activeBackground4":                  "#111", // Color of the active editor indentation guides (4).
+  "editorIndentGuide.activeBackground5":                  "#111", // Color of the active editor indentation guides (5).
+  "editorIndentGuide.activeBackground6":                  "#111", // Color of the active editor indentation guides (6).
+  "editorInlayHint.background":                           "#111", // Background color of inline hints.
+  "editorInlayHint.foreground":                           "#111", // Foreground color of inline hints.
+  "editorInlayHint.typeForeground":                       "#111", // Foreground color of inline hints for types
+  "editorInlayHint.typeBackground":                       "#111", // Background color of inline hints for types
+  "editorInlayHint.parameterForeground":                  "#111", // Foreground color of inline hints for parameters
+  "editorInlayHint.parameterBackground":                  "#111", // Background color of inline hints for parameters
+  "editorRuler.foreground":                               "#111", // Color of the editor rulers.
+  "editor.linkedEditingBackground":                       "#111", // Background color when the editor is in linked editing mode.
+  "editorCodeLens.foreground":                            "#111", // Foreground color of an editor CodeLens.
+  "editorLightBulb.foreground":                           "#111", // The color used for the lightbulb actions icon.
+  "editorLightBulbAutoFix.foreground":                    "#111", // The color used for the lightbulb auto fix actions icon.
+  "editorLightBulbAi.foreground":                         "#111", // The color used for the lightbulb AI icon.
+  "editorBracketMatch.background":                        "#111", // Background color behind matching brackets.
+  "editorBracketMatch.border":                            "#111", // Color for matching brackets boxes.
+  "editorBracketMatch.foreground":                        "#111", // Foreground color for matching brackets.
+  "editorBracketHighlight.foreground1":                   "#111", // Foreground color of brackets (1). Requires enabling bracket pair colorization.
+  "editorBracketHighlight.foreground2":                   "#111", // Foreground color of brackets (2). Requires enabling bracket pair colorization.
+  "editorBracketHighlight.foreground3":                   "#111", // Foreground color of brackets (3). Requires enabling bracket pair colorization.
+  "editorBracketHighlight.foreground4":                   "#111", // Foreground color of brackets (4). Requires enabling bracket pair colorization.
+  "editorBracketHighlight.foreground5":                   "#111", // Foreground color of brackets (5). Requires enabling bracket pair colorization.
+  "editorBracketHighlight.foreground6":                   "#111", // Foreground color of brackets (6). Requires enabling bracket pair colorization.
+  "editorBracketHighlight.unexpectedBracket.foreground":  "#111", // Foreground color of unexpected brackets.
+  "editorBracketPairGuide.activeBackground1":             "#111", // Background color of active bracket pair guides (1). Requires enabling bracket pair guides.
+  "editorBracketPairGuide.activeBackground2":             "#111", // Background color of active bracket pair guides (2). Requires enabling bracket pair guides.
+  "editorBracketPairGuide.activeBackground3":             "#111", // Background color of active bracket pair guides (3). Requires enabling bracket pair guides.
+  "editorBracketPairGuide.activeBackground4":             "#111", // Background color of active bracket pair guides (4). Requires enabling bracket pair guides.
+  "editorBracketPairGuide.activeBackground5":             "#111", // Background color of active bracket pair guides (5). Requires enabling bracket pair guides.
+  "editorBracketPairGuide.activeBackground6":             "#111", // Background color of active bracket pair guides (6). Requires enabling bracket pair guides.
+  "editorBracketPairGuide.background1":                   "#111", // Background color of inactive bracket pair guides (1). Requires enabling bracket pair guides.
+  "editorBracketPairGuide.background2":                   "#111", // Background color of inactive bracket pair guides (2). Requires enabling bracket pair guides.
+  "editorBracketPairGuide.background3":                   "#111", // Background color of inactive bracket pair guides (3). Requires enabling bracket pair guides.
+  "editorBracketPairGuide.background4":                   "#111", // Background color of inactive bracket pair guides (4). Requires enabling bracket pair guides.
+  "editorBracketPairGuide.background5":                   "#111", // Background color of inactive bracket pair guides (5). Requires enabling bracket pair guides.
+  "editorBracketPairGuide.background6":                   "#111", // Background color of inactive bracket pair guides (6). Requires enabling bracket pair guides.
+  "editor.foldBackground":                                "#111", // Background color for folded ranges. The color must not be opaque so as not to hide underlying decorations.
+  "editor.foldPlaceholderForeground":                     "#111", // Color of the collapsed  // Background color of the editor overview ruler. Only used when the minimap is enabled and placed on the right side of the editor.
+  "editorOverviewRuler.border":                           "#111", // Color of the overview ruler border.
+  "editorOverviewRuler.findMatchForeground":              "#111", // Overview ruler marker color for find matches. The color must not be opaque so as not to hide underlying decorations.
+  "editorOverviewRuler.rangeHighlightForeground":         "#111", // Overview ruler marker color for highlighted ranges, like by the Quick Open, Symbol in File and Find features. The color must not be opaque so as not to hide underlying decorations.
+  "editorOverviewRuler.selectionHighlightForeground":     "#111", // Overview ruler marker color for selection highlights. The color must not be opaque so as not to hide underlying decorations.
+  "editorOverviewRuler.wordHighlightForeground":          "#111", // Overview ruler marker color for symbol highlights. The color must not be opaque so as not to hide underlying decorations.
+  "editorOverviewRuler.wordHighlightStrongForeground":    "#111", // Overview ruler marker color for write-access symbol highlights. The color must not be opaque so as not to hide underlying decorations.
+  "editorOverviewRuler.wordHighlightTextForeground":      "#111", // Overview ruler marker color of a textual occurrence for a symbol. The color must not be opaque so as not to hide underlying decorations.
+  "editorOverviewRuler.modifiedForeground":               "#111", // Overview ruler marker color for modified content.
+  "editorOverviewRuler.addedForeground":                  "#111", // Overview ruler marker color for added content.
+  "editorOverviewRuler.deletedForeground":                "#111", // Overview ruler marker color for deleted content.
+  "editorOverviewRuler.errorForeground":                  "#111", // Overview ruler marker color for errors.
+  "editorOverviewRuler.warningForeground":                "#111", // Overview ruler marker color for warnings.
+  "editorOverviewRuler.infoForeground":                   "#111", // Overview ruler marker color for infos.
+  "editorOverviewRuler.bracketMatchForeground":           "#111", // Overview ruler marker color for matching brackets.
+  "editorOverviewRuler.inlineChatInserted":               "#111", // Overview ruler marker color for inline chat inserted content.
+  "editorOverviewRuler.inlineChatRemoved":                "#111", // Overview ruler marker color for inline chat removed content.
+  "editorOverviewRuler.commentDraftForeground":           "#111", // Editor overview ruler decoration color for comment threads with draft comments. This color should be opaque.
+  "editorError.foreground":                               "#111", // Foreground color of error squiggles in the editor.
+  "editorError.border":                                   "#111", // Border color of error boxes in the editor.
+  "editorError.background":                               "#111", // Background color of error text in the editor. The color must not be opaque so as not to hide underlying decorations.
+  "editorWarning.foreground":                             "#111", // Foreground color of warning squiggles in the editor.
+  "editorWarning.border":                                 "#111", // Border color of warning boxes in the editor.
+  "editorWarning.background":                             "#111", // Background color of warning text in the editor. The color must not be opaque so as not to hide underlying decorations.
+  "editorInfo.foreground":                                "#111", // Foreground color of info squiggles in the editor.
+  "editorInfo.border":                                    "#111", // Border color of info boxes in the editor.
+  "editorInfo.background":                                "#111", // Background color of info text in the editor. The color must not be opaque so as not to hide underlying decorations.
+  "editorHint.foreground":                                "#111", // Foreground color of hints in the editor.
+  "editorHint.border":                                    "#111", // Border color of hint boxes in the editor.
+  "problemsErrorIcon.foreground":                         "#111", // The color used for the problems error icon.
+  "problemsWarningIcon.foreground":                       "#111", // The color used for the problems warning icon.
+  "problemsInfoIcon.foreground":                          "#111", // The color used for the problems info icon.
+  "editorUnnecessaryCode.border":                         "#111", // Border color of unnecessary (unused) source code in the editor.
+  "editorUnnecessaryCode.opacity":                        "#111", // "#000000c0" will render the code with 75% opacity. For high contrast themes, use the "editorUnnecessaryCode.border" theme color to underline unnecessary code instead of fading it out.
+  "editorGutter.background":                              "#111", // Background color of the editor gutter. The gutter contains the glyph margins and the line numbers.
+  "editorGutter.modifiedBackground":                      "#111", // Editor gutter background color for lines that are modified.
+  "editorGutter.modifiedSecondaryBackground":             "#111", // Editor gutter secondary background color for lines that are modified.
+  "editorGutter.addedBackground":                         "#111", // Editor gutter background color for lines that are added.
+  "editorGutter.addedSecondaryBackground":                "#111", // Editor gutter secondary background color for lines that are added.
+  "editorGutter.deletedBackground":                       "#111", // Editor gutter background color for lines that are deleted.
+  "editorGutter.deletedSecondaryBackground":              "#111", // Editor gutter secondary background color for lines that are deleted.
+  "editorGutter.commentRangeForeground":                  "#111", // Editor gutter decoration color for commenting ranges.
+  "editorGutter.commentGlyphForeground":                  "#111", // Editor gutter decoration color for commenting glyphs.
+  "editorGutter.commentUnresolvedGlyphForeground":        "#111", // Editor gutter decoration color for commenting glyphs for unresolved comment threads.
+  "editorGutter.foldingControlForeground":                "#111", // Color of the folding control in the editor gutter.
+  "editorGutter.itemGlyphForeground":                     "#111", // Editor gutter decoration color for gutter item glyphs.
+  "editorGutter.itemBackground":                          "#111", // Editor gutter decoration color for gutter item background. This color should be opaque.
+  "editorGutter.commentDraftGlyphForeground":             "#111", // Editor gutter decoration color for commenting glyphs for comment threads with draft comments.
+  "editorCommentsWidget.resolvedBorder":                  "#111", // Color of borders and arrow for resolved comments.
+  "editorCommentsWidget.unresolvedBorder":                "#111", // Color of borders and arrow for unresolved comments.
+  "editorCommentsWidget.rangeBackground":                 "#111", // Color of background for comment ranges.
+  "editorCommentsWidget.rangeActiveBackground":           "#111", // Color of background for currently selected or hovered comment range.
+  "editorCommentsWidget.replyInputBackground":            "#111", // Background color for comment reply input box.
+  "inlineEdit.gutterIndicator.primaryBorder":             "#111", // Border color for the primary inline edit gutter indicator.
+  "inlineEdit.gutterIndicator.primaryForeground":         "#111", // Foreground color for the primary inline edit gutter indicator.
+  "inlineEdit.gutterIndicator.primaryBackground":         "#111", // Background color for the primary inline edit gutter indicator.
+  "inlineEdit.gutterIndicator.secondaryBorder":           "#111", // Border color for the secondary inline edit gutter indicator.
+  "inlineEdit.gutterIndicator.secondaryForeground":       "#111", // Foreground color for the secondary inline edit gutter indicator.
+  "inlineEdit.gutterIndicator.secondaryBackground":       "#111", // Background color for the secondary inline edit gutter indicator.
+  "inlineEdit.gutterIndicator.successfulBorder":          "#111", // Border color for the successful inline edit gutter indicator.
+  "inlineEdit.gutterIndicator.successfulForeground":      "#111", // Foreground color for the successful inline edit gutter indicator.
+  "inlineEdit.gutterIndicator.successfulBackground":      "#111", // Background color for the successful inline edit gutter indicator.
+  "inlineEdit.gutterIndicator.background":                "#111", // Background color for the inline edit gutter indicator.
+  "inlineEdit.originalBackground":                        "#111", // Background color for the original text in inline edits.
+  "inlineEdit.modifiedBackground":                        "#111", // Background color for the modified text in inline edits.
+  "inlineEdit.originalChangedLineBackground":             "#111", // Background color for the changed lines in the original text of inline edits.
+  "inlineEdit.originalChangedTextBackground":             "#111", // Overlay color for the changed text in the original text of inline edits.
+  "inlineEdit.modifiedChangedLineBackground":             "#111", // Background color for the changed lines in the modified text of inline edits.
+  "inlineEdit.modifiedChangedTextBackground":             "#111", // Overlay color for the changed text in the modified text of inline edits.
+  "inlineEdit.originalBorder":                            "#111", // Border color for the original text in inline edits.
+  "inlineEdit.modifiedBorder":                            "#111", // Border color for the modified text in inline edits.
+  "inlineEdit.tabWillAcceptModifiedBorder":               "#111", // Modified border color for the inline edits widget when tab will accept it.
+  "inlineEdit.tabWillAcceptOriginalBorder":               "#111", // Original border color for the inline edits widget over the original text when tab will accept it.
+  "diffEditor.insertedTextBackground":                    "#111", // Background color for text that got inserted. The color must not be opaque so as not to hide underlying decorations.
+  "diffEditor.insertedTextBorder":                        "#111", // Outline color for the text that got inserted.
+  "diffEditor.removedTextBackground":                     "#111", // Background color for text that got removed. The color must not be opaque so as not to hide underlying decorations.
+  "diffEditor.removedTextBorder":                         "#111", // Outline color for text that got removed.
+  "diffEditor.border":                                    "#111", // Border color between the two text editors.
+  "diffEditor.diagonalFill":                              "#111", // Color of the diff editor's diagonal fill. The diagonal fill is used in side-by-side diff views.
+  "diffEditor.insertedLineBackground":                    "#111", // Background color for lines that got inserted. The color must not be opaque so as not to hide underlying decorations.
+  "diffEditor.removedLineBackground":                     "#111", // Background color for lines that got removed. The color must not be opaque so as not to hide underlying decorations.
+  "diffEditorGutter.insertedLineBackground":              "#111", // Background color for the margin where lines got inserted.
+  "diffEditorGutter.removedLineBackground":               "#111", // Background color for the margin where lines got removed.
+  "diffEditorOverview.insertedForeground":                "#111", // Diff overview ruler foreground for inserted content.
+  "diffEditorOverview.removedForeground":                 "#111", // Diff overview ruler foreground for removed content.
+  "diffEditor.unchangedRegionBackground":                 "#111", // The color of unchanged blocks in diff editor.
+  "diffEditor.unchangedRegionForeground":                 "#111", // The foreground color of unchanged blocks in the diff editor.
+  "diffEditor.unchangedRegionShadow":                     "#111", // The color of the shadow around unchanged region widgets.
+  "diffEditor.unchangedCodeBackground":                   "#111", // The background color of unchanged code in the diff editor.
+  "diffEditor.move.border":                               "#111", // The border color for text that got moved in the diff editor.
+  "diffEditor.moveActive.border":                         "#111", // The active border color for text that got moved in the diff editor.
+  "multiDiffEditor.headerBackground":                     "#111", // The background color of the diff editor's header
+  "multiDiffEditor.background":                           "#111", // The background color of the multi file diff editor
+  "multiDiffEditor.border":                               "#111", // The border color of the multi file diff editor
+  "chat.requestBorder":                                   "#111", // The border color of a chat request.
+  "chat.requestBackground":                               "#111", // The background color of a chat request.
+  "chat.slashCommandBackground":                          "#111", // The background color of a chat slash command.
+  "chat.slashCommandForeground":                          "#111", // The foreground color of a chat slash command.
+  "chat.avatarBackground":                                "#111", // The background color of a chat avatar.
+  "chat.avatarForeground":                                "#111", // The foreground color of a chat avatar.
+  "chat.editedFileForeground":                            "#111", // The foreground color of a chat edited file in the edited file list.
+  "chat.linesAddedForeground":                            "#111", // Foreground color of lines added in chat code block pill.
+  "chat.linesRemovedForeground":                          "#111", // Foreground color of lines removed in chat code block pill.
+  "chat.requestCodeBorder":                               "#111", // Border color of code blocks within the chat request bubble.
+  "chat.requestBubbleBackground":                         "#111", // Background color of the chat request bubble.
+  "chat.requestBubbleHoverBackground":                    "#111", // Background color of the chat request bubble on hover.
+  "chat.checkpointSeparator":                             "#111", // Chat checkpoint separator color.
+  "chat.thinkingShimmer":                                 "#111", // Shimmer highlight for thinking/working labels.
+  "chatManagement.sashBorder":                            "#111", // The color of the Chat Management editor splitview sash border.
+  "inlineChat.background":                                "#111", // Background color of the interactive editor widget.
+  "inlineChat.foreground":                                "#111", // Foreground color of the interactive editor widget
+  "inlineChat.border":                                    "#111", // Border color of the interactive editor widget.
+  "inlineChat.shadow":                                    "#111", // Shadow color of the interactive editor widget.
+  "inlineChatInput.border":                               "#111", // Border color of the interactive editor input.
+  "inlineChatInput.focusBorder":                          "#111", // Border color of the interactive editor input when focused.
+  "inlineChatInput.placeholderForeground":                "#111", // Foreground color of the interactive editor input placeholder.
+  "inlineChatInput.background":                           "#111", // Background color of the interactive editor input.
+  "inlineChatDiff.inserted":                              "#111", // Background color of inserted text in the interactive editor input.
+  "inlineChatDiff.removed":                               "#111", // Background color of removed text in the interactive editor input.
+  "interactive.activeCodeBorder":                         "#111", // The border color for the current interactive code cell when the editor has focus.
+  "interactive.inactiveCodeBorder":                       "#111", // The border color for the current interactive code cell when the editor does not have focus.
+  "editorWidget.foreground":                              "#111", // Foreground color of editor widgets, such as find/replace.
+  "editorWidget.background":                              "#111", // Background color of editor widgets, such as Find/Replace.
+  "editorWidget.border":                                  "#111", // Border color of the editor widget unless the widget does not contain a border or defines its own border color.
+  "editorWidget.resizeBorder":                            "#111", // Border color of the resize bar of editor widgets. The color is only used if the widget chooses to have a resize border and if the color is not overridden by a widget.
+  "editorSuggestWidget.background":                       "#111", // Background color of the suggestion widget.
+  "editorSuggestWidget.border":                           "#111", // Border color of the suggestion widget.
+  "editorSuggestWidget.foreground":                       "#111", // Foreground color of the suggestion widget.
+  "editorSuggestWidget.focusHighlightForeground":         "#111", // Color of the match highlights in the suggest widget when an item is focused.
+  "editorSuggestWidget.highlightForeground":              "#111", // Color of the match highlights in the suggestion widget.
+  "editorSuggestWidget.selectedBackground":               "#111", // Background color of the selected entry in the suggestion widget.
+  "editorSuggestWidget.selectedForeground":               "#111", // Foreground color of the selected entry in the suggest widget.
+  "editorSuggestWidget.selectedIconForeground":           "#111", // Icon foreground color of the selected entry in the suggest widget.
+  "editorSuggestWidgetStatus.foreground":                 "#111", // Foreground color of the suggest widget status.
+  "editorHoverWidget.foreground":                         "#111", // Foreground color of the editor hover.
+  "editorHoverWidget.background":                         "#111", // Background color of the editor hover.
+  "editorHoverWidget.border":                             "#111", // Border color of the editor hover.
+  "editorHoverWidget.highlightForeground":                "#111", // Foreground color of the active item in the parameter hint.
+  "editorHoverWidget.statusBarBackground":                "#111", // Background color of the editor hover status bar.
+  "editorGhostText.border":                               "#111", // Border color of the ghost text shown by inline completion providers and the suggest preview.
+  "editorGhostText.background":                           "#111", // Background color of the ghost text in the editor.
+  "editorGhostText.foreground":                           "#111", // Foreground color of the ghost text shown by inline completion providers and the suggest preview.
+  "editorStickyScroll.background":                        "#111", // Editor sticky scroll background color.
+  "editorStickyScroll.border":                            "#111", // Border color of sticky scroll in the editor.
+  "editorStickyScroll.shadow":                            "#111", // Shadow color of sticky scroll in the editor.
+  "editorStickyScrollGutter.background":                  "#111", // Background color of the gutter part of sticky scroll in the editor.
+  "editorStickyScrollHover.background":                   "#111", // Editor sticky scroll on hover background color.
+  "debugExceptionWidget.background":                      "#111", // Exception widget background color.
+  "debugExceptionWidget.border":                          "#111", // Exception widget border color.
+  "editorMarkerNavigation.background":                    "#111", // Editor marker navigation widget background.
+  "editorMarkerNavigationError.background":               "#111", // Editor marker navigation widget error color.
+  "editorMarkerNavigationWarning.background":             "#111", // Editor marker navigation widget warning color.
+  "editorMarkerNavigationInfo.background":                "#111", // Editor marker navigation widget info color.
+  "editorMarkerNavigationError.headerBackground":         "#111", // Editor marker navigation widget error heading background.
+  "editorMarkerNavigationWarning.headerBackground":       "#111", // Editor marker navigation widget warning heading background.
+  "editorMarkerNavigationInfo.headerBackground":          "#111", // Editor marker navigation widget info heading background.
+  "peekView.border":                                      "#111", // Color of the peek view borders and arrow.
+  "peekViewEditor.background":                            "#111", // Background color of the peek view editor.
+  "peekViewEditorGutter.background":                      "#111", // Background color of the gutter in the peek view editor.
+  "peekViewEditor.matchHighlightBackground":              "#111", // Match highlight color in the peek view editor.
+  "peekViewEditor.matchHighlightBorder":                  "#111", // Match highlight border color in the peek view editor.
+  "peekViewResult.background":                            "#111", // Background color of the peek view result list.
+  "peekViewResult.fileForeground":                        "#111", // Foreground color for file nodes in the peek view result list.
+  "peekViewResult.lineForeground":                        "#111", // Foreground color for line nodes in the peek view result list.
+  "peekViewResult.matchHighlightBackground":              "#111", // Match highlight color in the peek view result list.
+  "peekViewResult.selectionBackground":                   "#111", // Background color of the selected entry in the peek view result list.
+  "peekViewResult.selectionForeground":                   "#111", // Foreground color of the selected entry in the peek view result list.
+  "peekViewTitle.background":                             "#111", // Background color of the peek view title area.
+  "peekViewTitleDescription.foreground":                  "#111", // Color of the peek view title info.
+  "peekViewTitleLabel.foreground":                        "#111", // Color of the peek view title.
+  "peekViewEditorStickyScroll.background":                "#111", // Background color of sticky scroll in the peek view editor.
+  "peekViewEditorStickyScrollGutter.background":          "#111", // Background color of the gutter part of sticky scroll in the peek view editor.
+  "merge.currentHeaderBackground":                        "#111", // Current header background in inline merge conflicts. The color must not be opaque so as not to hide underlying decorations.
+  "merge.currentContentBackground":                       "#111", // Current content background in inline merge conflicts. The color must not be opaque so as not to hide underlying decorations.
+  "merge.incomingHeaderBackground":                       "#111", // Incoming header background in inline merge conflicts. The color must not be opaque so as not to hide underlying decorations.
+  "merge.incomingContentBackground":                      "#111", // Incoming content background in inline merge conflicts. The color must not be opaque so as not to hide underlying decorations.
+  "merge.border":                                         "#111", // Border color on headers and the splitter in inline merge conflicts.
+  "merge.commonContentBackground":                        "#111", // Common ancestor content background in inline merge-conflicts. The color must not be opaque so as not to hide underlying decorations.
+  "merge.commonHeaderBackground":                         "#111", // Common ancestor header background in inline merge-conflicts. The color must not be opaque so as not to hide underlying decorations.
+  "editorOverviewRuler.currentContentForeground":         "#111", // Current overview ruler foreground for inline merge conflicts.
+  "editorOverviewRuler.incomingContentForeground":        "#111", // Incoming overview ruler foreground for inline merge conflicts.
+  "editorOverviewRuler.commonContentForeground":          "#111", // Common ancestor overview ruler foreground for inline merge conflicts.
+  "editorOverviewRuler.commentForeground":                "#111", // Editor overview ruler decoration color for resolved comments. This color should be opaque.
+  "editorOverviewRuler.commentUnresolvedForeground":      "#111", // Editor overview ruler decoration color for unresolved comments. This color should be opaque.
+  "mergeEditor.change.background":                        "#111", // The background color for changes.
+  "mergeEditor.change.word.background":                   "#111", // The background color for word changes.
+  "mergeEditor.conflict.unhandledUnfocused.border":       "#111", // The border color of unhandled unfocused conflicts.
+  "mergeEditor.conflict.unhandledFocused.border":         "#111", // The border color of unhandled focused conflicts.
+  "mergeEditor.conflict.handledUnfocused.border":         "#111", // The border color of handled unfocused conflicts.
+  "mergeEditor.conflict.handledFocused.border":           "#111", // The border color of handled focused conflicts.
+  "mergeEditor.conflict.handled.minimapOverViewRuler":    "#111", // The foreground color for changes in input 1.
+  "mergeEditor.conflict.unhandled.minimapOverViewRuler":  "#111", // The foreground color for changes in input 1.
+  "mergeEditor.conflictingLines.background":              "#111", // The background of the "Conflicting Lines" text.
+  "mergeEditor.changeBase.background":                    "#111", // The background color for changes in base.
+  "mergeEditor.changeBase.word.background":               "#111", // The background color for word changes in base.
+  "mergeEditor.conflict.input1.background":               "#111", // The background color of decorations in input 1.
+  "mergeEditor.conflict.input2.background":               "#111", // The background color of decorations in input 2.
+  "panel.background":                                     "#111", // Panel background color.
+  "panel.border":                                         "#111", // Panel border color to separate the panel from the editor.
+  "panel.dropBorder":                                     "#111", // Drag and drop feedback color for the panel titles. Panels are shown below the editor area and contain views like output and integrated terminal.
+  "panelTitle.activeBorder":                              "#111", // Border color for the active panel title.
+  "panelTitle.activeForeground":                          "#111", // Title color for the active panel.
+  "panelTitle.inactiveForeground":                        "#111", // Title color for the inactive panel.
+  "panelTitle.border":                                    "#111", // Panel title border color on the bottom, separating the title from the views. Panels are shown below the editor area and contain views like output and integrated terminal.
+  "panelTitleBadge.background":                           "#111", // Panel title badge background color. Panels are shown below the editor area and contain views like output and integrated terminal.
+  "panelTitleBadge.foreground":                           "#111", // Panel title badge foreground color. Panels are shown below the editor area and contain views like output and integrated terminal.
+  "panelInput.border":                                    "#111", // Input box border for inputs in the panel.
+  "panelSection.border":                                  "#111", // Panel section border color used when multiple views are stacked horizontally in the panel. Panels are shown below the editor area and contain views like output and integrated terminal.
+  "panelSection.dropBackground":                          "#111", // Drag and drop feedback color for the panel sections. The color should have transparency so that the panel sections can still shine through. Panels are shown below the editor area and contain views like output and integrated terminal.
+  "panelSectionHeader.background":                        "#111", // Panel section header background color. Panels are shown below the editor area and contain views like output and integrated terminal.
+  "panelSectionHeader.foreground":                        "#111", // Panel section header foreground color. Panels are shown below the editor area and contain views like output and integrated terminal.
+  "panelStickyScroll.background":                         "#111", // Background color of sticky scroll in the panel.
+  "panelStickyScroll.border":                             "#111", // Border color of sticky scroll in the panel.
+  "panelStickyScroll.shadow":                             "#111", // Shadow color of sticky scroll in the panel.
+  "panelSectionHeader.border":                            "#111", // Panel section header border color used when multiple views are stacked vertically in the panel. Panels are shown below the editor area and contain views like output and integrated terminal.
+  "outputView.background":                                "#111", // Output view background color.
+  "outputViewStickyScroll.background":                    "#111", // Output view sticky scroll background color.
+  "statusBar.background":                                 "#111", // Standard Status Bar background color.
+  "statusBar.foreground":                                 "#111", // Status Bar foreground color.
+  "statusBar.border":                                     "#111", // Status Bar border color separating the Status Bar and editor.
+  "statusBar.debuggingBackground":                        "#111", // Status Bar background color when a program is being debugged.
+  "statusBar.debuggingForeground":                        "#111", // Status Bar foreground color when a program is being debugged.
+  "statusBar.debuggingBorder":                            "#111", // Status Bar border color separating the Status Bar and editor when a program is being debugged.
+  "statusBar.noFolderForeground":                         "#111", // Status Bar foreground color when no folder is opened.
+  "statusBar.noFolderBackground":                         "#111", // Status Bar background color when no folder is opened.
+  "statusBar.noFolderBorder":                             "#111", // Status Bar border color separating the Status Bar and editor when no folder is opened.
+  "statusBarItem.activeBackground":                       "#111", // Status Bar item background color when clicking.
+  "statusBarItem.hoverForeground":                        "#111", // Status bar item foreground color when hovering. The status bar is shown in the bottom of the window.
+  "statusBarItem.hoverBackground":                        "#111", // Status Bar item background color when hovering.
+  "statusBarItem.prominentForeground":                    "#111", // Status Bar prominent items foreground color.
+  "statusBarItem.prominentBackground":                    "#111", // Status Bar prominent items background color.
+  "statusBarItem.prominentHoverForeground":               "#111", // Status bar prominent items foreground color when hovering. Prominent items stand out from other status bar entries to indicate importance. The status bar is shown in the bottom of the window.
+  "statusBarItem.prominentHoverBackground":               "#111", // Status Bar prominent items background color when hovering.
+  "statusBarItem.remoteBackground":                       "#111", // Background color for the remote indicator on the status bar.
+  "statusBarItem.remoteForeground":                       "#111", // Foreground color for the remote indicator on the status bar.
+  "statusBarItem.remoteHoverBackground":                  "#111", // Background color for the remote indicator on the status bar when hovering.
+  "statusBarItem.remoteHoverForeground":                  "#111", // Foreground color for the remote indicator on the status bar when hovering.
+  "statusBarItem.errorBackground":                        "#111", // Status bar error items background color. Error items stand out from other status bar entries to indicate error conditions.
+  "statusBarItem.errorForeground":                        "#111", // Status bar error items foreground color. Error items stand out from other status bar entries to indicate error conditions.
+  "statusBarItem.errorHoverBackground":                   "#111", // Status bar error items background color when hovering. Error items stand out from other status bar entries to indicate error conditions. The status bar is shown in the bottom of the window.
+  "statusBarItem.errorHoverForeground":                   "#111", // Status bar error items foreground color when hovering. Error items stand out from other status bar entries to indicate error conditions. The status bar is shown in the bottom of the window.
+  "statusBarItem.warningBackground":                      "#111", // Status bar warning items background color. Warning items stand out from other status bar entries to indicate warning conditions. The status bar is shown in the bottom of the window.
+  "statusBarItem.warningForeground":                      "#111", // Status bar warning items foreground color. Warning items stand out from other status bar entries to indicate warning conditions. The status bar is shown in the bottom of the window.
+  "statusBarItem.warningHoverBackground":                 "#111", // Status bar warning items background color when hovering. Warning items stand out from other status bar entries to indicate warning conditions. The status bar is shown in the bottom of the window.
+  "statusBarItem.warningHoverForeground":                 "#111", // Status bar warning items foreground color when hovering. Warning items stand out from other status bar entries to indicate warning conditions. The status bar is shown in the bottom of the window.
+  "statusBarItem.compactHoverBackground":                 "#111", // Status bar item background color when hovering an item that contains two hovers. The status bar is shown in the bottom of the window.
+  "statusBarItem.focusBorder":                            "#111", // Status bar item border color when focused on keyboard navigation. The status bar is shown in the bottom of the window.
+  "statusBar.focusBorder":                                "#111", // Status bar border color when focused on keyboard navigation. The status bar is shown in the bottom of the window.
+  "statusBarItem.offlineBackground":                      "#111", // Status bar item background color when the workbench is offline.
+  "statusBarItem.offlineForeground":                      "#111", // Status bar item foreground color when the workbench is offline.
+  "statusBarItem.offlineHoverForeground":                 "#111", // Status bar item foreground hover color when the workbench is offline.
+  "statusBarItem.offlineHoverBackground":                 "#111", // Status bar item background hover color when the workbench is offline.
+  "titleBar.activeBackground":                            "#111", // Title Bar background when the window is active.
+  "titleBar.activeForeground":                            "#111", // Title Bar foreground when the window is active.
+  "titleBar.inactiveBackground":                          "#111", // Title Bar background when the window is inactive.
+  "titleBar.inactiveForeground":                          "#111", // Title Bar foreground when the window is inactive.
+  "titleBar.border":                                      "#111", // Title bar border color.
+  "menubar.selectionForeground":                          "#111", // Foreground color of the selected menu item in the menubar.
+  "menubar.selectionBackground":                          "#111", // Background color of the selected menu item in the menubar.
+  "menubar.selectionBorder":                              "#111", // Border color of the selected menu item in the menubar.
+  "menu.foreground":                                      "#111", // Foreground color of menu items.
+  "menu.background":                                      "#111", // Background color of menu items.
+  "menu.selectionForeground":                             "#111", // Foreground color of the selected menu item in menus.
+  "menu.selectionBackground":                             "#111", // Background color of the selected menu item in menus.
+  "menu.selectionBorder":                                 "#111", // Border color of the selected menu item in menus.
+  "menu.separatorBackground":                             "#111", // Color of a separator menu item in menus.
+  "menu.border":                                          "#111", // Border color of menus.
+  "commandCenter.foreground":                             "#111", // Foreground color of the Command Center.
+  "commandCenter.activeForeground":                       "#111", // Active foreground color of the Command Center.
+  "commandCenter.background":                             "#111", // Background color of the Command Center.
+  "commandCenter.activeBackground":                       "#111", // Active background color of the Command Center.
+  "commandCenter.border":                                 "#111", // Border color of the Command Center.
+  "commandCenter.inactiveForeground":                     "#111", // Foreground color of the Command Center when the window is inactive.
+  "commandCenter.inactiveBorder":                         "#111", // Border color of the Command Center when the window is inactive.
+  "commandCenter.activeBorder":                           "#111", // Active border color of the Command Center.
+  "commandCenter.debuggingBackground":                    "#111", // Command Center background color when a program is being debugged.
+  "notificationCenter.border":                            "#111", // Notification Center border color.
+  "notificationCenterHeader.foreground":                  "#111", // Notification Center header foreground color.
+  "notificationCenterHeader.background":                  "#111", // Notification Center header background color.
+  "notificationToast.border":                             "#111", // Notification toast border color.
+  "notifications.foreground":                             "#111", // Notification foreground color.
+  "notifications.background":                             "#111", // Notification background color.
+  "notifications.border":                                 "#111", // Notification border color separating from other notifications in the Notification Center.
+  "notificationLink.foreground":                          "#111", // Notification links foreground color.
+  "notificationsErrorIcon.foreground":                    "#111", // The color used for the notification error icon.
+  "notificationsWarningIcon.foreground":                  "#111", // The color used for the notification warning icon.
+  "notificationsInfoIcon.foreground":                     "#111", // The color used for the notification info icon.
+  "banner.background":                                    "#111", // Banner background color.
+  "banner.foreground":                                    "#111", // Banner foreground color.
+  "banner.iconForeground":                                "#111", // Color for the icon in front of the banner text.
+  "extensionButton.prominentForeground":                  "#111", // Extension view button foreground color (for example Install button).
+  "extensionButton.prominentBackground":                  "#111", // Extension view button background color.
+  "extensionButton.prominentHoverBackground":             "#111", // Extension view button background hover color.
+  "extensionButton.background":                           "#111", // Button background color for extension actions.
+  "extensionButton.foreground":                           "#111", // Button foreground color for extension actions.
+  "extensionButton.hoverBackground":                      "#111", // Button background hover color for extension actions.
+  "extensionButton.separator":                            "#111", // Button separator color for extension actions.
+  "extensionButton.border":                               "#111", // Button border color for extension actions.
+  "extensionBadge.remoteBackground":                      "#111", // Background color for the remote badge in the extensions view.
+  "extensionBadge.remoteForeground":                      "#111", // Foreground color for the remote badge in the extensions view.
+  "extensionIcon.starForeground":                         "#111", // The icon color for extension ratings.
+  "extensionIcon.verifiedForeground":                     "#111", // The icon color for extension verified publisher.
+  "extensionIcon.preReleaseForeground":                   "#111", // The icon color for pre-release extension.
+  "extensionIcon.sponsorForeground":                      "#111", // The icon color for extension sponsor.
+  "extensionIcon.privateForeground":                      "#111", // The icon color for private extensions.
+  "mcpIcon.starForeground":                               "#111", // The icon color for mcp starred.
+  "pickerGroup.border":                                   "#111", // Quick picker (Quick Open) color for grouping borders.
+  "pickerGroup.foreground":                               "#111", // Quick picker (Quick Open) color for grouping labels.
+  "quickInput.background":                                "#111", // Quick input background color. The quick input widget is the container for views like the color theme picker.
+  "quickInput.foreground":                                "#111", // Quick input foreground color. The quick input widget is the container for views like the color theme picker.
+  "quickInputList.focusBackground":                       "#111", // Quick picker background color for the focused item.
+  "quickInputList.focusForeground":                       "#111", // Quick picker foreground color for the focused item.
+  "quickInputList.focusIconForeground":                   "#111", // Quick picker icon foreground color for the focused item.
+  "quickInputTitle.background":                           "#111", // Quick picker title background color. The quick picker widget is the container for pickers like the Command Palette.
+  "keybindingLabel.background":                           "#111", // Keybinding label background color. The keybinding label is used to represent a keyboard shortcut.
+  "keybindingLabel.foreground":                           "#111", // Keybinding label foreground color. The keybinding label is used to represent a keyboard shortcut.
+  "keybindingLabel.border":                               "#111", // Keybinding label border color. The keybinding label is used to represent a keyboard shortcut.
+  "keybindingLabel.bottomBorder":                         "#111", // Keybinding label border bottom color. The keybinding label is used to represent a keyboard shortcut.
+  "keybindingTable.headerBackground":                     "#111", // Background color for the keyboard shortcuts table header.
+  "keybindingTable.rowsBackground":                       "#111", // Background color for the keyboard shortcuts table alternating rows.
+  "terminal.background":                                  "#111", // The background of the Integrated Terminal's viewport.
+  "terminal.border":                                      "#111", // The color of the border that separates split panes within the terminal. This defaults to panel.border.
+  "terminal.foreground":                                  "#111", // The default foreground color of the Integrated Terminal.
+  "terminal.ansiBlack":                                   "#111", // 'Black' ANSI color in the terminal.
+  "terminal.ansiBlue":                                    "#111", // 'Blue' ANSI color in the terminal.
+  "terminal.ansiBrightBlack":                             "#111", // 'BrightBlack' ANSI color in the terminal.
+  "terminal.ansiBrightBlue":                              "#111", // 'BrightBlue' ANSI color in the terminal.
+  "terminal.ansiBrightCyan":                              "#111", // 'BrightCyan' ANSI color in the terminal.
+  "terminal.ansiBrightGreen":                             "#111", // 'BrightGreen' ANSI color in the terminal.
+  "terminal.ansiBrightMagenta":                           "#111", // 'BrightMagenta' ANSI color in the terminal.
+  "terminal.ansiBrightRed":                               "#111", // 'BrightRed' ANSI color in the terminal.
+  "terminal.ansiBrightWhite":                             "#111", // 'BrightWhite' ANSI color in the terminal.
+  "terminal.ansiBrightYellow":                            "#111", // 'BrightYellow' ANSI color in the terminal.
+  "terminal.ansiCyan":                                    "#111", // 'Cyan' ANSI color in the terminal.
+  "terminal.ansiGreen":                                   "#111", // 'Green' ANSI color in the terminal.
+  "terminal.ansiMagenta":                                 "#111", // 'Magenta' ANSI color in the terminal.
+  "terminal.ansiRed":                                     "#111", // 'Red' ANSI color in the terminal.
+  "terminal.ansiWhite":                                   "#111", // 'White' ANSI color in the terminal.
+  "terminal.ansiYellow":                                  "#111", // 'Yellow' ANSI color in the terminal.
+  "terminal.selectionBackground":                         "#111", // The selection background color of the terminal.
+  "terminal.selectionForeground":                         "#111", // The selection foreground color of the terminal. When this is null the selection foreground will be retained and have the minimum contrast ratio feature applied.
+  "terminal.inactiveSelectionBackground":                 "#111", // The selection background color of the terminal when it does not have focus.
+  "terminal.findMatchBackground":                         "#111", // Color of the current search match in the terminal. The color must not be opaque so as not to hide underlying terminal content.
+  "terminal.findMatchBorder":                             "#111", // Border color of the current search match in the terminal.
+  "terminal.findMatchHighlightBackground":                "#111", // Color of the other search matches in the terminal. The color must not be opaque so as not to hide underlying terminal content.
+  "terminal.findMatchHighlightBorder":                    "#111", // Border color of the other search matches in the terminal.
+  "terminal.hoverHighlightBackground":                    "#111", // Color of the highlight when hovering a link in the terminal.
+  "terminalCursor.background":                            "#111", // The background color of the terminal cursor. Allows customizing the color of a character overlapped by a block cursor.
+  "terminalCursor.foreground":                            "#111", // The foreground color of the terminal cursor.
+  "terminal.dropBackground":                              "#111", // The background color when dragging on top of terminals. The color should have transparency so that the terminal contents can still shine through.
+  "terminal.tab.activeBorder":                            "#111", // Border on the side of the terminal tab in the panel. This defaults to tab.activeBorder.
+  "terminalCommandDecoration.defaultBackground":          "#111", // The default terminal command decoration background color.
+  "terminalCommandDecoration.successBackground":          "#111", // The terminal command decoration background color for successful commands.
+  "terminalCommandDecoration.errorBackground":            "#111", // The terminal command decoration background color for error commands.
+  "terminalOverviewRuler.cursorForeground":               "#111", // The overview ruler cursor color.
+  "terminalOverviewRuler.findMatchForeground":            "#111", // Overview ruler marker color for find matches in the terminal.
+  "terminalStickyScroll.background":                      "#111", // The background color of the sticky scroll overlay in the terminal.
+  "terminalStickyScroll.border":                          "#111", // The border of the sticky scroll overlay in the terminal.
+  "terminalStickyScrollHover.background":                 "#111", // The background color of the sticky scroll overlay in the terminal when hovered.
+  "terminal.initialHintForeground":                       "#111", // Foreground color of the terminal initial hint.
+  "terminalOverviewRuler.border":                         "#111", // The overview ruler left-side border color.
+  "terminalCommandGuide.foreground":                      "#111", // The foreground color of the terminal command guide that appears to the left of a command and its output on hover.
+  "terminalSymbolIcon.aliasForeground":                   "#111", // The foreground color for an alias icon. These icons will appear in the terminal suggest widget
+  "terminalSymbolIcon.branchForeground":                  "#111", // The foreground color for a branch icon. These icons will appear in the terminal suggest widget.
+  "terminalSymbolIcon.commitForeground":                  "#111", // The foreground color for a commit icon. These icons will appear in the terminal suggest widget.
+  "terminalSymbolIcon.flagForeground":                    "#111", // The foreground color for an flag icon. These icons will appear in the terminal suggest widget
+  "terminalSymbolIcon.optionForeground":                  "#111", // The foreground color for an option icon. These icons will appear in the terminal suggest widget.
+  "terminalSymbolIcon.optionValueForeground":             "#111", // The foreground color for an enum member icon. These icons will appear in the terminal suggest widget.
+  "terminalSymbolIcon.methodForeground":                  "#111", // The foreground color for a method icon. These icons will appear in the terminal suggest widget.
+  "terminalSymbolIcon.argumentForeground":                "#111", // The foreground color for an argument icon. These icons will appear in the terminal suggest widget.
+  "terminalSymbolIcon.inlineSuggestionForeground":        "#111", // The foreground color for an inline suggestion icon. These icons will appear in the terminal suggest widget.
+  "terminalSymbolIcon.fileForeground":                    "#111", // The foreground color for a file icon. These icons will appear in the terminal suggest widget.
+  "terminalSymbolIcon.folderForeground":                  "#111", // The foreground color for a folder icon. These icons will appear in the terminal suggest widget.
+  "terminalSymbolIcon.pullRequestDoneForeground":         "#111", // The foreground color for a completed pull request icon. These icons will appear in the terminal suggest widget.
+  "terminalSymbolIcon.pullRequestForeground":             "#111", // The foreground color for a pull request icon. These icons will appear in the terminal suggest widget.
+  "terminalSymbolIcon.remoteForeground":                  "#111", // The foreground color for a remote icon. These icons will appear in the terminal suggest widget.
+  "terminalSymbolIcon.stashForeground":                   "#111", // The foreground color for a stash icon. These icons will appear in the terminal suggest widget.
+  "terminalSymbolIcon.symbolText":                        "#111", // The foreground color for a plaintext suggestion. These icons will appear in the terminal suggest widget.
+  "terminalSymbolIcon.symbolicLinkFileForeground":        "#111", // The foreground color for a symbolic link file icon. These icons will appear in the terminal suggest widget.
+  "terminalSymbolIcon.symbolicLinkFolderForeground":      "#111", // The foreground color for a symbolic link folder icon. These icons will appear in the terminal suggest widget.
+  "terminalSymbolIcon.tagForeground":                     "#111", // The foreground color for a tag icon. These icons will appear in the terminal suggest widget.
+  "debugToolBar.background":                              "#111", // Debug toolbar background color.
+  "debugToolBar.border":                                  "#111", // Debug toolbar border color.
+  "editor.stackFrameHighlightBackground":                 "#111", // Background color of the top stack frame highlight in the editor.
+  "editor.focusedStackFrameHighlightBackground":          "#111", // Background color of the focused stack frame highlight in the editor.
+  "editor.inlineValuesForeground":                        "#111", // Color for the debug inline value text.
+  "editor.inlineValuesBackground":                        "#111", // Color for the debug inline value background.
+  "debugView.exceptionLabelForeground":                   "#111", // Foreground color for a label shown in the CALL STACK view when the debugger breaks on an exception.
+  "debugView.exceptionLabelBackground":                   "#111", // Background color for a label shown in the CALL STACK view when the debugger breaks on an exception.
+  "debugView.stateLabelForeground":                       "#111", // Foreground color for a label in the CALL STACK view showing the current session's or thread's state.
+  "debugView.stateLabelBackground":                       "#111", // Background color for a label in the CALL STACK view showing the current session's or thread's state.
+  "debugView.valueChangedHighlight":                      "#111", // Color used to highlight value changes in the debug views (such as in the Variables view).
+  "debugTokenExpression.name":                            "#111", // Foreground color for the token names shown in debug views (such as in the Variables or Watch view).
+  "debugTokenExpression.value":                           "#111", // Foreground color for the token values shown in debug views.
+  "debugTokenExpression.string":                          "#111", // Foreground color for strings in debug views.
+  "debugTokenExpression.boolean":                         "#111", // Foreground color for booleans in debug views.
+  "debugTokenExpression.number":                          "#111", // Foreground color for numbers in debug views.
+  "debugTokenExpression.error":                           "#111", // Foreground color for expression errors in debug views.
+  "debugTokenExpression.type":                            "#111", // Foreground color for the token types shown in the debug views (ie. the Variables or Watch view).
+  "testing.runAction":                                    "#111", // Color for 'run' icons in the editor.
+  "testing.iconErrored":                                  "#111", // Color for the 'Errored' icon in the test explorer.
+  "testing.iconFailed":                                   "#111", // Color for the 'failed' icon in the test explorer.
+  "testing.iconPassed":                                   "#111", // Color for the 'passed' icon in the test explorer.
+  "testing.iconQueued":                                   "#111", // Color for the 'Queued' icon in the test explorer.
+  "testing.iconUnset":                                    "#111", // Color for the 'Unset' icon in the test explorer.
+  "testing.iconSkipped":                                  "#111", // Color for the 'Skipped' icon in the test explorer.
+  "testing.iconErrored.retired":                          "#111", // Retired color for the 'Errored' icon in the test explorer.
+  "testing.iconFailed.retired":                           "#111", // Retired color for the 'failed' icon in the test explorer.
+  "testing.iconPassed.retired":                           "#111", // Retired color for the 'passed' icon in the test explorer.
+  "testing.iconQueued.retired":                           "#111", // Retired color for the 'Queued' icon in the test explorer.
+  "testing.iconUnset.retired":                            "#111", // Retired color for the 'Unset' icon in the test explorer.
+  "testing.iconSkipped.retired":                          "#111", // Retired color for the 'Skipped' icon in the test explorer.
+  "testing.peekBorder":                                   "#111", // Color of the peek view borders and arrow.
+  "testing.peekHeaderBackground":                         "#111", // Color of the peek view borders and arrow.
+  "testing.message.error.lineBackground":                 "#111", // Margin color beside error messages shown inline in the editor.
+  "testing.message.info.decorationForeground":            "#111", // Text color of test info messages shown inline in the editor.
+  "testing.message.info.lineBackground":                  "#111", // Margin color beside info messages shown inline in the editor.
+  "testing.messagePeekBorder":                            "#111", // Color of the peek view borders and arrow when peeking a logged message.
+  "testing.messagePeekHeaderBackground":                  "#111", // Color of the peek view borders and arrow when peeking a logged message.
+  "testing.coveredBackground":                            "#111", // Background color of text that was covered.
+  "testing.coveredBorder":                                "#111", // Border color of text that was covered.
+  "testing.coveredGutterBackground":                      "#111", // Gutter color of regions where code was covered.
+  "testing.uncoveredBranchBackground":                    "#111", // Background of the widget shown for an uncovered branch.
+  "testing.uncoveredBackground":                          "#111", // Background color of text that was not covered.
+  "testing.uncoveredBorder":                              "#111", // Border color of text that was not covered.
+  "testing.uncoveredGutterBackground":                    "#111", // Gutter color of regions where code not covered.
+  "testing.coverCountBadgeBackground":                    "#111", // Background for the badge indicating execution count
+  "testing.coverCountBadgeForeground":                    "#111", // Foreground for the badge indicating execution count
+  "testing.message.error.badgeBackground":                "#111", // Background color of test error messages shown inline in the editor.
+  "testing.message.error.badgeBorder":                    "#111", // Border color of test error messages shown inline in the editor.
+  "testing.message.error.badgeForeground":                "#111", // Text color of test error messages shown inline in the editor.
+  "welcomePage.background":                               "#111", // Background color for the Welcome page.
+  "welcomePage.progress.background":                      "#111", // Foreground color for the Welcome page progress bars.
+  "welcomePage.progress.foreground":                      "#111", // Background color for the Welcome page progress bars.
+  "welcomePage.tileBackground":                           "#111", // Background color for the tiles on the Welcome page.
+  "welcomePage.tileHoverBackground":                      "#111", // Hover background color for the tiles on the Welcome page.
+  "welcomePage.tileBorder":                               "#111", // Border color for the tiles on the Welcome page.
+  "walkThrough.embeddedEditorBackground":                 "#111", // Background color for the embedded editors on the Interactive Playground.
+  "walkthrough.stepTitle.foreground":                     "#111", // Foreground color of the heading of each walkthrough step.
+  "gitDecoration.addedResourceForeground":                "#111", // Color for added Git resources. Used for file labels and the SCM viewlet.
+  "gitDecoration.modifiedResourceForeground":             "#111", // Color for modified Git resources. Used for file labels and the SCM viewlet.
+  "gitDecoration.deletedResourceForeground":              "#111", // Color for deleted Git resources. Used for file labels and the SCM viewlet.
+  "gitDecoration.renamedResourceForeground":              "#111", // Color for renamed or copied Git resources. Used for file labels and the SCM viewlet.
+  "gitDecoration.stageModifiedResourceForeground":        "#111", // Color for staged modifications git decorations. Used for file labels and the SCM viewlet.
+  "gitDecoration.stageDeletedResourceForeground":         "#111", // Color for staged deletions git decorations. Used for file labels and the SCM viewlet.
+  "gitDecoration.untrackedResourceForeground":            "#111", // Color for untracked Git resources. Used for file labels and the SCM viewlet.
+  "gitDecoration.ignoredResourceForeground":              "#111", // Color for ignored Git resources. Used for file labels and the SCM viewlet.
+  "gitDecoration.conflictingResourceForeground":          "#111", // Color for conflicting Git resources. Used for file labels and the SCM viewlet.
+  "gitDecoration.submoduleResourceForeground":            "#111", // Color for submodule resources.
+  "git.blame.editorDecorationForeground":                 "#111", // Color for the blame editor decoration.
+  "scmGraph.historyItemHoverLabelForeground":             "#111", // History item hover label foreground color.
+  "scmGraph.foreground1":                                 "#111", // Source control graph foreground color (1).
+  "scmGraph.foreground2":                                 "#111", // Source control graph foreground color (2).
+  "scmGraph.foreground3":                                 "#111", // Source control graph foreground color (3).
+  "scmGraph.foreground4":                                 "#111", // Source control graph foreground color (4).
+  "scmGraph.foreground5":                                 "#111", // Source control graph foreground color (5).
+  "scmGraph.historyItemHoverAdditionsForeground":         "#111", // History item hover additions foreground color.
+  "scmGraph.historyItemHoverDeletionsForeground":         "#111", // History item hover deletions foreground color.
+  "scmGraph.historyItemRefColor":                         "#111", // History item reference color.
+  "scmGraph.historyItemRemoteRefColor":                   "#111", // History item remote reference color.
+  "scmGraph.historyItemBaseRefColor":                     "#111", // History item base reference color.
+  "scmGraph.historyItemHoverDefaultLabelForeground":      "#111", // History item hover default label foreground color.
+  "scmGraph.historyItemHoverDefaultLabelBackground":      "#111", // History item hover default label background color.
+  "settings.headerForeground":                            "#111", // The foreground color for a section header or active title.
+  "settings.modifiedItemIndicator":                       "#111", // The line that indicates a modified setting.
+  "settings.dropdownBackground":                          "#111", // Dropdown background.
+  "settings.dropdownForeground":                          "#111", // Dropdown foreground.
+  "settings.dropdownBorder":                              "#111", // Dropdown border.
+  "settings.dropdownListBorder":                          "#111", // Dropdown list border.
+  "settings.checkboxBackground":                          "#111", // Checkbox background.
+  "settings.checkboxForeground":                          "#111", // Checkbox foreground.
+  "settings.checkboxBorder":                              "#111", // Checkbox border.
+  "settings.rowHoverBackground":                          "#111", // The background color of a settings row when hovered.
+  "settings.textInputBackground":                         "#111", // Text input box background.
+  "settings.textInputForeground":                         "#111", // Text input box foreground.
+  "settings.textInputBorder":                             "#111", // Text input box border.
+  "settings.numberInputBackground":                       "#111", // Number input box background.
+  "settings.numberInputForeground":                       "#111", // Number input box foreground.
+  "settings.numberInputBorder":                           "#111", // Number input box border.
+  "settings.focusedRowBackground":                        "#111", // Background color of a focused setting row.
+  "settings.focusedRowBorder":                            "#111", // The color of the row's top and bottom border when the row is focused.
+  "settings.headerBorder":                                "#111", // The color of the header container border.
+  "settings.sashBorder":                                  "#111", // The color of the Settings editor splitview sash border.
+  "settings.settingsHeaderHoverForeground":               "#111", // The foreground color for a section header or hovered title.
+  "breadcrumb.foreground":                                "#111", // Color of breadcrumb items.
+  "breadcrumb.background":                                "#111", // Background color of breadcrumb items.
+  "breadcrumb.focusForeground":                           "#111", // Color of focused breadcrumb items.
+  "breadcrumb.activeSelectionForeground":                 "#111", // Color of selected breadcrumb items.
+  "breadcrumbPicker.background":                          "#111", // Background color of breadcrumb item picker.
+  "editor.snippetTabstopHighlightBackground":             "#111", // Highlight background color of a snippet tabstop.
+  "editor.snippetTabstopHighlightBorder":                 "#111", // Highlight border color of a snippet tabstop.
+  "editor.snippetFinalTabstopHighlightBackground":        "#111", // Highlight background color of the final tabstop of a snippet.
+  "editor.snippetFinalTabstopHighlightBorder":            "#111", // Highlight border color of the final tabstop of a snippet.
+  "symbolIcon.arrayForeground":                           "#111", // The foreground color for array symbols.
+  "symbolIcon.booleanForeground":                         "#111", // The foreground color for boolean symbols.
+  "symbolIcon.classForeground":                           "#111", // The foreground color for class symbols.
+  "symbolIcon.colorForeground":                           "#111", // The foreground color for color symbols.
+  "symbolIcon.constantForeground":                        "#111", // The foreground color for constant symbols.
+  "symbolIcon.constructorForeground":                     "#111", // The foreground color for constructor symbols.
+  "symbolIcon.enumeratorForeground":                      "#111", // The foreground color for enumerator symbols.
+  "symbolIcon.enumeratorMemberForeground":                "#111", // The foreground color for enumerator member symbols.
+  "symbolIcon.eventForeground":                           "#111", // The foreground color for event symbols.
+  "symbolIcon.fieldForeground":                           "#111", // The foreground color for field symbols.
+  "symbolIcon.fileForeground":                            "#111", // The foreground color for file symbols.
+  "symbolIcon.folderForeground":                          "#111", // The foreground color for folder symbols.
+  "symbolIcon.functionForeground":                        "#111", // The foreground color for function symbols.
+  "symbolIcon.interfaceForeground":                       "#111", // The foreground color for interface symbols.
+  "symbolIcon.keyForeground":                             "#111", // The foreground color for key symbols.
+  "symbolIcon.keywordForeground":                         "#111", // The foreground color for keyword symbols.
+  "symbolIcon.methodForeground":                          "#111", // The foreground color for method symbols.
+  "symbolIcon.moduleForeground":                          "#111", // The foreground color for module symbols.
+  "symbolIcon.namespaceForeground":                       "#111", // The foreground color for namespace symbols.
+  "symbolIcon.nullForeground":                            "#111", // The foreground color for null symbols.
+  "symbolIcon.numberForeground":                          "#111", // The foreground color for number symbols.
+  "symbolIcon.objectForeground":                          "#111", // The foreground color for object symbols.
+  "symbolIcon.operatorForeground":                        "#111", // The foreground color for operator symbols.
+  "symbolIcon.packageForeground":                         "#111", // The foreground color for package symbols.
+  "symbolIcon.propertyForeground":                        "#111", // The foreground color for property symbols.
+  "symbolIcon.referenceForeground":                       "#111", // The foreground color for reference symbols.
+  "symbolIcon.snippetForeground":                         "#111", // The foreground color for snippet symbols.
+  "symbolIcon.stringForeground":                          "#111", // The foreground color for string symbols.
+  "symbolIcon.structForeground":                          "#111", // The foreground color for struct symbols.
+  "symbolIcon.textForeground":                            "#111", // The foreground color for text symbols.
+  "symbolIcon.typeParameterForeground":                   "#111", // The foreground color for type parameter symbols.
+  "symbolIcon.unitForeground":                            "#111", // The foreground color for unit symbols.
+  "symbolIcon.variableForeground":                        "#111", // The foreground color for variable symbols.
+  "debugIcon.breakpointForeground":                       "#111", // Icon color for breakpoints.
+  "debugIcon.breakpointDisabledForeground":               "#111", // Icon color for disabled breakpoints.
+  "debugIcon.breakpointUnverifiedForeground":             "#111", // Icon color for unverified breakpoints.
+  "debugIcon.breakpointCurrentStackframeForeground":      "#111", // Icon color for the current breakpoint stack frame.
+  "debugIcon.breakpointStackframeForeground":             "#111", // Icon color for all breakpoint stack frames.
+  "debugIcon.startForeground":                            "#111", // Debug toolbar icon for start debugging.
+  "debugIcon.pauseForeground":                            "#111", // Debug toolbar icon for pause.
+  "debugIcon.stopForeground":                             "#111", // Debug toolbar icon for stop.
+  "debugIcon.disconnectForeground":                       "#111", // Debug toolbar icon for disconnect.
+  "debugIcon.restartForeground":                          "#111", // Debug toolbar icon for restart.
+  "debugIcon.stepOverForeground":                         "#111", // Debug toolbar icon for step over.
+  "debugIcon.stepIntoForeground":                         "#111", // Debug toolbar icon for step into.
+  "debugIcon.stepOutForeground":                          "#111", // Debug toolbar icon for step over.
+  "debugIcon.continueForeground":                         "#111", // Debug toolbar icon for continue.
+  "debugIcon.stepBackForeground":                         "#111", // Debug toolbar icon for step back.
+  "debugConsole.infoForeground":                          "#111", // Foreground color for info messages in debug REPL console.
+  "debugConsole.warningForeground":                       "#111", // Foreground color for warning messages in debug REPL console.
+  "debugConsole.errorForeground":                         "#111", // Foreground color for error messages in debug REPL console.
+  "debugConsole.sourceForeground":                        "#111", // Foreground color for source filenames in debug REPL console.
+  "debugConsoleInputIcon.foreground":                     "#111", // Foreground color for debug console input marker icon.
+  "notebook.editorBackground":                            "#111", // Notebook background color.
+  "notebook.cellBorderColor":                             "#111", // The border color for notebook cells.
+  "notebook.cellHoverBackground":                         "#111", // The background color of a cell when the cell is hovered.
+  "notebook.cellInsertionIndicator":                      "#111", // The color of the notebook cell insertion indicator.
+  "notebook.cellStatusBarItemHoverBackground":            "#111", // The background color of notebook cell status bar items.
+  "notebook.cellToolbarSeparator":                        "#111", // The color of the separator in the cell bottom toolbar
+  "notebook.cellEditorBackground":                        "#111", // The color of the notebook cell editor background
+  "notebook.focusedCellBackground":                       "#111", // The background color of a cell when the cell is focused.
+  "notebook.focusedCellBorder":                           "#111", // The color of the cell's focus indicator borders when the cell is focused.
+  "notebook.focusedEditorBorder":                         "#111", // The color of the notebook cell editor border.
+  "notebook.inactiveFocusedCellBorder":                   "#111", // The color of the cell's top and bottom border when a cell is focused while the primary focus is outside of the editor.
+  "notebook.inactiveSelectedCellBorder":                  "#111", // The color of the cell's borders when multiple cells are selected.
+  "notebook.outputContainerBackgroundColor":              "#111", // The Color of the notebook output container background.
+  "notebook.outputContainerBorderColor":                  "#111", // The border color of the notebook output container.
+  "notebook.selectedCellBackground":                      "#111", // The background color of a cell when the cell is selected.
+  "notebook.selectedCellBorder":                          "#111", // The color of the cell's top and bottom border when the cell is selected but not focused.
+  "notebook.symbolHighlightBackground":                   "#111", // Background color of highlighted cell
+  "notebookScrollbarSlider.activeBackground":             "#111", // Notebook scrollbar slider background color when clicked on.
+  "notebookScrollbarSlider.background":                   "#111", // Notebook scrollbar slider background color.
+  "notebookScrollbarSlider.hoverBackground":              "#111", // Notebook scrollbar slider background color when hovering.
+  "notebookStatusErrorIcon.foreground":                   "#111", // The error icon color of notebook cells in the cell status bar.
+  "notebookStatusRunningIcon.foreground":                 "#111", // The running icon color of notebook cells in the cell status bar.
+  "notebookStatusSuccessIcon.foreground":                 "#111", // The success icon color of notebook cells in the cell status bar.
+  "notebookEditorOverviewRuler.runningCellForeground":    "#111", // The color of the running cell decoration in the notebook editor overview ruler.
+  "charts.foreground":                                    "#111", // Contrast color for text in charts.
+  "charts.lines":                                         "#111", // Color for lines in charts.
+  "charts.red":                                           "#111", // Color for red elements in charts.
+  "charts.blue":                                          "#111", // Color for blue elements in charts.
+  "charts.yellow":                                        "#111", // Color for yellow elements in charts.
+  "charts.orange":                                        "#111", // Color for orange elements in charts.
+  "charts.green":                                         "#111", // Color for green elements in charts.
+  "charts.purple":                                        "#111", // Color for purple elements in charts.
+  "chart.line":                                           "#111", // Line color for the chart.
+  "chart.axis":                                           "#111", // Axis color for the chart.
+  "chart.guide":                                          "#111", // Guide line for the chart.
+  "ports.iconRunningProcessForeground":                   "#111", // The color of the icon for a port that has an associated running process.
+  "commentsView.resolvedIcon":                            "#111", // Icon color for resolved comments.
+  "commentsView.unresolvedIcon":                          "#111", // Icon color for unresolved comments.
+  "actionBar.toggledBackground":                          "#111", // Background color for toggled action items in action bar.
+  "simpleFindWidget.sashBorder":                          "#111", // Border color of the sash border.
+  "gauge.background":                                     "#111", // Gauge background color.
+  "gauge.foreground":                                     "#111", // Gauge foreground color.
+  "gauge.border":                                         "#111", // Gauge border color.
+  "gauge.warningBackground":                              "#111", // Gauge warning background color.
+  "gauge.warningForeground":                              "#111", // Gauge warning foreground color.
+  "gauge.errorBackground":                                "#111", // Gauge error background color.
+  "gauge.errorForeground":                                "#111", // Gauge error foreground color.
+  "markdownAlert.note.foreground":                        "#111", // Foreground color for note alerts in markdown.
+  "markdownAlert.tip.foreground":                         "#111", // Foreground color for tip alerts in markdown.
+  "markdownAlert.important.foreground":                   "#111", // Foreground color for important alerts in markdown.
+  "markdownAlert.warning.foreground":                     "#111", // Foreground color for warning alerts in markdown.
+  "markdownAlert.caution.foreground":                     "#111", // Foreground color for caution alerts in markdown.
+  "agentSessionReadIndicator.foreground":                 "#111", // Foreground color for the read indicator in an agent session.
+  "agentSessionSelectedBadge.border":                     "#111", // Border color for the badges in selected agent session items.
+  "agentSessionSelectedUnfocusedBadge.border":            "#111" // Border color for the badges in selected agent session items when the view is unfocused.
   }
 }
-
-module.exports = { smartSelect };
-
-
-==== src\commands\surroundingPairs.js ====
-
-const vscode = require('vscode');
-
-function getDelimiters() {
-  const config = vscode.workspace.getConfiguration('JavEditorHelper');
-  return config.get('surroundingPairs') || [
-    ['[', ']'],
-    ['{', '}'],
-    ['(', ')'],
-    ["'", "'"],
-    ['"', '"'],
-    ['*', '*']
-  ];
-}
-
-function selectSurround() {
-  const editor = vscode.window.activeTextEditor;
-  if (!editor) return;
-
-  const delimiters = getDelimiters();
-  const doc = editor.document;
-  const selections = editor.selections;
-  let newSelections = [];
-
-  for (const sel of selections) {
-    let newSel = null;
-
-    if (!sel.isEmpty) {
-      const line = doc.lineAt(sel.start.line).text;
-      let isExpanded = false;
-
-      for (const [open, close] of delimiters) {
-        const selText = doc.getText(sel);
-        if (selText.startsWith(open) && selText.endsWith(close) && selText.length > open.length + close.length) {
-          isExpanded = true;
-          break;
-        }
-      }
-
-      if (isExpanded) {
-        // Jump to next pair content
-        const startLine = sel.end.line;
-        const startChar = sel.end.character;
-        let selectedPair = findNextPair(doc, delimiters, startLine, startChar);
-
-        // Wrap to beginning if none found
-        if (!selectedPair) {
-          selectedPair = findNextPair(doc, delimiters, 0, 0, startLine);
-        }
-
-        if (selectedPair) {
-          newSel = pairToSelection(selectedPair);
-        }
-      } else {
-        // Check if selection matches content inside a pair — expand to include delimiters
-        let expandedPair = null;
-
-        for (const [open, close] of delimiters) {
-          const beforeStart = sel.start.character - open.length;
-          const afterEnd = sel.end.character + close.length;
-
-          if (beforeStart >= 0 && afterEnd <= line.length) {
-            const beforeText = line.substring(beforeStart, sel.start.character);
-            const afterText = line.substring(sel.end.character, afterEnd);
-
-            if (beforeText === open && afterText === close) {
-              expandedPair = {
-                start: new vscode.Position(sel.start.line, beforeStart),
-                end: new vscode.Position(sel.end.line, afterEnd)
-              };
-              break;
-            }
-          }
-        }
-
-        if (expandedPair) {
-          newSel = new vscode.Selection(expandedPair.start, expandedPair.end);
-        }
-      }
-    }
-
-    // No expansion/jump or no selection — find next pair
-    if (!newSel) {
-      const startLine = sel.active.line;
-      const startChar = sel.isEmpty ? sel.active.character : sel.end.character;
-      const selectedPair = findNextPair(doc, delimiters, startLine, startChar);
-
-      if (selectedPair) {
-        newSel = pairToSelection(selectedPair);
-      }
-    }
-
-    newSelections.push(newSel || sel);
-  }
-
-  editor.selections = newSelections;
-}
-
-function removeSurround() {
-  const editor = vscode.window.activeTextEditor;
-  if (!editor) return;
-
-  const delimiters = getDelimiters();
-  const doc = editor.document;
-
-  editor.edit(editBuilder => {
-    for (const sel of editor.selections) {
-      const line = doc.lineAt(sel.active.line).text;
-      const cursor = sel.active.character;
-      let found = null;
-
-      for (const [open, close] of delimiters) {
-        const leftIndex = line.lastIndexOf(open, cursor);
-        const rightSearchStart = Math.max(cursor - open.length + 1, 0);
-        const rightIndex = line.indexOf(close, rightSearchStart);
-
-        if (
-          leftIndex !== -1 &&
-          rightIndex !== -1 &&
-          leftIndex + open.length <= rightIndex
-        ) {
-          if (
-            !found ||
-            leftIndex > found.leftIndex ||
-            (leftIndex === found.leftIndex && rightIndex < found.rightIndex)
-          ) {
-            found = { open, close, leftIndex, rightIndex };
-          }
-        }
-      }
-
-      if (found) {
-        const content = line.slice(found.leftIndex + found.open.length, found.rightIndex);
-        editBuilder.replace(
-          new vscode.Range(sel.active.line, found.leftIndex, sel.active.line, found.rightIndex + found.close.length),
-          content
-        );
-      }
-    }
-  });
-}
-
-// ── Helpers ──
-
-function findNextPair(doc, delimiters, fromLine, fromChar, maxLine) {
-  const limit = maxLine !== undefined ? maxLine : doc.lineCount - 1;
-
-  for (let lineNum = fromLine; lineNum <= limit; lineNum++) {
-    const text = doc.lineAt(lineNum).text;
-    let pairs = [];
-
-    for (const [open, close] of delimiters) {
-      let idx = 0;
-      while (true) {
-        const openIdx = text.indexOf(open, idx);
-        if (openIdx === -1) break;
-        const closeIdx = text.indexOf(close, openIdx + open.length);
-        if (closeIdx === -1) break;
-        if (lineNum === fromLine && openIdx + open.length <= fromChar && closeIdx <= fromChar) {
-          idx = openIdx + open.length;
-          continue;
-        }
-        pairs.push({ open, close, openIdx, closeIdx, lineNum });
-        idx = openIdx + open.length;
-      }
-    }
-
-    if (pairs.length) {
-      pairs.sort((a, b) => a.lineNum - b.lineNum || a.openIdx - b.openIdx);
-      return pairs[0];
-    }
-  }
-  return null;
-}
-
-function pairToSelection(pair) {
-  const start = new vscode.Position(pair.lineNum, pair.openIdx + pair.open.length);
-  const end = new vscode.Position(pair.lineNum, pair.closeIdx);
-  return new vscode.Selection(start, end);
-}
-
-module.exports = { selectSurround, removeSurround };
-
-==== src\commands\textCleanup.js ====
-
-// src/commands/textCleanup.js
-const vscode = require('vscode');
-const { getGlossary } = require('../config');
-
-
-const flashDecoration = vscode.window.createTextEditorDecorationType({
-    color: '#f00',
-    isWholeLine: true
-
-});
-
-// pass 1: normalize case to glossary (uses pre-compiled normRe)
-function normalizeCase(text, entries) {
-  let out = text;
-  for (const { key, normRe, hasSuffix } of entries) {
-    normRe.lastIndex = 0;
-    out = out.replace(normRe, function () {
-      const args = Array.from(arguments);
-      const lead = args[1] || '';
-      const suf = hasSuffix ? (args[3] || '') : '';
-      const trail = hasSuffix ? (args[4] || '') : (args[3] || '');
-      return `${lead}${key}${suf}${trail}`;
-    });
-  }
-  return out;
-}
-
-// pass 2: enforce single-star wrapping (uses pre-compiled starRe)
-function enforceStars(text, entries) {
-  let out = text;
-  for (const { key, starred, starRe } of entries) {
-    if (!starred) continue;
-    starRe.lastIndex = 0;
-    out = out.replace(starRe, function () {
-      const args = Array.from(arguments);
-      const suf = args[2] || '';
-      return `*${key}${suf}*`;
-    });
-  }
-  return out;
-}
-
-// sentence-start capitalization
-function capitalizeSentenceStarts(text) {
-  // start of text / line: first non-letter then first [a-z]
-  text = text.replace(/(^|\n)([^A-Za-z]*)([a-z])/g, function () {
-    const args = Array.from(arguments);
-    const prefix = args[1] || '';
-    const gap = args[2] || '';
-    const c = args[3] || '';
-    return prefix + gap + c.toUpperCase();
-  });
-
-  // after period: always capitalize
-  text = text.replace(/(\.)([^A-Za-z]*)([a-z])/g, function () {
-    const args = Array.from(arguments);
-    const p = args[1] || '';
-    const gap = args[2] || '';
-    const c = args[3] || '';
-    return p + gap + c.toUpperCase();
-  });
-
-  // after ? or !: always capitalize
-  return text.replace(/([?!])([^A-Za-z]*)([a-z])/g, function () {
-    const args = Array.from(arguments);
-    const p = args[1] || '';
-    const gap = args[2] || '';
-    const c = args[3] || '';
-    return p + gap + c.toUpperCase();
-  });
-}
-
-// capitalize first word in quotes only if it starts a new sentence
-function capitalizeDialogue(text) {
-  return text.replace(/(["""])(\s*)([a-z])/g, function() {
-    const args = Array.from(arguments);
-    const quote = args[1] || '';
-    const space = args[2] || '';
-    const firstChar = args[3] || '';
-    const offset = args[args.length - 2];
-
-    const beforeQuote = text.substring(0, offset);
-    const quoteCount = (beforeQuote.match(/["""]/g) || []).length;
-
-    // closing quote - skip
-    if (quoteCount % 2 === 1) {
-      return quote + space + firstChar;
-    }
-
-    // find matching closing quote (same type or equivalent)
-    const afterStart = offset + quote.length + space.length + 1;
-    const afterQuote = text.substring(afterStart);
-
-    // match content up to closing quote, check if ends with sentence punctuation
-    const closingMatch = afterQuote.match(/^[^"""]*?([.?!])\s*["""]/);
-
-    if (closingMatch) {
-      // punctuation immediately before closing quote = complete sentence
-      return quote + space + firstChar.toUpperCase();
-    }
-
-    // incomplete quote - don't capitalize
-    const beforeText = beforeQuote.trimEnd();
-    if (/,\s*$/.test(beforeText)) {
-      return quote + space + firstChar;
-    }
-
-    // no dialogue tag, but also not a complete sentence - check if at sentence start
-    if (/^$|[.?!]\s*$/.test(beforeText)) {
-      return quote + space + firstChar.toUpperCase();
-    }
-
-    return quote + space + firstChar;
-  });
-}
-
-async function textCleanup() {
-  const editor = vscode.window.activeTextEditor;
-  if (!editor) return;
-
-  const glossary = getGlossary();
-
-  const doc = editor.document;
-  const edits = [];
-
-  for (const sel of editor.selections) {
-    let range;
-    let leadingWhitespace = '';
-
-    if (sel.isEmpty) {
-      // For empty selection, get the full line but preserve leading whitespace
-      const line = doc.lineAt(sel.start.line);
-      const lineText = line.text;
-
-      // Find where the actual content starts (first non-whitespace)
-      const contentStart = lineText.search(/\S/);
-
-      if (contentStart === -1) {
-        // Line is all whitespace, skip it
-        continue;
-      }
-
-      // Extract leading whitespace
-      leadingWhitespace = lineText.substring(0, contentStart);
-
-      // Create range from first non-whitespace to end of line
-      range = new vscode.Range(
-        new vscode.Position(line.lineNumber, contentStart),
-        line.range.end
-      );
-    } else {
-      // For non-empty selection, use it as-is
-      range = sel;
-
-      // Check if selection starts at beginning of line
-      if (sel.start.character === 0) {
-        const lineText = doc.getText(new vscode.Range(
-          new vscode.Position(sel.start.line, 0),
-          sel.end
-        ));
-        const contentStart = lineText.search(/\S/);
-        if (contentStart > 0) {
-          leadingWhitespace = lineText.substring(0, contentStart);
-          // Adjust range to exclude leading whitespace
-          range = new vscode.Range(
-            new vscode.Position(sel.start.line, contentStart),
-            sel.end
-          );
-        }
-      }
-    }
-
-    let text = doc.getText(range);
-
-    // normalize base case: lowercase entire selection
-    text = text.toLowerCase();
-
-    // minimal baseline cleanup
-    text = text.replace(/[ \t]+$/gm, '');               // trim trailing spaces/tabs
-    text = text.replace(/\s+([.,!?;:])/g, '$1');        // no space before punctuation
-    text = text.replace(/([.,!?;:])([A-Za-z])/g, '$1 $2'); // space after punctuation before letter
-
-    // dash + ellipsis normalization (match longer sequences first)
-    text = text.replace(/--/g, '\u2014');    // em dash
-    // text = text.replace(/\.{3}/g, '\u2026'); // ellipsis
-
-    // strip unicode em quad and em space
-    text = text.replace(/[\u2001\u2003]/g, ' ');
-
-    // collapse internal runs of spaces/tabs
-    text = text.replace(/[ \t]{2,}/g, ' ');
-
-    // trim inner space in *...*
-    text = text.replace(/\*(\s*)([^*]*?)(\s*)\*/g, function () {
-      const args = Array.from(arguments);
-      const content = args[2] || '';
-      return `*${content.trim()}*`;
-    });
-
-    // trim inner space in quotes
-    text = text.replace(/(["""])(\s*)(.*?)(\s*)(\1)/g, function () {
-      const args = Array.from(arguments);
-      const quote = args[1] || '"';
-      const content = args[3] || '';
-      return quote + content.trim() + quote;
-    });
-
-    // pass 1: case
-    text = normalizeCase(text, glossary);
-
-    // pass 2: stars
-    text = enforceStars(text, glossary);
-
-    // quoted dialogue
-    text = capitalizeDialogue(text);
-
-    // sentence starts
-    text = capitalizeSentenceStarts(text);
-
-
-
-    // If we preserved leading whitespace, prepend it back
-    if (leadingWhitespace && range.start.character > 0) {
-      // We need to extend the range to include the leading whitespace position
-      const fullRange = new vscode.Range(
-        new vscode.Position(range.start.line, 0),
-        range.end
-      );
-      edits.push({ range: fullRange, text: leadingWhitespace + text });
-    } else {
-      edits.push({ range, text });
-    }
-  }
-
-const applied = await editor.edit(b => {
-  for (const e of edits) {
-    const oldText = doc.getText(e.range);
-    if (oldText.trim() === e.text.trim()) continue;
-    b.replace(e.range, e.text);
-  }
-});
-
-if (applied) {
-  const ranges = edits.map(e => e.range);
-  editor.setDecorations(flashDecoration, ranges);
-  setTimeout(() => editor.setDecorations(flashDecoration, []), 150);
-}
-
-}
-
-module.exports = { textCleanup };
-
-==== src\commands\toggleCase.js ====
-
-const vscode = require('vscode');
-
-/**
- * Toggle case. Supports multiple cursors.
- *
- * With selection:  lower → UPPER → Title → lower
- * Without selection: word under cursor, lower → Sentence → lower
- *
- * All cursors cycle based on the state of the FIRST selection/word.
- */
-function toggleCase() {
-  const editor = vscode.window.activeTextEditor;
-  if (!editor) return;
-
-  const doc = editor.document;
-  const sels = editor.selections;
-
-  // Build list of { range, text } for each cursor
-  const items = [];
-  for (const sel of sels) {
-    if (!sel.isEmpty) {
-      items.push({ range: sel, text: doc.getText(sel) });
-    } else {
-      const wordRange = doc.getWordRangeAtPosition(sel.active);
-      if (wordRange) {
-        items.push({ range: wordRange, text: doc.getText(wordRange) });
-      }
-    }
-  }
-  if (items.length === 0) return;
-
-  // Determine cycle state from first item
-  const hasSelection = !sels[0].isEmpty;
-  const ref = items[0].text;
-  const nextFn = hasSelection ? cycleThreeState(ref) : cycleTwoState(ref);
-
-  editor.edit(editBuilder => {
-    for (const { range, text } of items) {
-      editBuilder.replace(range, nextFn(text));
-    }
-  });
-}
-
-/**
- * 3-state for selections: lower → UPPER → Title Case → lower
- * Returns a transform function based on the reference text's current state.
- */
-function cycleThreeState(ref) {
-  const lower = ref.toLowerCase();
-  const upper = ref.toUpperCase();
-
-  if (ref === lower) return t => t.toUpperCase();
-  if (ref === upper) return t => toTitleCase(t);
-  return t => t.toLowerCase();
-}
-
-/**
- * 2-state for no-selection (word): lower → Sentence → lower
- */
-function cycleTwoState(ref) {
-  const lower = ref.toLowerCase();
-  if (ref === lower) {
-    return t => t.charAt(0).toUpperCase() + t.slice(1).toLowerCase();
-  }
-  return t => t.toLowerCase();
-}
-
-function toTitleCase(str) {
-  return str.replace(/\S+/g, w =>
-    w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()
-  );
-}
-
-module.exports = { toggleCase };
-
-==== src\config.js ====
-
-const vscode = require('vscode');
-const { loadList, resolvePath } = require('./utils/fileLoader');
-
-const capListKey = 'JavEditorHelper.capitalizationFilePaths';
-const punctKey = 'JavEditorHelper.punctuationCharacters';
-
-// ── glossary cache ──────────────────────────────────────────────
-
-let glossaryCache = null;
-
-function escapeRegex(s) {
-  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
-function compileGlossary(raw) {
-  const entries = [];
-  for (const t of raw || []) {
-    const term = String(t || '').trim();
-    if (!term) continue;
-    const starred = term.startsWith('*') && term.endsWith('*');
-    const inner = term.replace(/^\*|\*$/g, '');
-    if (!inner) continue;
-
-    const pat = escapeRegex(inner).replace(/\s+/g, '\\s+');
-    const isI = inner.toLowerCase() === 'i';
-
-    // pre-compiled regex for normalizeCase
-    let normRe;
-    if (isI) {
-      normRe = new RegExp(
-        String.raw`(?<!\p{L})(\*+)?(${pat})(\*+)?(?!\p{L})`, 'giu'
-      );
-    } else {
-      normRe = new RegExp(
-        String.raw`(?<!\p{L})(\*+)?(${pat})(?:('s|s))?(\*+)?(?!\p{L})`, 'giu'
-      );
-    }
-
-    // pre-compiled regex for enforceStars (only used when starred)
-    let starRe = null;
-    if (starred) {
-      starRe = new RegExp(
-        String.raw`(?<!\p{L})(?:\*+)?(${pat})(?:('s|s))?(?:\*+)?(?!\p{L})`, 'giu'
-      );
-    }
-
-    entries.push({ key: inner, starred, normRe, starRe, hasSuffix: !isI });
-  }
-  entries.sort((a, b) => b.key.length - a.key.length);
-  return entries;
-}
-
-function getGlossary() {
-  if (glossaryCache) return glossaryCache;
-  const paths = vscode.workspace.getConfiguration().get(capListKey, []);
-  const rawList = Array.isArray(paths)
-    ? paths.flatMap(p => loadList(p))
-    : loadList(paths);
-  glossaryCache = compileGlossary(rawList);
-  return glossaryCache;
-}
-
-function glossaryCacheInvalidate() {
-  glossaryCache = null;
-}
-
-// ── file watchers ───────────────────────────────────────────────
-
-let watchers = [];
-
-function watchersSetup(context) {
-  watchersTeardown();
-  const paths = vscode.workspace.getConfiguration().get(capListKey, []);
-  const list = Array.isArray(paths) ? paths : [paths];
-  for (const p of list) {
-    if (!p) continue;
-    try {
-      const resolved = resolvePath(p);
-      if (!resolved) continue;
-
-      let pattern;
-      const fs = require('fs');
-      if (fs.existsSync(resolved) && fs.statSync(resolved).isDirectory()) {
-        // directory → watch all files inside
-        pattern = new vscode.RelativePattern(vscode.Uri.file(resolved), '**');
-      } else {
-        // file → watch that specific file
-        const dir = require('path').dirname(resolved);
-        const base = require('path').basename(resolved);
-        pattern = new vscode.RelativePattern(vscode.Uri.file(dir), base);
-      }
-
-      const watcher = vscode.workspace.createFileSystemWatcher(pattern);
-      watcher.onDidChange(() => glossaryCacheInvalidate());
-      watcher.onDidCreate(() => glossaryCacheInvalidate());
-      watcher.onDidDelete(() => glossaryCacheInvalidate());
-      context.subscriptions.push(watcher);
-      watchers.push(watcher);
-    } catch (_) {}
-  }
-}
-
-function watchersTeardown() {
-  for (const w of watchers) {
-    try { w.dispose(); } catch (_) {}
-  }
-  watchers = [];
-}
-
-// ── punctuation (unchanged) ─────────────────────────────────────
-
-function getCustomList() {
-  const paths = vscode.workspace.getConfiguration().get(capListKey, []);
-  if (!Array.isArray(paths)) return loadList(paths);
-  return paths.flatMap(p => loadList(p));
-}
-
-function getPunctuationCharacters() {
-  const def = `,\.!\?'";:""''`;
-  const raw = vscode.workspace.getConfiguration().get(punctKey, def);
-  const escaped = raw.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
-  return new RegExp(`[${escaped}]`, 'gu');
-}
-
-module.exports = {
-  capListKey,
-  getCustomList,
-  getGlossary,
-  glossaryCacheInvalidate,
-  watchersSetup,
-  punctKey,
-  getPunctuationCharacters
-};
-
-==== src\extension.js ====
-
-const vscode = require('vscode');
-const { capListKey, glossaryCacheInvalidate, watchersSetup } = require('./config');
-const { editDialog } = require('./commands/editDialog');
-const { convertToCurlyQuotation, convertToStraightQuotation } = require('./commands/convertQuotes');
-const { textCleanup } = require('./commands/textCleanup');
-const { insertSpace } = require('./commands/insertSpace');
-const { joinLineAbove, joinLineBelow } = require('./commands/joinLines');
-const { toggleCase } = require('./commands/toggleCase');
-const { smartDelete } = require('./commands/SmartDelete');
-const { smartSelect } = require('./commands/smartSelect');
-const { selectSurround, removeSurround } = require('./commands/surroundingPairs');
-
-
-function activate(context) {
-
-  // set up file watchers for glossary source files
-  watchersSetup(context);
-
-  context.subscriptions.push(
-    vscode.workspace.onDidChangeConfiguration(e => {
-      if (e.affectsConfiguration(capListKey)) {
-        glossaryCacheInvalidate();
-        watchersSetup(context);
-      }
-    }),
-
-    // Editing
-    vscode.commands.registerCommand('JavEditorHelper.toggleCase', toggleCase),
-    vscode.commands.registerCommand('JavEditorHelper.editDialog', editDialog),
-    vscode.commands.registerCommand('JavEditorHelper.insertSpace', insertSpace),
-    vscode.commands.registerCommand('JavEditorHelper.joinLineAbove', joinLineAbove),
-    vscode.commands.registerCommand('JavEditorHelper.joinLineBelow', joinLineBelow),
-    vscode.commands.registerCommand('JavEditorHelper.smartDelete', smartDelete),
-    vscode.commands.registerCommand('JavEditorHelper.smartSelect', smartSelect),
-    vscode.commands.registerCommand('JavEditorHelper.selectSurround', selectSurround),
-    vscode.commands.registerCommand('JavEditorHelper.removeSurround', removeSurround),
-
-
-    // Quotes & cleanup
-    vscode.commands.registerCommand('JavEditorHelper.convertToCurlyQuotation', convertToCurlyQuotation),
-    vscode.commands.registerCommand('JavEditorHelper.convertToStraightQuotation', convertToStraightQuotation),
-    vscode.commands.registerCommand('JavEditorHelper.textCleanup', textCleanup),
-  );
-}
-
-function deactivate() {}
-
-module.exports = { activate, deactivate };
-
-==== src\utils\fileLoader.js ====
-
-// fileLoader.js
-const fs = require('fs');
-const path = require('path');
-const vscode = require('vscode');
-
-function resolvePath(p) {
-  if (!p) return p;
-
-  // ${execDir} prefix → resolve from executable location
-  if (p.includes('${execDir}')) {
-    const execDir = path.dirname(process.execPath);
-    return p.replace(/\$\{execDir\}/g, execDir);
-  }
-
-  // absolute → use as-is
-  if (path.isAbsolute(p)) return p;
-
-  // plain relative → resolve from workspace root
-  const folders = vscode.workspace.workspaceFolders;
-  if (folders && folders.length) {
-    return path.join(folders[0].uri.fsPath, p);
-  }
-
-  return p;
-}
-
-function loadList(targetPath) {
-  targetPath = resolvePath(targetPath);
-  const out = [];
-  try {
-    if (targetPath && fs.existsSync(targetPath)) {
-      const stat = fs.statSync(targetPath);
-      if (stat.isDirectory()) {
-        for (const entry of fs.readdirSync(targetPath)) {
-          out.push(...loadList(require('path').join(targetPath, entry)));
-        }
-      } else {
-        out.push(
-          ...fs
-            .readFileSync(targetPath, 'utf8')
-            .split(/\r?\n/)
-            .map(line => line.trim())
-            .filter(Boolean)
-            .map(line => line.split(':')[0].trim())
-            .filter(term => /^[\p{L}]/u.test(term.replace(/^\*|\*$/g, '')))
-        );
-      }
-    }
-  } catch (_) {}
-  return out;
-}
-
-
-module.exports = { loadList, resolvePath };
