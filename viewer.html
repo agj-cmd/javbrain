@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>javbrain — viewer</title>
+<style>
+@font-face {
+  font-family: 'TT2020 Style E';
+  src: url('fonts/TT2020StyleE-Regular.ttf') format('truetype');
+  font-weight: normal; font-style: normal;
+}
+@font-face {
+  font-family: 'TT2020 Style E';
+  src: url('fonts/TT2020StyleE-Italic.ttf') format('truetype');
+  font-weight: normal; font-style: italic;
+}
+@font-face {
+  font-family: 'TT2020 Base';
+  src: url('fonts/TT2020Base-Regular.ttf') format('truetype');
+  font-weight: normal; font-style: normal;
+}
+@font-face {
+  font-family: 'TT2020 Base';
+  src: url('fonts/TT2020Base-Italic.ttf') format('truetype');
+  font-weight: normal; font-style: italic;
+}
+:root {
+  --font-body: 'TT2020 Style E', serif;
+  --font-size: 18px;
+  --line-height: 1.4;
+  --bg-primary: #ffffff;
+  --bg-secondary: #f5f5f5;
+  --text-primary: #1a1a1a;
+  --text-muted: #888888;
+  --border-color: #d0d0d0;
+  --text-margin: 40px;
+  --text-align: justify;
+  --text-line-height: 1.6;
+  --highlight-bg: #fff3a8;
+  --highlight-text: #1a1a1a;
+  --toc-width: 260px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  font-family: var(--font-body);
+  font-size: var(--font-size);
+  line-height: var(--text-line-height);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+body { display: flex; flex-direction: column; }
+
+/* Themed scrollbars */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-color) var(--bg-primary);
+}
+*::-webkit-scrollbar { width: 8px; height: 8px; }
+*::-webkit-scrollbar-track { background: var(--bg-primary); }
+*::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
+*::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+#main {
+  flex: 1; display: flex; overflow: hidden;
+}
+
+/* TOC sidebar */
+#toc {
+  width: var(--toc-width);
+  min-width: var(--toc-width);
+  border-right: 1px solid var(--border-color);
+  overflow-y: auto;
+  padding: 12px 0;
+  font-size: calc(var(--font-size) - 4px);
+  flex-shrink: 0;
+  background: var(--bg-primary);
+}
+
+#toc.focused {
+  background: var(--bg-secondary);
+}
+
+#toc .toc-hint {
+  padding: 4px 12px;
+  color: var(--text-muted);
+  font-size: calc(var(--font-size) - 6px);
+  opacity: 0.6;
+  user-select: none;
+}
+
+.toc-item {
+  padding: 3px 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--text-muted);
+  user-select: none;
+}
+.toc-item:hover { color: var(--text-primary); }
+.toc-item.selected {
+  background: var(--highlight-bg);
+  color: var(--highlight-text);
+}
+.toc-item .toc-arrow {
+  display: inline-block;
+  width: 12px;
+  font-size: 9px;
+  text-align: center;
+  margin-right: 2px;
+}
+.toc-item.depth-0 { padding-left: 12px; font-weight: 600; color: var(--text-primary); }
+.toc-item.depth-1 { padding-left: 26px; }
+.toc-item.depth-2 { padding-left: 40px; }
+.toc-item.depth-3 { padding-left: 54px; }
+.toc-item.depth-4 { padding-left: 68px; }
+.toc-item.hidden { display: none; }
+
+/* No TOC */
+#toc.empty { display: none; }
+#toc.empty + #viewer { margin-left: 0; }
+
+/* Viewer */
+#viewer {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--text-margin);
+  text-align: var(--text-align);
+  outline: none;
+}
+
+pre.txt-content {
+  white-space: pre-wrap; word-wrap: break-word;
+  font-family: var(--font-body);
+  font-size: var(--font-size);
+  line-height: var(--text-line-height);
+}
+
+.jav-block { margin: 8px 0; }
+
+.jav-block-label {
+  display: block;
+  text-align: center;
+  font-size: calc(var(--font-size) - 1px);
+  font-weight: 600; color: var(--text-muted);
+  letter-spacing: 0.03em; margin-bottom: 2px;
+}
+
+.jav-block-body {
+  padding: 8px 12px; border-radius: 2px;
+}
+
+/* Depth-based tinting — 6 colors, repeating */
+.jav-block[data-depth="0"] > .jav-block-body { background: rgba(78,143,107,0.06); border: 1px solid rgba(78,143,107,0.2); --rule-color: rgba(78,143,107,0.15); }
+.jav-block[data-depth="1"] > .jav-block-body { background: rgba(203,148,52,0.06); border: 1px solid rgba(203,148,52,0.2); --rule-color: rgba(203,148,52,0.15); margin-left: 8px; }
+.jav-block[data-depth="2"] > .jav-block-body { background: rgba(205,80,72,0.06); border: 1px solid rgba(205,80,72,0.2); --rule-color: rgba(205,80,72,0.15); margin-left: 8px; }
+.jav-block[data-depth="3"] > .jav-block-body { background: rgba(192,76,137,0.06); border: 1px solid rgba(192,76,137,0.2); --rule-color: rgba(192,76,137,0.15); margin-left: 8px; }
+.jav-block[data-depth="4"] > .jav-block-body { background: rgba(154,107,180,0.06); border: 1px solid rgba(154,107,180,0.2); --rule-color: rgba(154,107,180,0.15); margin-left: 8px; }
+.jav-block[data-depth="5"] > .jav-block-body { background: rgba(56,125,201,0.06); border: 1px solid rgba(56,125,201,0.2); --rule-color: rgba(56,125,201,0.15); margin-left: 8px; }
+.jav-block[data-depth="6"] > .jav-block-body { background: rgba(78,143,107,0.06); border: 1px solid rgba(78,143,107,0.2); --rule-color: rgba(78,143,107,0.15); margin-left: 8px; }
+.jav-block[data-depth="7"] > .jav-block-body { background: rgba(203,148,52,0.06); border: 1px solid rgba(203,148,52,0.2); --rule-color: rgba(203,148,52,0.15); margin-left: 8px; }
+.jav-block[data-depth="8"] > .jav-block-body { background: rgba(205,80,72,0.06); border: 1px solid rgba(205,80,72,0.2); --rule-color: rgba(205,80,72,0.15); margin-left: 8px; }
+.jav-block[data-depth="9"] > .jav-block-body { background: rgba(192,76,137,0.06); border: 1px solid rgba(192,76,137,0.2); --rule-color: rgba(192,76,137,0.15); margin-left: 8px; }
+.jav-block[data-depth="10"] > .jav-block-body { background: rgba(154,107,180,0.06); border: 1px solid rgba(154,107,180,0.2); --rule-color: rgba(154,107,180,0.15); margin-left: 8px; }
+.jav-block[data-depth="11"] > .jav-block-body { background: rgba(56,125,201,0.06); border: 1px solid rgba(56,125,201,0.2); --rule-color: rgba(56,125,201,0.15); margin-left: 8px; }
+
+/* Ruled lines on each text element inside blocks */
+.jav-block-body > .jav-para,
+.jav-block-body > .jav-block > .jav-block-label {
+  border-bottom: 1px solid var(--rule-color, transparent);
+}
+
+.jav-para {
+  margin: 6px 0; padding: 2px 0;
+  line-height: var(--text-line-height);
+  text-indent: 10px;
+}
+.jav-para.list-line { text-indent: 0; text-align: left; }
+
+.txt-line {
+  display: block; padding: 2px 0;
+  text-indent: 10px;
+}
+.txt-line.list-line { text-indent: 0; text-align: left; }
+
+.jav-italic { font-style: italic; }
+.jav-bold { font-weight: 700; }
+.jav-note { color: var(--text-muted); font-size: calc(var(--font-size) - 1px); }
+.jav-callout {
+  display: block; background: var(--bg-secondary);
+  border-left: 3px solid var(--border-color);
+  padding: 4px 10px; margin: 6px 0;
+  color: var(--text-primary); font-size: calc(var(--font-size) - 1px);
+}
+
+#loading { color: var(--text-muted); padding: 40px; text-align: center; }
+
+mark { background: var(--highlight-bg); color: var(--highlight-text); padding: 0 1px; border-radius: 1px; }
+</style>
+</head>
+<body>
+
+<div id="main">
+  <div id="toc" class="empty"></div>
+  <div id="viewer" tabindex="-1">
+    <div id="loading">Loading...</div>
+  </div>
+</div>
+
+<script>
+(function() {
+  'use strict';
+
+  const hashRaw = window.location.hash ? window.location.hash.slice(1) : null;
+  if (!hashRaw) { document.getElementById('loading').textContent = 'No file specified.'; return; }
+  const hashParts = hashRaw.split(':');
+  const fileIdx = hashParts[0];
+  const targetLine = hashParts[1] ? parseInt(hashParts[1]) : null;
+  const searchQuery = hashParts[2] ? decodeURIComponent(hashParts.slice(2).join(':')) : null;
+
+  // TOC state
+  let tocItems = [];    // flat list: {id, title, depth, parentIdx, children:[], collapsed}
+  let tocSelected = 0;
+  let tocFocused = false;
+
+  const tocEl = document.getElementById('toc');
+  const viewerEl = document.getElementById('viewer');
+
+  async function applySettings() {
+    const themeKey = localStorage.getItem('jb-theme') || 'dark';
+    try {
+      const res = await fetch('themes.json');
+      const themes = await res.json();
+      const t = themes[themeKey];
+      if (t) {
+        for (const [k, v] of Object.entries(t.vars)) document.documentElement.style.setProperty(k, v);
+      }
+    } catch(e) {}
+  }
+
+  async function loadAndRender() {
+    await applySettings();
+
+    let meta;
+    try {
+      const res = await fetch('data.json');
+      const data = await res.json();
+      meta = data[parseInt(fileIdx)];
+    } catch(e) { document.getElementById('loading').textContent = 'Failed to load metadata.'; return; }
+
+    if (!meta) { document.getElementById('loading').textContent = 'File not found.'; return; }
+    document.title = meta.filename + ' — javbrain';
+
+    let content;
+    try {
+      const res = await fetch('files/' + fileIdx + '.txt');
+      content = await res.text();
+    } catch(e) { document.getElementById('loading').textContent = 'Failed to load file.'; return; }
+
+    if (meta.ext === '.txt') {
+      viewerEl.innerHTML = renderTxtWithLines(content);
+    } else if (meta.ext === '.jav') {
+      viewerEl.innerHTML = renderJav(content);
+      buildToc();
+    } else {
+      viewerEl.innerHTML = renderTxtWithLines(content);
+    }
+
+    if (searchQuery) highlightSearchTerms(viewerEl, searchQuery);
+
+    if (targetLine) {
+      const lineEl = document.getElementById('L' + targetLine);
+      if (lineEl) {
+        setTimeout(() => {
+          lineEl.scrollIntoView({ block: 'center' });
+          lineEl.style.background = 'var(--highlight-bg)';
+          lineEl.style.transition = 'background 2s';
+          setTimeout(() => { lineEl.style.background = ''; }, 3000);
+        }, 100);
+      } else if (searchQuery) scrollToFirstMark(viewerEl);
+    } else if (searchQuery) scrollToFirstMark(viewerEl);
+  }
+
+  function scrollToFirstMark(container) {
+    const m = container.querySelector('mark');
+    if (m) setTimeout(() => m.scrollIntoView({ block: 'center' }), 100);
+  }
+
+  const LIST_RE = /^\s*(-|●|·|▶|•|\d+\.)\s/;
+
+  function renderTxtWithLines(content) {
+    const lines = content.split('\n');
+    let html = '<pre class="txt-content">';
+    lines.forEach((line, i) => {
+      const cls = LIST_RE.test(line) ? 'txt-line list-line' : 'txt-line';
+      html += '<span id="L' + (i + 1) + '" class="' + cls + '">' + smartQuotes(escHtml(line)) + '</span>\n';
+    });
+    return html + '</pre>';
+  }
+
+  function highlightSearchTerms(container, query) {
+    const terms = query.toLowerCase().split(/\s+/).filter(Boolean);
+    if (terms.length === 0) return;
+    const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, null, false);
+    const textNodes = [];
+    while (walker.nextNode()) textNodes.push(walker.currentNode);
+    for (const node of textNodes) {
+      const text = node.textContent;
+      const lower = text.toLowerCase();
+      let positions = [];
+      for (const t of terms) {
+        let pos = 0;
+        while (true) { const idx = lower.indexOf(t, pos); if (idx === -1) break; positions.push([idx, idx + t.length]); pos = idx + 1; }
+      }
+      if (positions.length === 0) continue;
+      positions.sort((a, b) => a[0] - b[0]);
+      const merged = [positions[0]];
+      for (let i = 1; i < positions.length; i++) {
+        const last = merged[merged.length - 1];
+        if (positions[i][0] <= last[1]) last[1] = Math.max(last[1], positions[i][1]);
+        else merged.push(positions[i]);
+      }
+      const frag = document.createDocumentFragment();
+      let prev = 0;
+      for (const [s, e] of merged) {
+        if (s > prev) frag.appendChild(document.createTextNode(text.slice(prev, s)));
+        const mark = document.createElement('mark');
+        mark.textContent = text.slice(s, e);
+        frag.appendChild(mark);
+        prev = e;
+      }
+      if (prev < text.length) frag.appendChild(document.createTextNode(text.slice(prev)));
+      node.parentNode.replaceChild(frag, node);
+    }
+  }
+
+  function escHtml(s) { return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+
+  function smartQuotes(s) {
+    // Double quotes
+    s = s.replace(/(^|[\s(\[{])"/g, '$1\u201c');
+    s = s.replace(/"/g, '\u201d');
+    // Single quotes / apostrophes
+    s = s.replace(/(^|[\s(\[{])'/g, '$1\u2018');
+    s = s.replace(/'/g, '\u2019');
+    return s;
+  }
+
+  // --- Jav Parser ---
+  let blockIdCounter = 0;
+
+  function renderJav(src) {
+    blockIdCounter = 0;
+    const tokens = tokenizeJav(src);
+    return renderJavTokens(tokens, 0);
+  }
+
+  function tokenizeJav(src) {
+    const result = [];
+    let i = 0;
+    while (i < src.length) {
+      const bracketIdx = findUnescapedBracket(src, i);
+      if (bracketIdx === -1) {
+        const rest = src.slice(i).trim();
+        if (rest) result.push({ type: 'text', value: rest });
+        break;
+      }
+      let titleStart = bracketIdx - 1;
+      while (titleStart >= i && src[titleStart] !== '\n') titleStart--;
+      titleStart++;
+      const preText = src.slice(i, titleStart).trim();
+      if (preText) result.push({ type: 'text', value: preText });
+      const title = src.slice(titleStart, bracketIdx).trim();
+      const closeIdx = findMatchingClose(src, bracketIdx);
+      if (closeIdx === -1) {
+        result.push({ type: 'text', value: src.slice(titleStart).trim() });
+        break;
+      }
+      const inner = src.slice(bracketIdx + 1, closeIdx);
+      const children = tokenizeJav(inner);
+      result.push({ type: 'block', title: title, children: children });
+      i = closeIdx + 1;
+    }
+    return result;
+  }
+
+  function findUnescapedBracket(src, from) {
+    for (let i = from; i < src.length; i++) {
+      if (src[i] === '[' && (i === 0 || src[i-1] !== '\\')) return i;
+    }
+    return -1;
+  }
+
+  function findMatchingClose(src, openIdx) {
+    let depth = 1;
+    for (let i = openIdx + 1; i < src.length; i++) {
+      if (src[i] === '\\' && i + 1 < src.length && (src[i+1] === '[' || src[i+1] === ']')) { i++; continue; }
+      if (src[i] === '[') depth++;
+      if (src[i] === ']') { depth--; if (depth === 0) return i; }
+    }
+    return -1;
+  }
+
+  function renderJavTokens(tokens, depth) {
+    let html = '';
+    for (const tok of tokens) {
+      if (tok.type === 'text') {
+        html += renderJavText(tok.value);
+      } else if (tok.type === 'block') {
+        const id = 'B' + (blockIdCounter++);
+        html += '<div class="jav-block" id="' + id + '" data-depth="' + depth + '">';
+        if (tok.title) html += '<div class="jav-block-label">' + escHtml(tok.title) + '</div>';
+        html += '<div class="jav-block-body">';
+        html += renderJavTokens(tok.children, depth + 1);
+        html += '</div></div>';
+      }
+    }
+    return html;
+  }
+
+  function renderJavText(text) {
+    const paras = text.split(/\n/);
+    let html = '';
+    for (const p of paras) {
+      const trimmed = p.trim();
+      if (!trimmed) continue;
+      const cls = LIST_RE.test(trimmed) ? 'jav-para list-line' : 'jav-para';
+      html += '<div class="' + cls + '">' + formatInline(trimmed) + '</div>';
+    }
+    return html;
+  }
+
+  function formatInline(text) {
+    let s = escHtml(text);
+    s = smartQuotes(s);
+    s = s.replace(/\\\\([^\\]+?)\\\\/g, '<span class="jav-callout">$1</span>');
+    s = s.replace(/\\([^\\]+?)\\/g, '<span class="jav-note">$1</span>');
+    s = s.replace(/\*\*([^*]+?)\*\*/g, '<span class="jav-bold">$1</span>');
+    s = s.replace(/\*([^*]+?)\*/g, '<span class="jav-italic">$1</span>');
+    return s;
+  }
+
+  // --- TOC ---
+  function buildToc() {
+    const blocks = viewerEl.querySelectorAll('.jav-block[id]');
+    if (blocks.length === 0) { tocEl.classList.add('empty'); return; }
+    tocEl.classList.remove('empty');
+
+    tocItems = [];
+    const stack = []; // track parent indices by depth
+
+    blocks.forEach((el) => {
+      const id = el.id;
+      const depth = parseInt(el.dataset.depth) || 0;
+      const label = el.querySelector(':scope > .jav-block-label');
+      const title = label ? label.textContent : '(untitled)';
+
+      // Has child blocks?
+      const hasChildren = el.querySelector(':scope > .jav-block-body > .jav-block[id]') !== null;
+
+      // Find parent
+      while (stack.length > 0 && stack[stack.length - 1].depth >= depth) stack.pop();
+      const parentIdx = stack.length > 0 ? stack[stack.length - 1].idx : -1;
+
+      const idx = tocItems.length;
+      tocItems.push({
+        id: id,
+        title: title,
+        depth: depth,
+        parentIdx: parentIdx,
+        hasChildren: hasChildren,
+        collapsed: false
+      });
+
+      if (parentIdx >= 0) {
+        if (!tocItems[parentIdx].childIndices) tocItems[parentIdx].childIndices = [];
+        tocItems[parentIdx].childIndices.push(idx);
+      }
+
+      stack.push({ depth: depth, idx: idx });
+    });
+
+    renderToc();
+    tocEl.innerHTML += '<div class="toc-hint">[Space] focus</div>';
+  }
+
+  function renderToc() {
+    const visibleSet = new Set();
+    // Determine visible items
+    for (let i = 0; i < tocItems.length; i++) {
+      let visible = true;
+      let pi = tocItems[i].parentIdx;
+      while (pi >= 0) {
+        if (tocItems[pi].collapsed) { visible = false; break; }
+        pi = tocItems[pi].parentIdx;
+      }
+      if (visible) visibleSet.add(i);
+    }
+
+    let html = '';
+    for (let i = 0; i < tocItems.length; i++) {
+      const t = tocItems[i];
+      const hidden = visibleSet.has(i) ? '' : ' hidden';
+      const sel = (i === tocSelected && tocFocused) ? ' selected' : '';
+      const depthCls = 'depth-' + Math.min(t.depth, 4);
+      let arrow = '';
+      if (t.hasChildren) {
+        arrow = '<span class="toc-arrow">' + (t.collapsed ? '&#9654;' : '&#9660;') + '</span>';
+      } else {
+        arrow = '<span class="toc-arrow"></span>';
+      }
+      html += '<div class="toc-item ' + depthCls + sel + hidden + '" data-idx="' + i + '">' +
+        arrow + escHtml(t.title) + '</div>';
+    }
+    // Keep the hint if present
+    const hint = tocEl.querySelector('.toc-hint');
+    tocEl.innerHTML = html;
+    if (hint) tocEl.appendChild(hint);
+
+    // Scroll selected into view
+    const selEl = tocEl.querySelector('.toc-item.selected');
+    if (selEl) selEl.scrollIntoView({ block: 'nearest' });
+  }
+
+  function getVisibleTocIndices() {
+    const vis = [];
+    for (let i = 0; i < tocItems.length; i++) {
+      let visible = true;
+      let pi = tocItems[i].parentIdx;
+      while (pi >= 0) {
+        if (tocItems[pi].collapsed) { visible = false; break; }
+        pi = tocItems[pi].parentIdx;
+      }
+      if (visible) vis.push(i);
+    }
+    return vis;
+  }
+
+  function tocNav(key, ctrl) {
+    const vis = getVisibleTocIndices();
+    if (vis.length === 0) return;
+    const curVisIdx = vis.indexOf(tocSelected);
+
+    if (key === 'ArrowDown') {
+      if (curVisIdx < vis.length - 1) {
+        tocSelected = vis[curVisIdx + 1];
+        renderToc();
+        scrollToBlock(tocItems[tocSelected].id);
+      }
+    } else if (key === 'ArrowUp') {
+      if (curVisIdx > 0) {
+        tocSelected = vis[curVisIdx - 1];
+        renderToc();
+        scrollToBlock(tocItems[tocSelected].id);
+      }
+    } else if (key === 'ArrowRight') {
+      if (ctrl) {
+        for (const t of tocItems) { if (t.hasChildren) t.collapsed = false; }
+        renderToc();
+      } else {
+        const t = tocItems[tocSelected];
+        if (t.hasChildren && t.collapsed) {
+          t.collapsed = false;
+          renderToc();
+        }
+      }
+    } else if (key === 'ArrowLeft') {
+      if (ctrl) {
+        for (const t of tocItems) { if (t.hasChildren) t.collapsed = true; }
+        renderToc();
+      } else {
+        const t = tocItems[tocSelected];
+        if (t.hasChildren && !t.collapsed) {
+          t.collapsed = true;
+          renderToc();
+        } else if (t.parentIdx >= 0) {
+          tocSelected = t.parentIdx;
+          renderToc();
+          scrollToBlock(tocItems[tocSelected].id);
+        }
+      }
+    }
+  }
+
+  function scrollToBlock(id) {
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  // --- Keyboard ---
+  document.addEventListener('keydown', function(e) {
+    if (e.key === ' ' || e.code === 'Space') {
+      // Don't intercept if user is in an input
+      if (document.activeElement && document.activeElement.tagName === 'INPUT') return;
+      if (tocItems.length === 0) return;
+      e.preventDefault();
+      if (tocFocused) {
+        tocFocused = false;
+        tocEl.classList.remove('focused');
+        renderToc();
+        viewerEl.focus();
+      } else {
+        tocFocused = true;
+        tocEl.classList.add('focused');
+        renderToc();
+        scrollToBlock(tocItems[tocSelected].id);
+      }
+      return;
+    }
+
+    if (e.key === 'Escape' && tocFocused) {
+      e.preventDefault();
+      tocFocused = false;
+      tocEl.classList.remove('focused');
+      renderToc();
+      viewerEl.focus();
+      return;
+    }
+
+    if (tocFocused && ['ArrowDown', 'ArrowUp', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+      e.preventDefault();
+      tocNav(e.key, e.ctrlKey);
+      return;
+    }
+  });
+
+  // Click on TOC items
+  tocEl.addEventListener('click', function(e) {
+    const item = e.target.closest('.toc-item');
+    if (!item) return;
+    const idx = parseInt(item.dataset.idx);
+    tocSelected = idx;
+    tocFocused = true;
+    tocEl.classList.add('focused');
+    renderToc();
+    scrollToBlock(tocItems[idx].id);
+  });
+
+  loadAndRender();
+})();
+</script>
+</body>
+</html>
