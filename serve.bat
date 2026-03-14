@@ -4,4 +4,4 @@ echo Building...
 node build.js
 echo.
 echo Serving at http://127.0.0.1:8080
-npx http-server dist -c-1
+npx http-server docs -c-1

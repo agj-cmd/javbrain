@@ -4,7 +4,7 @@ const fs = require('fs');
 const path = require('path');
 
 const CONTENT_DIR = path.join(__dirname, 'content');
-const DIST_DIR = path.join(__dirname, 'dist');
+const DIST_DIR = path.join(__dirname, 'docs');
 const FILES_DIR = path.join(DIST_DIR, 'files');
 const PREVIEW_LENGTH = 200;
 const INDEX_CHUNK_SIZE = 5 * 1024 * 1024; // 5MB
