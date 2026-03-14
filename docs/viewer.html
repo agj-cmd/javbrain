@@ -200,6 +200,38 @@ pre.txt-content {
 
 #loading { color: var(--text-muted); padding: 40px; text-align: center; }
 
+/* Flat/code rendering for ==== delimited files */
+.flat-content {
+  font-family: 'SF Mono','Cascadia Code','Fira Code','Consolas','Liberation Mono',monospace;
+  font-size: 13px;
+  line-height: 1.3;
+  margin: calc(var(--text-margin) * -1);
+  margin-bottom: 0;
+}
+.flat-section { margin: 0; padding: 0; }
+.flat-section-label {
+  display: block;
+  padding: 6px 8px;
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  user-select: none;
+}
+.flat-section pre {
+  margin: 0;
+  padding: 4px 8px;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  text-align: left;
+}
+
 mark { background: var(--highlight-bg); color: var(--highlight-text); padding: 0 1px; border-radius: 1px; }
 </style>
 </head>
@@ -262,7 +294,10 @@ mark { background: var(--highlight-bg); color: var(--highlight-text); padding: 0
       content = await res.text();
     } catch(e) { document.getElementById('loading').textContent = 'Failed to load file.'; return; }
 
-    if (meta.ext === '.txt') {
+    if (meta.ext === '.txt' && /^====/.test(content)) {
+      viewerEl.innerHTML = renderFlatDelimited(content);
+      buildFlatToc();
+    } else if (meta.ext === '.txt') {
       viewerEl.innerHTML = renderTxtWithLines(content);
     } else if (meta.ext === '.jav') {
       viewerEl.innerHTML = renderJav(content);
@@ -301,6 +336,64 @@ mark { background: var(--highlight-bg); color: var(--highlight-text); padding: 0
       html += '<span id="L' + (i + 1) + '" class="' + cls + '">' + smartQuotes(escHtml(line)) + '</span>\n';
     });
     return html + '</pre>';
+  }
+
+  // --- Flat delimited renderer for ==== files ---
+  function renderFlatDelimited(content) {
+    const lines = content.split('\n');
+    let html = '<div class="flat-content">';
+    let sectionIdx = 0;
+    let currentLabel = '';
+    let currentLines = [];
+
+    function flushSection() {
+      if (currentLabel || currentLines.length > 0) {
+        html += '<div class="flat-section" id="FS' + sectionIdx + '">';
+        if (currentLabel) {
+          html += '<div class="flat-section-label">' + escHtml(currentLabel) + '</div>';
+        }
+        html += '<pre>' + escHtml(currentLines.join('\n')) + '</pre>';
+        html += '</div>';
+        sectionIdx++;
+      }
+    }
+
+    for (const line of lines) {
+      if (/^====/.test(line)) {
+        flushSection();
+        // Extract label: everything after ==== markers, trim
+        currentLabel = line.replace(/^=+\s*/, '').replace(/\s*=+$/, '').trim();
+        currentLines = [];
+      } else {
+        currentLines.push(line);
+      }
+    }
+    flushSection();
+    html += '</div>';
+    return html;
+  }
+
+  function buildFlatToc() {
+    const sections = viewerEl.querySelectorAll('.flat-section[id]');
+    if (sections.length === 0) { tocEl.classList.add('empty'); return; }
+    tocEl.classList.remove('empty');
+
+    tocItems = [];
+    sections.forEach((el, i) => {
+      const label = el.querySelector('.flat-section-label');
+      const title = label ? label.textContent : '(section ' + i + ')';
+      tocItems.push({
+        id: el.id,
+        title: title,
+        depth: 0,
+        parentIdx: -1,
+        hasChildren: false,
+        collapsed: false
+      });
+    });
+
+    renderToc();
+    tocEl.innerHTML += '<div class="toc-hint">[Space] focus</div>';
   }
 
   function highlightSearchTerms(container, query) {
