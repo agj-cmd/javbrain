@@ -1,0 +1,1166 @@
+
+
+==== extensions\jav.javnavigation-2.1.0\package.json ====
+
+{
+	"name": "javnavigation",
+	"displayName": "JavNavigation",
+	"description": "Clause-based navigation with visual highlighting",
+	"version": "2.1.0",
+	"publisher": "Jav",
+	"engines": {
+		"vscode": "^1.70.0"
+	},
+	"categories": [
+		"Other"
+	],
+	"activationEvents": [
+		"onStartupFinished"
+	],
+	"main": "./src/extension.js",
+	"contributes": {
+		"commands": [
+			{
+				"command": "JavNav.cycleHighlightMode",
+				"title": "JavNav: Cycle Highlight Mode"
+			},
+			{
+				"command": "JavNav.clauseRight",
+				"title": "JavNav: Move Clause Right"
+			},
+			{
+				"command": "JavNav.clauseLeft",
+				"title": "JavNav: Move Clause Left"
+			},
+			{
+				"command": "JavNav.right",
+				"title": "JavNav: Move Right"
+			},
+			{
+				"command": "JavNav.left",
+				"title": "JavNav: Move Left"
+			},
+			{
+				"command": "JavNav.up",
+				"title": "JavNav: Move Up"
+			},
+			{
+				"command": "JavNav.down",
+				"title": "JavNav: Move Down"
+			},
+			{
+				"command": "JavNav.sentenceSelectRight",
+				"title": "JavNav: Select Sentence Right"
+			},
+			{
+				"command": "JavNav.sentenceSelectLeft",
+				"title": "JavNav: Select Sentence Left"
+			},
+			{
+				"command": "JavNav.clauseSelectRight",
+				"title": "JavNav: Select Clause Right"
+			},
+			{
+				"command": "JavNav.clauseSelectLeft",
+				"title": "JavNav: Select Clause Left"
+			},
+			{
+				"command": "JavNav.upSelect",
+				"title": "JavNav: Move Up (Select)"
+			},
+			{
+				"command": "JavNav.downSelect",
+				"title": "JavNav: Move Down (Select)"
+			},
+			{
+				"command": "JavNav.toggleMode",
+				"title": "JavNav: Toggle Clause/Normal Mode"
+			},
+			{
+				"command": "JavNav.cycleScrollMode",
+				"title": "JavNav: Cycle Scroll Mode"
+			},
+			{
+				"command": "JavNav.selectBackQuick",
+				"title": "JavNav: Select Back Quick"
+			},
+			{
+				"command": "JavNav.selectForwardQuick",
+				"title": "JavNav: Select Forward Quick"
+			}
+		],
+		"configuration": {
+			"title": "JavNavigation",
+			"properties": {
+				"JavNavigation.segmentFade.startOpacity": {
+					"type": "number",
+					"default": 0.6,
+					"description": "Opacity at first word (0.0–1.0)"
+				},
+				"JavNavigation.segmentFade.endOpacity": {
+					"type": "number",
+					"default": 0,
+					"description": "Opacity at last word (0.0–1.0)"
+				},
+				"javnav.sentenceStopChars": {
+					"type": "array",
+					"items": {
+						"type": "string"
+					},
+					"default": [
+						".",
+						"?",
+						"!",
+						";",
+						":",
+						"\"",
+						"\n"
+					],
+					"description": "Stop characters for sentence-level selection."
+				},
+				"javnav.clauseStopChars": {
+					"type": "array",
+					"items": {
+						"type": "string"
+					},
+					"default": [
+						".",
+						"?",
+						"!",
+						";",
+						":",
+						",",
+						"\"",
+						"(",
+						")",
+						"[",
+						"]",
+						"{",
+						"}",
+						"\n"
+					],
+					"description": "Stop characters for clause-level selection and navigation."
+				},
+				"JavNavigation.highlightVisibleLines": {
+					"type": "boolean",
+					"default": false,
+					"description": "Highlight segments on all visible lines (true) or only the cursor line (false)"
+				},
+				"JavNavigation.selection": {
+					"type": "object",
+					"description": "Decoration for selection highlights.",
+					"default": {
+						"light": {
+							"backgroundColor": "hsl(0 0% 0% / 0.2)",
+							"borderColor": "hsl(0 0% 0%)",
+							"borderWidth": "1px",
+							"borderStyle": "solid"
+						},
+						"dark": {
+							"backgroundColor": "hsl(0 0% 100% / 0.2)",
+							"borderColor": "hsl(0 0% 100%)",
+							"borderWidth": "1px",
+							"borderStyle": "solid"
+						}
+					}
+				},
+				"JavNavigation.regexClause": {
+					"type": "string",
+					"description": "Regex for segment highlighting in clause mode.",
+					"default": "[.|,|\\\"|\\?|!|\\n|\\(\\)|-|:|/|\\{\\}]|[ ]{2,}|[.!?\"][ ]+\\w+"
+				},
+				"JavNavigation.segmentDecorations": {
+					"type": "object",
+					"description": "Decoration styles applied to segments on the current line, starting from the one under the cursor (index 0). Each level applies outward symmetrically. If more segments exist than styles, the last one is reused. Supports 'backgroundColor', 'color' (foreground), and other VS Code decoration properties.",
+					"default": {
+						"light": [
+							{
+								"backgroundColor": "hsl(112 100% 80%)",
+								"color": "hsl(112 100% 20%)"
+							},
+							{
+								"backgroundColor": "hsl(112 100% 60%)",
+								"color": "hsl(112 100% 10%)"
+							},
+							{
+								"backgroundColor": "hsl(112 100% 40%)",
+								"color": "hsl(0 0% 100%)"
+							}
+						],
+						"dark": [
+							{
+								"backgroundColor": "hsl(112 100% 30%)",
+								"color": "hsl(112 100% 90%)"
+							},
+							{
+								"backgroundColor": "hsl(112 100% 20%)",
+								"color": "hsl(112 100% 95%)"
+							},
+							{
+								"backgroundColor": "hsl(112 100% 10%)",
+								"color": "hsl(0 0% 100%)"
+							}
+						]
+					}
+				}
+			}
+		},
+		"keybindings": [
+			{
+				"command": "JavNav.clauseRight",
+				"key": "ctrl+right",
+				"when": "editorTextFocus && JavNav.clauseMode"
+			},
+			{
+				"command": "JavNav.clauseLeft",
+				"key": "ctrl+left",
+				"when": "editorTextFocus && JavNav.clauseMode"
+			},
+			{
+				"command": "JavNav.right",
+				"key": "right",
+				"when": "editorTextFocus && JavNav.clauseMode"
+			},
+			{
+				"command": "JavNav.left",
+				"key": "left",
+				"when": "editorTextFocus && JavNav.clauseMode"
+			},
+			{
+				"command": "JavNav.up",
+				"key": "up",
+				"when": "editorTextFocus && JavNav.clauseMode && !suggestWidgetVisible"
+			},
+			{
+				"command": "JavNav.down",
+				"key": "down",
+				"when": "editorTextFocus && JavNav.clauseMode && !suggestWidgetVisible"
+			},
+			{
+				"command": "JavNav.sentenceSelectRight",
+				"key": "shift+right",
+				"when": "editorTextFocus && JavNav.clauseMode"
+			},
+			{
+				"command": "JavNav.sentenceSelectLeft",
+				"key": "shift+left",
+				"when": "editorTextFocus && JavNav.clauseMode"
+			},
+			{
+				"command": "JavNav.clauseSelectRight",
+				"key": "ctrl+shift+right",
+				"when": "editorTextFocus && JavNav.clauseMode"
+			},
+			{
+				"command": "JavNav.clauseSelectLeft",
+				"key": "ctrl+shift+left",
+				"when": "editorTextFocus && JavNav.clauseMode"
+			},
+			{
+				"command": "JavNav.upSelect",
+				"key": "shift+up",
+				"when": "editorTextFocus && JavNav.clauseMode && !suggestWidgetVisible"
+			},
+			{
+				"command": "JavNav.downSelect",
+				"key": "shift+down",
+				"when": "editorTextFocus && JavNav.clauseMode && !suggestWidgetVisible"
+			},
+			{
+				"command": "JavNav.toggleMode",
+				"key": "alt+m",
+				"when": "editorTextFocus"
+			}
+		]
+	},
+	"__metadata": {
+		"installedTimestamp": 1771341908545,
+		"targetPlatform": "undefined",
+		"size": 40372
+	}
+}
+
+==== extensions\jav.javnavigation-2.1.0\src\extension.js ====
+
+// JavNavigation - Combined Extension
+'use strict';
+const vscode = require('vscode');
+
+// ============================================================================
+// ## STATE MANAGEMENT
+// ============================================================================
+
+let clauseModeEnabled = true;
+let modeStatusBar;
+let highlightModeStatusBar;
+
+// "regular" | "faded" | "off"
+let highlightMode = "faded";
+
+let segmentRegularDecorations = {};  // segIndex → DecorationType (flat, no fade)
+let segmentFadeDecorations = {};     // segIndex → DecorationType[] (per fade step)
+let revealMode = vscode.TextEditorRevealType.Default;
+
+const FADE_STEPS = 16;
+
+let config = {
+  sentenceStopChars: ['.', '?', '!', ';', ':', '"', '\n'],
+  clauseStopChars: ['.', '?', '!', ';', ':', ',', '"', '(', ')', '[', ']', '{', '}', '\n']
+};
+
+// ============================================================================
+// ## COLOR UTILITIES
+// ============================================================================
+
+function parseColor(colorStr) {
+    if (!colorStr || typeof colorStr !== 'string') return null;
+    colorStr = colorStr.trim();
+
+    if (colorStr.startsWith('#')) {
+        const hex = colorStr.slice(1);
+        let r, g, b, a;
+        if (hex.length === 3) {
+            r = parseInt(hex[0] + hex[0], 16); g = parseInt(hex[1] + hex[1], 16);
+            b = parseInt(hex[2] + hex[2], 16); a = 255;
+        } else if (hex.length === 4) {
+            r = parseInt(hex[0] + hex[0], 16); g = parseInt(hex[1] + hex[1], 16);
+            b = parseInt(hex[2] + hex[2], 16); a = parseInt(hex[3] + hex[3], 16);
+        } else if (hex.length === 6) {
+            r = parseInt(hex.slice(0, 2), 16); g = parseInt(hex.slice(2, 4), 16);
+            b = parseInt(hex.slice(4, 6), 16); a = 255;
+        } else if (hex.length === 8) {
+            r = parseInt(hex.slice(0, 2), 16); g = parseInt(hex.slice(2, 4), 16);
+            b = parseInt(hex.slice(4, 6), 16); a = parseInt(hex.slice(6, 8), 16);
+        } else {
+            return null;
+        }
+        return { r, g, b, a };
+    }
+
+    const rgbaMatch = colorStr.match(/^rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*(?:,\s*([\d.]+))?\s*\)$/i);
+    if (rgbaMatch) {
+        return {
+            r: parseInt(rgbaMatch[1]),
+            g: parseInt(rgbaMatch[2]),
+            b: parseInt(rgbaMatch[3]),
+            a: rgbaMatch[4] !== undefined ? Math.round(parseFloat(rgbaMatch[4]) * 255) : 255
+        };
+    }
+
+    return null;
+}
+
+function toHex8(r, g, b, alpha255) {
+    const clamp = v => Math.max(0, Math.min(255, Math.round(v)));
+    return '#' +
+        clamp(r).toString(16).padStart(2, '0') +
+        clamp(g).toString(16).padStart(2, '0') +
+        clamp(b).toString(16).padStart(2, '0') +
+        clamp(alpha255).toString(16).padStart(2, '0');
+}
+
+/**
+ * Check if a decoration config uses only foreground "color" (no backgroundColor).
+ */
+function isForegroundOnly(decoConfig) {
+    if (!decoConfig || typeof decoConfig !== 'object') return true;
+    return !decoConfig.backgroundColor && !!decoConfig.color;
+}
+
+/**
+ * Apply a fixed alpha (0-255) to all bg color props, stripping original alpha.
+ */
+function applyNormalizedAlpha(decoConfig, alpha255) {
+    if (!decoConfig || typeof decoConfig !== 'object') return decoConfig;
+    const result = { ...decoConfig };
+    const bgProps = ['backgroundColor', 'borderColor', 'outlineColor', 'overviewRulerColor'];
+    for (const prop of bgProps) {
+        if (result[prop] && typeof result[prop] === 'string') {
+            const parsed = parseColor(result[prop]);
+            if (parsed) {
+                result[prop] = toHex8(parsed.r, parsed.g, parsed.b, alpha255);
+            }
+        }
+    }
+    return result;
+}
+
+// ============================================================================
+// ## FOLD-AWARENESS UTILITY
+// ============================================================================
+
+/**
+ * Returns true if the given line is hidden by a code fold.
+ * Folded lines fall in gaps BETWEEN consecutive visibleRanges.
+ * Lines before the first range or after the last range are just
+ * scrolled off-screen and should NOT be treated as folded.
+ */
+function isLineFolded(editor, lineNum) {
+    if (!editor) return false;
+    const ranges = editor.visibleRanges;
+    if (ranges.length <= 1) return false;
+
+    for (let i = 0; i < ranges.length - 1; i++) {
+        const gapStart = ranges[i].end.line + 1;
+        const gapEnd = ranges[i + 1].start.line - 1;
+        if (lineNum >= gapStart && lineNum <= gapEnd) return true;
+    }
+    return false;
+}
+
+/**
+ * Returns true if a line should be skipped during navigation:
+ * either it's blank or it's hidden by a fold.
+ */
+function shouldSkipLine(editor, doc, lineNum) {
+    if (lineNum < 0 || lineNum >= doc.lineCount) return false;
+    if (doc.lineAt(lineNum).text.trim() === '') return true;
+    if (isLineFolded(editor, lineNum)) return true;
+    return false;
+}
+
+// ============================================================================
+// ## SEGMENT DECORATIONS
+// ============================================================================
+
+function disposeAllDecorations() {
+    for (const deco of Object.values(segmentRegularDecorations)) {
+        deco.dispose();
+    }
+    segmentRegularDecorations = {};
+
+    for (const steps of Object.values(segmentFadeDecorations)) {
+        if (!steps) continue;
+        for (const deco of steps) deco.dispose();
+    }
+    segmentFadeDecorations = {};
+}
+
+function createSegmentDecorations() {
+    disposeAllDecorations();
+
+    const userConfig = vscode.workspace.getConfiguration("JavNavigation");
+    const lightDecorArray = userConfig.get("segmentDecorations.light", []);
+    const darkDecorArray = userConfig.get("segmentDecorations.dark", []);
+    const maxLen = Math.max(lightDecorArray.length, darkDecorArray.length);
+
+    const startOpacity = userConfig.get("segmentFade.startOpacity", 0.6);
+    const endOpacity = userConfig.get("segmentFade.endOpacity", 0.0);
+
+    for (let i = 0; i < maxLen; i++) {
+        const lightBase = lightDecorArray[i] || lightDecorArray[lightDecorArray.length - 1] || {};
+        const darkBase = darkDecorArray[i] || darkDecorArray[darkDecorArray.length - 1] || {};
+
+        // Regular (flat) decoration — used in "regular" mode and as fallback for fg-only in "faded" mode
+        segmentRegularDecorations[i] = vscode.window.createTextEditorDecorationType({
+            light: lightBase,
+            dark: darkBase,
+        });
+
+        // Faded decorations — only meaningful for bg colors
+        // If BOTH light and dark are fg-only, skip creating fade steps
+        const lightFgOnly = isForegroundOnly(lightBase);
+        const darkFgOnly = isForegroundOnly(darkBase);
+
+        if (lightFgOnly && darkFgOnly) {
+            segmentFadeDecorations[i] = null; // signal: use regular for this segment
+        } else {
+            segmentFadeDecorations[i] = [];
+            for (let step = 0; step < FADE_STEPS; step++) {
+                const t = FADE_STEPS > 1 ? step / (FADE_STEPS - 1) : 0;
+                const opacity = startOpacity + t * (endOpacity - startOpacity);
+                const alpha255 = Math.round(opacity * 255);
+
+                segmentFadeDecorations[i].push(
+                    vscode.window.createTextEditorDecorationType({
+                        light: lightFgOnly ? lightBase : applyNormalizedAlpha(lightBase, alpha255),
+                        dark: darkFgOnly ? darkBase : applyNormalizedAlpha(darkBase, alpha255),
+                    })
+                );
+            }
+        }
+    }
+}
+
+function updateSegmentHighlight() {
+    const editor = vscode.window.activeTextEditor;
+    if (!editor) return;
+
+    const maxDecoration = Object.keys(segmentRegularDecorations).length;
+    if (maxDecoration === 0) return;
+
+    // Helper: clear everything
+    const clearAll = () => {
+        for (const deco of Object.values(segmentRegularDecorations)) {
+            editor.setDecorations(deco, []);
+        }
+        for (const steps of Object.values(segmentFadeDecorations)) {
+            if (!steps) continue;
+            for (const deco of steps) editor.setDecorations(deco, []);
+        }
+    };
+
+    // Off mode or clause mode disabled
+    if (highlightMode === "off" || !clauseModeEnabled) { clearAll(); return; }
+
+    const hasFindMatches = editor.selections.length > 1 ||
+                          (editor.selections.length === 1 && !editor.selection.isEmpty);
+    if (hasFindMatches) { clearAll(); return; }
+
+    const userConfig = vscode.workspace.getConfiguration("JavNavigation");
+    const regexString = userConfig.get("regexClause", "[.|,|\\\"|\\?|!|\\n|\\(\\)|-|:|/|\\{\\}]|[ ]{2,}|[.!?\"][ ]+\\w+");
+    const segmentRegex = new RegExp(regexString, "g");
+    const highlightVisibleLines = userConfig.get("highlightVisibleLines", false);
+
+    const cursor = editor.selection.active;
+
+    let linesToProcess = [];
+    if (highlightVisibleLines) {
+        for (const range of editor.visibleRanges) {
+            for (let lineNum = range.start.line; lineNum <= range.end.line; lineNum++) {
+                linesToProcess.push(lineNum);
+            }
+        }
+    } else {
+        linesToProcess = [cursor.line];
+    }
+
+
+    const rangeFromOffsets = (start, end) =>
+        new vscode.Range(
+            editor.document.positionAt(start),
+            editor.document.positionAt(end)
+        );
+
+    // Collect ranges per segment
+    // For regular mode: regularRanges[segIndex] = [Range, ...]
+    // For faded mode:   fadeRanges["segIndex-step"] = [Range, ...]
+    //                   regularFallbackRanges[segIndex] = [Range, ...] (for fg-only segments)
+    const regularRanges = {};
+    const fadeRanges = {};
+    const regularFallbackRanges = {};
+
+    for (const lineNum of linesToProcess) {
+        const lineText = editor.document.lineAt(lineNum).text;
+        const lineOffset = editor.document.offsetAt(new vscode.Position(lineNum, 0));
+
+        const segments = [];
+        let match, lastIndex = 0;
+        segmentRegex.lastIndex = 0;
+
+        while ((match = segmentRegex.exec(lineText)) !== null) {
+            if (match.index > lastIndex) {
+                segments.push({ start: lineOffset + lastIndex, end: lineOffset + match.index });
+            }
+            lastIndex = match.index + match[0].length;
+        }
+        if (lastIndex < lineText.length) {
+            segments.push({ start: lineOffset + lastIndex, end: lineOffset + lineText.length });
+        }
+
+        for (let i = 0; i < segments.length; i++) {
+            const cycle = maxDecoration > 1 ? 2 * (maxDecoration - 1) : 1;
+            const pos = i % cycle;
+            const decoIndex = pos < maxDecoration ? pos : cycle - pos;
+            const seg = segments[i];
+
+            if (highlightMode === "regular" || segmentFadeDecorations[decoIndex] === null) {
+                // Regular mode OR fg-only segment in faded mode → full segment range
+                const bucket = (highlightMode === "faded") ? regularFallbackRanges : regularRanges;
+                if (!bucket[decoIndex]) bucket[decoIndex] = [];
+                bucket[decoIndex].push(rangeFromOffsets(seg.start, seg.end));
+            } else {
+                // Faded mode with bg colors → split into words + trailing whitespace
+                const segStart = seg.start - lineOffset;
+                const segEnd = seg.end - lineOffset;
+                const segText = lineText.substring(segStart, segEnd);
+
+                const words = [];
+                const wordRegex = /\S+\s*/g;
+                let wm;
+                while ((wm = wordRegex.exec(segText)) !== null) {
+                    words.push({ start: seg.start + wm.index, end: seg.start + wm.index + wm[0].length });
+                }
+
+                if (words.length === 0) continue;
+
+                const wordCount = words.length;
+                for (let w = 0; w < wordCount; w++) {
+                    const fadeStep = wordCount > 1
+                        ? Math.round(w * (FADE_STEPS - 1) / (wordCount - 1))
+                        : 0;
+                    const key = `${decoIndex}-${fadeStep}`;
+                    if (!fadeRanges[key]) fadeRanges[key] = [];
+                    fadeRanges[key].push(rangeFromOffsets(words[w].start, words[w].end));
+                }
+            }
+        }
+    }
+
+    const hasActiveSelection = editor.selections.some(sel => !sel.isEmpty);
+    const filterSel = (ranges) => {
+        if (!hasActiveSelection) return ranges;
+        return ranges.filter(range =>
+            !editor.selections.some(sel => !sel.isEmpty && sel.intersection(range))
+        );
+    };
+
+    // Apply regular decorations
+    for (let i = 0; i < maxDecoration; i++) {
+        const ranges = filterSel(regularRanges[i] || []);
+        editor.setDecorations(segmentRegularDecorations[i], ranges);
+    }
+
+    // Apply fade decorations
+    for (let i = 0; i < maxDecoration; i++) {
+        if (segmentFadeDecorations[i] === null) {
+            // fg-only fallback: use regular decoration type with fallback ranges
+            const fallback = filterSel(regularFallbackRanges[i] || []);
+            // Already applied above if in regular mode; for faded mode, apply fallback
+            if (highlightMode === "faded") {
+                editor.setDecorations(segmentRegularDecorations[i], fallback);
+            }
+            continue;
+        }
+        for (let step = 0; step < FADE_STEPS; step++) {
+            const key = `${i}-${step}`;
+            const ranges = filterSel(fadeRanges[key] || []);
+            editor.setDecorations(segmentFadeDecorations[i][step], ranges);
+        }
+    }
+}
+
+// ============================================================================
+// ## MODE TOGGLES
+// ============================================================================
+
+function toggleClauseMode() {
+    clauseModeEnabled = !clauseModeEnabled;
+    vscode.commands.executeCommand('setContext', 'JavNav.clauseMode', clauseModeEnabled);
+    updateModeStatusBar();
+
+    if (clauseModeEnabled) {
+        vscode.window.setStatusBarMessage("Clause Mode: ON", 2000);
+        handleEditorChange();
+    } else {
+        vscode.window.setStatusBarMessage("Clause Mode: OFF", 2000);
+        handleEditorChange();
+    }
+}
+
+function cycleHighlightMode() {
+    const modes = ["regular", "faded", "off"];
+    const idx = modes.indexOf(highlightMode);
+    highlightMode = modes[(idx + 1) % modes.length];
+    updateHighlightModeStatusBar();
+    vscode.window.setStatusBarMessage(`Segment Highlight: ${highlightMode}`, 2000);
+    handleEditorChange();
+}
+
+function updateModeStatusBar() {
+    if (modeStatusBar) {
+        modeStatusBar.text = clauseModeEnabled ? "🔖 Clause" : "⌨️  Normal";
+    }
+}
+
+function updateHighlightModeStatusBar() {
+    if (highlightModeStatusBar) {
+        const icons = { regular: "▓", faded: "▒", off: "░" };
+        highlightModeStatusBar.text = `${icons[highlightMode] || "?"} ${highlightMode}`;
+    }
+}
+
+function initModeStatusBar() {
+    modeStatusBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
+    modeStatusBar.command = 'JavNav.toggleMode';
+    modeStatusBar.tooltip = "Click to toggle Clause/Normal mode";
+    updateModeStatusBar();
+    modeStatusBar.show();
+    return modeStatusBar;
+}
+
+function initHighlightModeStatusBar() {
+    highlightModeStatusBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 99);
+    highlightModeStatusBar.command = 'JavNav.cycleHighlightMode';
+    highlightModeStatusBar.tooltip = "Click to cycle: regular → faded → off";
+    updateHighlightModeStatusBar();
+    highlightModeStatusBar.show();
+    return highlightModeStatusBar;
+}
+
+// ============================================================================
+// ## CLAUSE NAVIGATION
+// ============================================================================
+
+function loadConfig() {
+  const userConfig = vscode.workspace.getConfiguration('javnav');
+  config.sentenceStopChars = userConfig.get('sentenceStopChars', config.sentenceStopChars);
+  config.clauseStopChars = userConfig.get('clauseStopChars', config.clauseStopChars);
+}
+
+function getLineSegments(text, stopChars) {
+  const escapedChars = stopChars.map(ch => {
+    return ch.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  });
+  const pattern = escapedChars.join('|');
+  const segmentRegex = new RegExp(pattern, 'g');
+
+  const segments = [];
+  let match, lastIndex = 0;
+  segmentRegex.lastIndex = 0;
+
+  while ((match = segmentRegex.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      let segStart = lastIndex;
+      while (segStart < match.index && /[\s"]/.test(text[segStart])) {
+        segStart++;
+      }
+      if (segStart < match.index) {
+        segments.push({ start: segStart, end: match.index });
+      }
+    }
+    lastIndex = match.index + match[0].length;
+  }
+  if (lastIndex < text.length) {
+    let segStart = lastIndex;
+    while (segStart < text.length && /[\s"]/.test(text[segStart])) {
+      segStart++;
+    }
+    if (segStart < text.length) {
+      segments.push({ start: segStart, end: text.length });
+    }
+  }
+
+  return segments;
+}
+
+function moveRight(doc, pos, stopChars) {
+  const editor = vscode.window.activeTextEditor;
+  const line = doc.lineAt(pos.line);
+  const text = line.text;
+  const cursorOffset = pos.character;
+
+  const segments = getLineSegments(text, stopChars);
+
+  for (const seg of segments) {
+    if (seg.start > cursorOffset) {
+      return new vscode.Position(pos.line, seg.start);
+    }
+  }
+
+  if (cursorOffset < text.length) {
+    return new vscode.Position(pos.line, text.length);
+  }
+
+  let nextLine = pos.line + 1;
+  while (nextLine < doc.lineCount && shouldSkipLine(editor, doc, nextLine)) {
+    nextLine++;
+  }
+
+  return nextLine < doc.lineCount ? logicalLineBegin(doc, nextLine) : pos;
+}
+
+function moveLeft(doc, pos, stopChars) {
+  const editor = vscode.window.activeTextEditor;
+  const line = doc.lineAt(pos.line);
+  const text = line.text;
+  const cursorOffset = pos.character;
+  const logicalBegin = logicalLineBegin(doc, pos.line);
+
+  if (pos.character <= logicalBegin.character) {
+    let prevLine = pos.line - 1;
+    while (prevLine >= 0 && shouldSkipLine(editor, doc, prevLine)) {
+      prevLine--;
+    }
+    return prevLine >= 0 ? doc.lineAt(prevLine).range.end : pos;
+  }
+
+  const segments = getLineSegments(text, stopChars);
+
+  for (let i = segments.length - 1; i >= 0; i--) {
+    if (segments[i].start < cursorOffset) {
+      return new vscode.Position(pos.line, segments[i].start);
+    }
+  }
+
+  return logicalBegin;
+}
+
+function moveClause(editor, direction, extend, stopChars) {
+  const doc = editor.document;
+  const newSelections = editor.selections.map(sel => {
+    const pos = sel.active;
+    const newPos =
+      direction === 'right' ? moveRight(doc, pos, stopChars) :
+      direction === 'left' ? moveLeft(doc, pos, stopChars) :
+      direction === 'up' ? moveUp(doc, pos) :
+      direction === 'down' ? moveDown(doc, pos) : pos;
+
+    return extend ? new vscode.Selection(sel.anchor, newPos) : new vscode.Selection(newPos, newPos);
+  });
+
+  editor.selections = newSelections;
+
+  setTimeout(() => {
+    const cursor = editor.selection.active;
+    const lineLength = editor.document.lineAt(cursor.line).text.length;
+    const safeChar = Math.min(cursor.character + 1, lineLength);
+    const revealEnd = new vscode.Position(cursor.line, safeChar);
+    const range = new vscode.Range(cursor, revealEnd);
+    editor.revealRange(range, revealMode);
+  }, 50);
+}
+
+function moveUp(doc, pos) {
+  const editor = vscode.window.activeTextEditor;
+  const state = getLineState(doc, pos);
+
+  if (state === 'EMPTY_LINE') {
+    let lineAbove = pos.line - 1;
+    while (lineAbove >= 0 && shouldSkipLine(editor, doc, lineAbove)) {
+      lineAbove--;
+    }
+    if (lineAbove >= 0) {
+      return logicalLineBegin(doc, lineAbove);
+    }
+    return pos;
+  }
+
+  if (state !== 'NONEMPTY_BEGIN') {
+    return logicalLineBegin(doc, pos.line);
+  }
+
+  let lineAbove = pos.line - 1;
+  while (lineAbove >= 0 && shouldSkipLine(editor, doc, lineAbove)) {
+    lineAbove--;
+  }
+  if (lineAbove >= 0) {
+    return logicalLineBegin(doc, lineAbove);
+  }
+
+  return pos;
+}
+
+function moveDown(doc, pos) {
+  const editor = vscode.window.activeTextEditor;
+  const state = getLineState(doc, pos);
+  const line = doc.lineAt(pos.line);
+
+  if (state === 'EMPTY_LINE') {
+    let lineBelow = pos.line + 1;
+    while (lineBelow < doc.lineCount && shouldSkipLine(editor, doc, lineBelow)) {
+      lineBelow++;
+    }
+    if (lineBelow < doc.lineCount) {
+      return logicalLineBegin(doc, lineBelow);
+    }
+    return pos;
+  }
+
+  if (state !== 'NONEMPTY_END') {
+    return new vscode.Position(pos.line, line.text.length);
+  }
+
+  let lineBelow = pos.line + 1;
+  while (lineBelow < doc.lineCount && shouldSkipLine(editor, doc, lineBelow)) {
+    lineBelow++;
+  }
+  if (lineBelow < doc.lineCount) {
+    return new vscode.Position(lineBelow, doc.lineAt(lineBelow).text.length);
+  }
+
+  return pos;
+}
+
+function getLineState(doc, pos) {
+  const line = doc.lineAt(pos.line);
+  const text = line.text;
+
+  if (/^\d{4}:\s*$/.test(text) || text.trim() === '') {
+    return 'EMPTY_LINE';
+  }
+
+  const logicalBegin = logicalLineBegin(doc, pos.line);
+  const zoneEnd = logicalBegin.character;
+
+  if (pos.character <= zoneEnd) {
+    return 'NONEMPTY_BEGIN';
+  }
+
+  if (pos.character === text.length) {
+    return 'NONEMPTY_END';
+  }
+
+  return 'NONEMPTY_MIDDLE';
+}
+
+function logicalLineBegin(doc, lineNum) {
+  const text = doc.lineAt(lineNum).text;
+  const firstNonWs = text.search(/\S/);
+  const char = firstNonWs === -1 ? text.length : firstNonWs;
+  return new vscode.Position(lineNum, char);
+}
+
+function selectBackQuick(editor) {
+  const doc = editor.document;
+  const newSelections = editor.selections.map(sel => {
+    const pos = sel.active;
+    const anchor = sel.anchor;
+
+    let currentLine = pos.line;
+    let currentChar = pos.character - 1;
+
+    const isWordChar = (ch) => /\w/.test(ch) || ch === "'";
+
+    const charAt = (line, char) => {
+      if (line < 0 || line >= doc.lineCount) return null;
+      const text = doc.lineAt(line).text;
+      if (char < 0) {
+        if (line > 0) return '\n';
+        return null;
+      }
+      if (char >= text.length) return null;
+      return text[char];
+    };
+
+    while (currentLine >= 0) {
+      let ch = charAt(currentLine, currentChar);
+      if (ch === null) break;
+      if (ch === '\n') {
+        currentLine--;
+        if (currentLine < 0) break;
+        currentChar = doc.lineAt(currentLine).text.length - 1;
+        continue;
+      }
+      if (!isWordChar(ch)) {
+        currentChar--;
+      } else {
+        break;
+      }
+    }
+
+    while (currentLine >= 0) {
+      let ch = charAt(currentLine, currentChar);
+      if (ch === null) break;
+      if (ch === '\n') {
+        currentLine--;
+        if (currentLine < 0) break;
+        currentChar = doc.lineAt(currentLine).text.length - 1;
+        continue;
+      }
+      if (isWordChar(ch)) {
+        currentChar--;
+      } else {
+        break;
+      }
+    }
+
+    while (currentLine >= 0) {
+      let ch = charAt(currentLine, currentChar);
+      if (ch === null) break;
+      if (ch === '\n') {
+        currentLine--;
+        if (currentLine < 0) break;
+        currentChar = doc.lineAt(currentLine).text.length - 1;
+        continue;
+      }
+      if (/\s/.test(ch)) {
+        currentChar--;
+      } else {
+        break;
+      }
+    }
+
+    const newActive = new vscode.Position(Math.max(0, currentLine), currentChar + 1);
+    return new vscode.Selection(anchor, newActive);
+  });
+
+  editor.selections = newSelections;
+}
+
+function selectForwardQuick(editor) {
+  const doc = editor.document;
+  const newSelections = editor.selections.map(sel => {
+    const pos = sel.active;
+    const anchor = sel.anchor;
+
+    let currentLine = pos.line;
+    let currentChar = pos.character;
+
+    const isWordChar = (ch) => /\w/.test(ch) || ch === "'";
+
+    const charAt = (line, char) => {
+      if (line < 0 || line >= doc.lineCount) return null;
+      const text = doc.lineAt(line).text;
+      if (char >= text.length) {
+        if (line < doc.lineCount - 1) return '\n';
+        return null;
+      }
+      if (char < 0) return null;
+      return text[char];
+    };
+
+    while (currentLine < doc.lineCount) {
+      let ch = charAt(currentLine, currentChar);
+      if (ch === null) break;
+      if (ch === '\n') {
+        currentLine++;
+        if (currentLine >= doc.lineCount) break;
+        currentChar = 0;
+        continue;
+      }
+      if (/\s/.test(ch)) {
+        currentChar++;
+      } else {
+        break;
+      }
+    }
+
+    while (currentLine < doc.lineCount) {
+      let ch = charAt(currentLine, currentChar);
+      if (ch === null) break;
+      if (ch === '\n') {
+        currentLine++;
+        if (currentLine >= doc.lineCount) break;
+        currentChar = 0;
+        continue;
+      }
+      if (isWordChar(ch)) {
+        currentChar++;
+      } else {
+        break;
+      }
+    }
+
+    while (currentLine < doc.lineCount) {
+      let ch = charAt(currentLine, currentChar);
+      if (ch === null) break;
+      if (ch === '\n') {
+        currentLine++;
+        if (currentLine >= doc.lineCount) break;
+        currentChar = 0;
+        continue;
+      }
+      if (!isWordChar(ch)) {
+        currentChar++;
+      } else {
+        break;
+      }
+    }
+
+    const newActive = new vscode.Position(Math.min(doc.lineCount - 1, currentLine), currentChar);
+    return new vscode.Selection(anchor, newActive);
+  });
+
+  editor.selections = newSelections;
+}
+
+function handleEditorChange() {
+    setTimeout(updateSegmentHighlight, 0);
+}
+
+// ============================================================================
+// ## CONFIG WATCHER
+// ============================================================================
+
+function registerConfigWatcher() {
+    vscode.workspace.onDidChangeConfiguration((event) => {
+        if (event.affectsConfiguration('javnav')) {
+            loadConfig();
+        }
+        if (
+            event.affectsConfiguration("JavNavigation.regexClause") ||
+            event.affectsConfiguration("JavNavigation.segmentDecorations") ||
+            event.affectsConfiguration("JavNavigation.segmentFade") ||
+            event.affectsConfiguration("JavNavigation.highlightVisibleLines")
+        ) {
+            createSegmentDecorations();
+            handleEditorChange();
+        }
+    });
+}
+
+// ============================================================================
+// ## MAIN ACTIVATION
+// ============================================================================
+
+function activate(context) {
+    loadConfig();
+    createSegmentDecorations();
+
+    vscode.commands.executeCommand('setContext', 'JavNav.clauseMode', clauseModeEnabled);
+
+    modeStatusBar = initModeStatusBar();
+    highlightModeStatusBar = initHighlightModeStatusBar();
+    context.subscriptions.push(modeStatusBar);
+    context.subscriptions.push(highlightModeStatusBar);
+
+    vscode.window.onDidChangeTextEditorSelection(handleEditorChange);
+    vscode.window.onDidChangeActiveTextEditor(handleEditorChange);
+    vscode.workspace.onDidChangeTextDocument((event) => {
+        const editor = vscode.window.activeTextEditor;
+        if (editor && event.document === editor.document) {
+            setTimeout(handleEditorChange, 0);
+        }
+    });
+
+    handleEditorChange();
+    registerConfigWatcher();
+
+    context.subscriptions.push(
+    // Navigation - Sentence level
+    vscode.commands.registerTextEditorCommand('JavNav.right', editor => moveClause(editor, 'right', false, config.sentenceStopChars)),
+    vscode.commands.registerTextEditorCommand('JavNav.left', editor => moveClause(editor, 'left', false, config.sentenceStopChars)),
+
+    // Navigation - Clause level
+    vscode.commands.registerTextEditorCommand('JavNav.clauseRight', editor => moveClause(editor, 'right', false, config.clauseStopChars)),
+    vscode.commands.registerTextEditorCommand('JavNav.clauseLeft', editor => moveClause(editor, 'left', false, config.clauseStopChars)),
+
+    vscode.commands.registerTextEditorCommand('JavNav.up', editor => moveClause(editor, 'up', false, config.clauseStopChars)),
+    vscode.commands.registerTextEditorCommand('JavNav.down', editor => moveClause(editor, 'down', false, config.clauseStopChars)),
+
+    // Sentence selection
+    vscode.commands.registerTextEditorCommand('JavNav.sentenceSelectRight', editor => moveClause(editor, 'right', true, config.sentenceStopChars)),
+    vscode.commands.registerTextEditorCommand('JavNav.sentenceSelectLeft', editor => moveClause(editor, 'left', true, config.sentenceStopChars)),
+
+    // Clause selection
+    vscode.commands.registerTextEditorCommand('JavNav.clauseSelectRight', editor => moveClause(editor, 'right', true, config.clauseStopChars)),
+    vscode.commands.registerTextEditorCommand('JavNav.clauseSelectLeft', editor => moveClause(editor, 'left', true, config.clauseStopChars)),
+
+    // Up/Down selection
+    vscode.commands.registerTextEditorCommand('JavNav.upSelect', editor => moveClause(editor, 'up', true, config.clauseStopChars)),
+    vscode.commands.registerTextEditorCommand('JavNav.downSelect', editor => moveClause(editor, 'down', true, config.clauseStopChars)),
+
+        vscode.commands.registerTextEditorCommand('JavNav.selectBackQuick', selectBackQuick),
+        vscode.commands.registerTextEditorCommand('JavNav.selectForwardQuick', selectForwardQuick),
+        vscode.commands.registerCommand('JavNav.toggleMode', toggleClauseMode),
+        vscode.commands.registerCommand('JavNav.cycleHighlightMode', cycleHighlightMode),
+        vscode.commands.registerCommand('JavNav.cycleScrollMode', () => {
+            const modes = [
+                vscode.TextEditorRevealType.Default,
+                vscode.TextEditorRevealType.InCenterIfOutsideViewport,
+                vscode.TextEditorRevealType.AtTop
+            ];
+            const labels = {
+                [vscode.TextEditorRevealType.Default]: 'Default',
+                [vscode.TextEditorRevealType.InCenterIfOutsideViewport]: 'InCenterIfOutsideViewport',
+                [vscode.TextEditorRevealType.AtTop]: 'AtTop'
+            };
+
+            const currentIndex = modes.indexOf(revealMode);
+            const nextIndex = (currentIndex + 1) % modes.length;
+            revealMode = modes[nextIndex];
+
+            vscode.window.showInformationMessage(`JavNav scroll mode: ${labels[revealMode]}`);
+        })
+    );
+}
+
+function deactivate() {
+    disposeAllDecorations();
+    if (modeStatusBar) modeStatusBar.dispose();
+    if (highlightModeStatusBar) highlightModeStatusBar.dispose();
+}
+
+exports.activate = activate;
+exports.deactivate = deactivate;

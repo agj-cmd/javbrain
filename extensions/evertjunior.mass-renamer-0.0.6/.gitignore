@@ -1,9 +1,0 @@
-out
-dist
-node_modules
-.vscode-test/
-*.vsix
-*.afdesign
-.DS_Store
-src/**/*.js
-src/**/*.js.map
