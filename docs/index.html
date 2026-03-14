@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>javbrain</title>
+<style>
+@font-face {
+  font-family: 'iA Writer Quattro S';
+  src: url('fonts/iAWriterQuattroS-Regular.woff2') format('woff2'), url('fonts/iAWriterQuattroS-Regular.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'iA Writer Quattro S';
+  src: url('fonts/iAWriterQuattroS-Italic.woff2') format('woff2'), url('fonts/iAWriterQuattroS-Italic.woff') format('woff');
+  font-weight: normal;
+  font-style: italic;
+}
+@font-face {
+  font-family: 'iA Writer Quattro S';
+  src: url('fonts/iAWriterQuattroS-Bold.woff2') format('woff2'), url('fonts/iAWriterQuattroS-Bold.woff') format('woff');
+  font-weight: bold;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'iA Writer Quattro S';
+  src: url('fonts/iAWriterQuattroS-BoldItalic.woff2') format('woff2'), url('fonts/iAWriterQuattroS-BoldItalic.woff') format('woff');
+  font-weight: bold;
+  font-style: italic;
+}
+:root {
+  --font-body: 'iA Writer Quattro S', sans-serif;
+  --font-size: 18px;
+  --line-height: 1.4;
+  --cell-padding: 4px 8px;
+  --bg-primary: #ffffff;
+  --bg-secondary: #f5f5f5;
+  --text-primary: #1a1a1a;
+  --text-muted: #888888;
+  --border-color: #d0d0d0;
+  --highlight-bg: #fff3a8;
+  --highlight-text: #1a1a1a;
+  --bottom-bar-bg: #f0f0f0;
+  --row-hover: #f7f7f7;
+  --selected-row: #e8e8ff;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  font-family: var(--font-body);
+  font-size: var(--font-size);
+  line-height: var(--line-height);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+body { display: flex; flex-direction: column; }
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-color) var(--bg-primary);
+}
+*::-webkit-scrollbar { width: 8px; height: 8px; }
+*::-webkit-scrollbar-track { background: var(--bg-primary); }
+*::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
+*::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+#table-wrap { flex: 1; overflow-y: auto; overflow-x: hidden; }
+
+table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+
+thead th {
+  position: sticky; top: 0; z-index: 2;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  padding: var(--cell-padding);
+  text-align: left; font-weight: 600;
+  color: var(--text-muted);
+  font-size: calc(var(--font-size) - 1px);
+  text-transform: uppercase; letter-spacing: 0.05em;
+  user-select: none;
+}
+
+th.col-name { width: 100%; }
+
+tbody tr { border-bottom: 1px solid var(--border-color); cursor: pointer; }
+tbody tr:hover { background: var(--row-hover); }
+tbody tr.selected { background: var(--selected-row); }
+
+td {
+  padding: var(--cell-padding);
+  vertical-align: top; overflow: hidden;
+  text-overflow: ellipsis; white-space: nowrap;
+}
+
+td.cell-name { font-weight: 500; }
+td.cell-name .ext { color: var(--text-muted); font-weight: 400; }
+td.cell-name .arrow {
+  display: inline-block; width: 14px;
+  color: var(--text-muted); font-size: 10px;
+  text-align: center; margin-right: 4px;
+}
+
+tr.match-line { border-bottom: none; cursor: pointer; }
+tr.match-line td {
+  padding: 1px 8px 1px 30px;
+  white-space: pre-wrap; word-break: break-word;
+  color: var(--text-muted); font-size: calc(var(--font-size) - 1px);
+}
+tr.match-line:hover td { color: var(--text-primary); }
+
+mark { background: var(--highlight-bg); color: var(--highlight-text); padding: 0 1px; border-radius: 1px; }
+
+.no-results { text-align: center; padding: 40px; color: var(--text-muted); }
+
+#bottom-bar {
+  flex-shrink: 0; display: flex; align-items: center; gap: 4px;
+  padding: 4px 8px; background: var(--bottom-bar-bg);
+  border-top: 1px solid var(--border-color);
+  font-size: calc(var(--font-size) - 1px);
+  color: var(--text-muted); user-select: none; min-height: 28px;
+}
+
+.bar-cmd { display: inline-flex; align-items: center; gap: 2px; padding: 1px 6px; white-space: nowrap; }
+.bar-cmd kbd {
+  display: inline-block; padding: 0 4px;
+  border: 1px solid var(--border-color); border-radius: 2px;
+  background: var(--bg-primary); font-family: inherit;
+  font-size: inherit; line-height: 1.6; min-width: 18px; text-align: center;
+}
+.bar-spacer { flex: 1; }
+.bar-status { color: var(--text-muted); padding: 0 6px; }
+
+#search-bar {
+  display: none; flex-shrink: 0; align-items: center; gap: 8px;
+  padding: 4px 8px; background: var(--bottom-bar-bg);
+  border-top: 1px solid var(--border-color); min-height: 28px;
+}
+#search-bar.active { display: flex; }
+
+#search-input {
+  flex: 1; background: var(--bg-primary);
+  border: 1px solid var(--border-color); color: var(--text-primary);
+  font-family: var(--font-body); font-size: var(--font-size);
+  padding: 2px 6px; outline: none;
+}
+#search-input:focus { border-color: var(--text-muted); }
+
+#search-mode {
+  font-size: calc(var(--font-size) - 1px); color: var(--text-muted);
+  padding: 1px 6px; border: 1px solid var(--border-color); border-radius: 2px;
+  background: var(--bg-secondary); cursor: default; user-select: none;
+  min-width: 50px; text-align: center;
+}
+
+#search-info { font-size: calc(var(--font-size) - 1px); color: var(--text-muted); white-space: nowrap; }
+
+.setting-dropdown {
+  position: fixed; bottom: 32px; background: var(--bg-primary);
+  border: 1px solid var(--border-color); padding: 4px 0; z-index: 100;
+  font-size: calc(var(--font-size) - 1px); box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
+}
+.setting-dropdown .opt { padding: 2px 12px; cursor: pointer; white-space: nowrap; }
+.setting-dropdown .opt:hover { background: var(--row-hover); }
+.setting-dropdown .opt.active { font-weight: 700; }
+</style>
+</head>
+<body>
+
+<div id="table-wrap">
+  <table>
+    <tbody id="tbody"></tbody>
+  </table>
+</div>
+
+<div id="search-bar">
+  <span style="color:var(--text-muted)">Search:</span>
+  <input id="search-input" type="text" aria-label="Search files" autocomplete="off" spellcheck="false">
+  <div id="search-mode">fuzzy</div>
+  <div id="search-info"></div>
+  <span class="bar-cmd" style="color:var(--text-muted)"><kbd>Tab</kbd> mode</span>
+  <span class="bar-cmd" style="color:var(--text-muted)"><kbd>Esc</kbd> close</span>
+</div>
+
+<div id="bottom-bar">
+  <span class="bar-cmd"><kbd>Space</kbd> Search</span>
+  <span class="bar-cmd"><kbd>T</kbd> Theme</span>
+  <span class="bar-cmd"><kbd>&uarr;&darr;</kbd> Navigate</span>
+  <span class="bar-cmd"><kbd>&larr;&rarr;</kbd> Fold</span>
+  <span class="bar-cmd"><kbd>Enter</kbd> Open</span>
+  <span class="bar-spacer"></span>
+  <span class="bar-status" id="file-count"></span>
+</div>
+
+<script>
+(function() {
+  'use strict';
+
+  let fileData = [];
+  let searchIndex = null;
+  let filteredIndices = null;
+  let selectedRow = 0;
+  let searchActive = false;
+  let searchModes = ['fuzzy', 'all', 'any', 'exact'];
+  let searchModeIdx = 0;
+  let activeDropdown = null;
+  let debounceTimer = null;
+
+  let expandedFiles = new Set();
+  let fileContentCache = {};
+  let fileMatchLines = {};
+
+  // Flat row list: [{type:'file',fi}, {type:'line',fi,lineNum}, {type:'empty',fi}]
+  let flatRows = [];
+
+  const SNIPPET_RADIUS = 60;
+
+  let themes = {};
+  let themeKeys = [];
+  let currentTheme = localStorage.getItem('jb-theme') || 'dark';
+
+  const tbody = document.getElementById('tbody');
+  const bottomBar = document.getElementById('bottom-bar');
+  const searchBar = document.getElementById('search-bar');
+  const searchInput = document.getElementById('search-input');
+  const searchModeEl = document.getElementById('search-mode');
+  const searchInfo = document.getElementById('search-info');
+  const fileCount = document.getElementById('file-count');
+
+  async function init() {
+    try {
+      const res = await fetch('themes.json');
+      themes = await res.json();
+    } catch(e) {
+      themes = { light: { name: 'Light', vars: {} }, dark: { name: 'Dark', vars: {} } };
+    }
+    themeKeys = Object.keys(themes);
+    if (!themes[currentTheme]) currentTheme = themeKeys[0];
+
+    const dataRes = await fetch('data.json');
+    fileData = await dataRes.json();
+
+    try {
+      const idxRes = await fetch('index.json');
+      if (idxRes.ok) {
+        searchIndex = await idxRes.json();
+      } else { throw new Error('x'); }
+    } catch(e) {
+      try {
+        const mRes = await fetch('index-manifest.json');
+        if (mRes.ok) {
+          const manifest = await mRes.json();
+          searchIndex = {};
+          const results = await Promise.all(Object.values(manifest).map(f => fetch(f).then(r => r.json())));
+          for (const chunk of results) Object.assign(searchIndex, chunk);
+        }
+      } catch(e2) {}
+    }
+
+    applyTheme();
+    renderTable();
+    fileCount.textContent = fileData.length + ' files';
+  }
+
+  function applyTheme() {
+    const t = themes[currentTheme]; if (!t) return;
+    for (const [k, v] of Object.entries(t.vars)) document.documentElement.style.setProperty(k, v);
+    localStorage.setItem('jb-theme', currentTheme);
+  }
+  function cycleTheme() {
+    currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    applyTheme();
+  }
+
+  function showDropdown(id, opts) {
+    closeDropdown();
+    const el = document.createElement('div');
+    el.className = 'setting-dropdown'; el.id = 'dropdown-' + id;
+    opts.forEach(o => {
+      const d = document.createElement('div');
+      d.className = 'opt' + (o.active ? ' active' : '');
+      d.textContent = o.label; el.appendChild(d);
+    });
+    document.body.appendChild(el); activeDropdown = el; el.style.left = '8px';
+    setTimeout(() => { if (activeDropdown === el) closeDropdown(); }, 1500);
+  }
+  function closeDropdown() { if (activeDropdown) { activeDropdown.remove(); activeDropdown = null; } }
+
+  async function getFileContent(fileIndex) {
+    if (fileContentCache[fileIndex] !== undefined) return fileContentCache[fileIndex];
+    try {
+      const res = await fetch('files/' + fileIndex + '.txt');
+      const text = await res.text();
+      fileContentCache[fileIndex] = text;
+      return text;
+    } catch(e) { return ''; }
+  }
+
+  function findMatchingLines(content, query) {
+    const mode = searchModes[searchModeIdx];
+    const terms = query.toLowerCase().split(/\s+/).filter(Boolean);
+    if (terms.length === 0) return [];
+    const lines = content.split('\n');
+    const matches = [];
+    for (let i = 0; i < lines.length && matches.length < 50; i++) {
+      const lower = lines[i].toLowerCase();
+      let hit = false;
+      if (mode === 'exact') hit = lower.includes(query.toLowerCase());
+      else if (mode === 'any' || mode === 'fuzzy') hit = terms.some(t => lower.includes(t));
+      else hit = terms.every(t => lower.includes(t));
+      if (hit) matches.push({ lineNum: i + 1, text: lines[i] });
+    }
+    return matches;
+  }
+
+  function snippetAroundMatch(lineText, query) {
+    const terms = query.toLowerCase().split(/\s+/).filter(Boolean);
+    const lower = lineText.toLowerCase();
+    let firstIdx = lineText.length;
+    for (const t of terms) {
+      const i = lower.indexOf(t);
+      if (i !== -1 && i < firstIdx) firstIdx = i;
+    }
+    if (firstIdx === lineText.length) firstIdx = 0;
+    const start = Math.max(0, firstIdx - SNIPPET_RADIUS);
+    const end = Math.min(lineText.length, firstIdx + SNIPPET_RADIUS);
+    let snippet = lineText.slice(start, end);
+    if (start > 0) snippet = '\u2026' + snippet;
+    if (end < lineText.length) snippet = snippet + '\u2026';
+    return snippet;
+  }
+
+  async function toggleExpand(fileIndex) {
+    if (expandedFiles.has(fileIndex)) {
+      expandedFiles.delete(fileIndex);
+      // Adjust selectedRow to stay on the file row
+      for (let i = 0; i < flatRows.length; i++) {
+        if (flatRows[i].type === 'file' && flatRows[i].fi === fileIndex) {
+          selectedRow = i; break;
+        }
+      }
+      renderTable(); return;
+    }
+    const content = await getFileContent(fileIndex);
+    fileMatchLines[fileIndex] = findMatchingLines(content, searchInput.value);
+    expandedFiles.add(fileIndex);
+    renderTable();
+  }
+
+  function fileRowForFlat(flatIdx) {
+    for (let i = flatIdx; i >= 0; i--) {
+      if (flatRows[i].type === 'file') return i;
+    }
+    return -1;
+  }
+
+  function renderTable() {
+    const indices = filteredIndices !== null ? filteredIndices : fileData.map((_, i) => i);
+    if (indices.length === 0) {
+      tbody.innerHTML = '<tr><td class="no-results">No matches</td></tr>';
+      flatRows = []; return;
+    }
+    const query = searchActive ? searchInput.value : '';
+    let html = '';
+    flatRows = [];
+
+    indices.forEach((fi) => {
+      const f = fileData[fi];
+      const rowIdx = flatRows.length;
+      const sel = rowIdx === selectedRow ? ' selected' : '';
+      const nameBase = f.filename.replace(/\.[^.]+$/, '');
+      const ext = f.filename.match(/\.[^.]+$/)?.[0] || '';
+      const isExpanded = searchActive && expandedFiles.has(fi);
+      const arrow = (searchActive && query) ? (isExpanded ? '&#9660;' : '&#9654;') : '';
+
+      let nameHtml;
+      if (query && searchActive) {
+        nameHtml = '<span class="arrow">' + arrow + '</span>' +
+          highlightText(nameBase, query) + '<span class="ext">' + highlightText(ext, query) + '</span>';
+      } else {
+        nameHtml = escHtml(nameBase) + '<span class="ext">' + escHtml(ext) + '</span>';
+      }
+
+      flatRows.push({ type: 'file', fi: fi });
+      html += '<tr class="' + sel + '" data-flat="' + rowIdx + '" data-fi="' + fi + '" data-type="file" role="row">' +
+        '<td class="cell-name">' + nameHtml + '</td></tr>';
+
+      if (isExpanded && fileMatchLines[fi]) {
+        for (const ml of fileMatchLines[fi]) {
+          const lineRowIdx = flatRows.length;
+          const lineSel = lineRowIdx === selectedRow ? ' selected' : '';
+          const snippet = snippetAroundMatch(ml.text, query);
+          const lineText = highlightText(snippet, query);
+          flatRows.push({ type: 'line', fi: fi, lineNum: ml.lineNum });
+          html += '<tr class="match-line' + lineSel + '" data-flat="' + lineRowIdx + '" data-fi="' + fi + '" data-line="' + ml.lineNum + '" data-type="line">' +
+            '<td>' + lineText + '</td></tr>';
+        }
+        if (fileMatchLines[fi].length === 0) {
+          flatRows.push({ type: 'empty', fi: fi });
+          html += '<tr class="match-line"><td style="padding-left:30px;opacity:0.4"><em>name match only</em></td></tr>';
+        }
+      }
+    });
+    tbody.innerHTML = html;
+    const selTr = tbody.querySelector('tr.selected');
+    if (selTr) selTr.scrollIntoView({ block: 'nearest' });
+  }
+
+  function escHtml(s) { return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+
+  function highlightText(text, query) {
+    const terms = query.toLowerCase().split(/\s+/).filter(Boolean);
+    if (terms.length === 0) return escHtml(text);
+    let positions = [];
+    const lower = text.toLowerCase();
+    if (searchModes[searchModeIdx] === 'exact') {
+      const q = query.toLowerCase();
+      let pos = 0;
+      while (true) { const idx = lower.indexOf(q, pos); if (idx === -1) break; positions.push([idx, idx + q.length]); pos = idx + 1; }
+    } else {
+      for (const term of terms) {
+        let pos = 0;
+        while (true) { const idx = lower.indexOf(term, pos); if (idx === -1) break; positions.push([idx, idx + term.length]); pos = idx + 1; }
+      }
+    }
+    if (positions.length === 0) return escHtml(text);
+    positions.sort((a, b) => a[0] - b[0]);
+    const merged = [positions[0]];
+    for (let i = 1; i < positions.length; i++) {
+      const last = merged[merged.length - 1];
+      if (positions[i][0] <= last[1]) last[1] = Math.max(last[1], positions[i][1]);
+      else merged.push(positions[i]);
+    }
+    let result = '', prev = 0;
+    for (const [s, e] of merged) {
+      result += escHtml(text.slice(prev, s)) + '<mark>' + escHtml(text.slice(s, e)) + '</mark>';
+      prev = e;
+    }
+    return result + escHtml(text.slice(prev));
+  }
+
+  async function doSearch(query) {
+    const mode = searchModes[searchModeIdx];
+    const terms = query.toLowerCase().split(/\s+/).filter(Boolean);
+    if (terms.length === 0) {
+      filteredIndices = null; expandedFiles.clear(); fileMatchLines = {};
+      searchInfo.textContent = ''; selectedRow = 0; renderTable(); return;
+    }
+    let matchingFiles;
+    if (mode === 'exact') {
+      const firstWord = (query.toLowerCase().match(/[a-z0-9]+/) || [''])[0];
+      if (!firstWord) { filteredIndices = []; renderTable(); return; }
+      const entries = searchIndex ? (searchIndex[firstWord] || []) : [];
+      const candidates = new Set(entries.map(e => e.file));
+      fileData.forEach((f, i) => { if (f.filename.toLowerCase().includes(query.toLowerCase())) candidates.add(i); });
+      matchingFiles = [...candidates];
+    } else if (mode === 'fuzzy' || mode === 'all') {
+      const fileSets = [];
+      for (const term of terms) {
+        const fileSet = new Set();
+        if (searchIndex) {
+          for (const word of Object.keys(searchIndex)) {
+            if (mode === 'fuzzy' ? word.includes(term) : word.startsWith(term)) {
+              for (const e of searchIndex[word]) fileSet.add(e.file);
+            }
+          }
+        }
+        fileData.forEach((f, i) => { if (f.filename.toLowerCase().includes(term)) fileSet.add(i); });
+        fileSets.push(fileSet);
+      }
+      if (fileSets.length === 0) matchingFiles = [];
+      else {
+        matchingFiles = [...fileSets[0]];
+        for (let i = 1; i < fileSets.length; i++) matchingFiles = matchingFiles.filter(f => fileSets[i].has(f));
+      }
+    } else {
+      const fileSet = new Set();
+      for (const term of terms) {
+        if (searchIndex) {
+          for (const word of Object.keys(searchIndex)) {
+            if (word.startsWith(term)) { for (const e of searchIndex[word]) fileSet.add(e.file); }
+          }
+        }
+        fileData.forEach((f, i) => { if (f.filename.toLowerCase().includes(term)) fileSet.add(i); });
+      }
+      matchingFiles = [...fileSet];
+    }
+    matchingFiles.sort((a, b) => a - b);
+    filteredIndices = matchingFiles;
+    selectedRow = 0;
+    expandedFiles.clear(); fileMatchLines = {};
+    searchInfo.textContent = matchingFiles.length + ' match' + (matchingFiles.length !== 1 ? 'es' : '');
+    renderTable();
+
+    // Auto-expand all
+    const expandPromises = matchingFiles.map(fi =>
+      getFileContent(fi).then(content => {
+        fileMatchLines[fi] = findMatchingLines(content, query);
+        expandedFiles.add(fi);
+      })
+    );
+    await Promise.all(expandPromises);
+    renderTable();
+  }
+
+  function openFile(fileIndex, lineNum) {
+    let hash = '' + fileIndex;
+    if (lineNum) hash += ':' + lineNum;
+    const query = searchActive ? searchInput.value : '';
+    if (query) hash += ':' + encodeURIComponent(query);
+    window.open('viewer.html#' + hash, '_blank');
+  }
+
+  function handleNav(key, ctrl) {
+    if (key === 'ArrowDown') {
+      if (flatRows.length > 0) {
+        let next = selectedRow + 1;
+        while (next < flatRows.length && flatRows[next].type === 'empty') next++;
+        if (next < flatRows.length) { selectedRow = next; renderTable(); }
+      }
+    } else if (key === 'ArrowUp') {
+      if (selectedRow > 0) {
+        let prev = selectedRow - 1;
+        while (prev > 0 && flatRows[prev].type === 'empty') prev--;
+        selectedRow = prev; renderTable();
+      }
+    } else if (key === 'ArrowRight') {
+      if (ctrl) {
+        // Expand all
+        const indices = filteredIndices !== null ? filteredIndices : [];
+        const promises = indices.map(fi => {
+          if (!expandedFiles.has(fi)) {
+            return getFileContent(fi).then(content => {
+              fileMatchLines[fi] = findMatchingLines(content, searchInput.value);
+              expandedFiles.add(fi);
+            });
+          }
+        });
+        Promise.all(promises).then(() => renderTable());
+      } else {
+        const row = flatRows[selectedRow];
+        if (!row) return;
+        if (row.type === 'file' && !expandedFiles.has(row.fi)) {
+          toggleExpand(row.fi);
+        }
+      }
+    } else if (key === 'ArrowLeft') {
+      if (ctrl) {
+        // Collapse all
+        expandedFiles.clear();
+        renderTable();
+      } else {
+        const row = flatRows[selectedRow];
+        if (!row) return;
+        if (row.type === 'line' || row.type === 'empty') {
+          const parentIdx = fileRowForFlat(selectedRow);
+          if (parentIdx >= 0) { selectedRow = parentIdx; renderTable(); }
+        } else if (row.type === 'file' && expandedFiles.has(row.fi)) {
+          expandedFiles.delete(row.fi);
+          renderTable();
+        }
+      }
+    } else if (key === 'Enter') {
+      const row = flatRows[selectedRow];
+      if (!row) return;
+      if (row.type === 'line') openFile(row.fi, row.lineNum);
+      else if (row.type === 'file') openFile(row.fi);
+    }
+  }
+
+  document.addEventListener('keydown', function(e) {
+    closeDropdown();
+    if (searchActive) {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        const wrap = document.getElementById('table-wrap');
+        const scrollPos = wrap.scrollTop;
+        searchActive = false; searchBar.classList.remove('active');
+        bottomBar.style.display = 'flex'; searchInput.value = '';
+        filteredIndices = null; selectedRow = 0;
+        expandedFiles.clear(); fileMatchLines = {};
+        searchInfo.textContent = ''; renderTable();
+        wrap.scrollTop = scrollPos;
+        return;
+      }
+      if (e.key === 'Tab') {
+        e.preventDefault();
+        searchModeIdx = (searchModeIdx + 1) % searchModes.length;
+        searchModeEl.textContent = searchModes[searchModeIdx];
+        if (searchInput.value) { clearTimeout(debounceTimer); doSearch(searchInput.value); }
+        return;
+      }
+      if (['ArrowDown','ArrowUp','ArrowLeft','ArrowRight'].includes(e.key)) {
+        e.preventDefault(); handleNav(e.key, e.ctrlKey); return;
+      }
+      if (e.key === 'Enter') { e.preventDefault(); handleNav('Enter', false); return; }
+      return;
+    }
+    if (e.key === ' ' || e.code === 'Space') {
+      e.preventDefault(); searchActive = true; searchBar.classList.add('active');
+      bottomBar.style.display = 'none'; searchInput.focus(); return;
+    }
+    const k = e.key.toLowerCase();
+    if (k === 't' && !e.ctrlKey && !e.metaKey) { e.preventDefault(); cycleTheme(); return; }
+    if (['ArrowDown','ArrowUp'].includes(e.key)) {
+      e.preventDefault(); handleNav(e.key, e.ctrlKey); return;
+    }
+    if (e.key === 'Enter') { e.preventDefault(); handleNav('Enter', false); return; }
+  });
+
+  searchInput.addEventListener('input', function() {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => doSearch(searchInput.value), 150);
+  });
+
+  tbody.addEventListener('click', function(e) {
+    const tr = e.target.closest('tr');
+    if (!tr) return;
+    const flatIdx = tr.dataset.flat;
+    if (flatIdx !== undefined) selectedRow = parseInt(flatIdx);
+    const fi = tr.dataset.fi;
+    if (fi === undefined) return;
+    if (tr.dataset.type === 'line') {
+      openFile(parseInt(fi), parseInt(tr.dataset.line));
+    } else if (tr.dataset.type === 'file') {
+      if (searchActive && searchInput.value) toggleExpand(parseInt(fi));
+      else openFile(parseInt(fi));
+    }
+  });
+
+  init();
+})();
+</script>
+</body>
+</html>

@@ -38,7 +38,7 @@ if (files.length === 0) {
 }
 
 const data = [];
-const invertedIndex = {};
+const invertedIndex = Object.create(null);
 
 files.forEach((filename, i) => {
   const filepath = path.join(CONTENT_DIR, filename);
