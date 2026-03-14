@@ -101,11 +101,16 @@ if (indexStr.length <= INDEX_CHUNK_SIZE) {
   console.log(`Built: ${files.length} files, ${Object.keys(chunks).length} index chunks`);
 }
 
-// Copy index.html and themes.json to dist
+// Build version for cache busting
+const buildVer = Date.now().toString(36);
+
+// Copy and inject version into HTML files
 const htmlSrc = path.join(__dirname, 'index.html');
 const themesSrc = path.join(__dirname, 'themes.json');
 if (fs.existsSync(htmlSrc)) {
-  fs.copyFileSync(htmlSrc, path.join(DIST_DIR, 'index.html'));
+  let html = fs.readFileSync(htmlSrc, 'utf-8');
+  html = html.replace(/__BUILD_VER__/g, buildVer);
+  fs.writeFileSync(path.join(DIST_DIR, 'index.html'), html, 'utf-8');
 }
 if (fs.existsSync(themesSrc)) {
   fs.copyFileSync(themesSrc, path.join(DIST_DIR, 'themes.json'));
@@ -114,7 +119,9 @@ if (fs.existsSync(themesSrc)) {
 // Copy viewer.html to dist
 const viewerSrc = path.join(__dirname, 'viewer.html');
 if (fs.existsSync(viewerSrc)) {
-  fs.copyFileSync(viewerSrc, path.join(DIST_DIR, 'viewer.html'));
+  let html = fs.readFileSync(viewerSrc, 'utf-8');
+  html = html.replace(/__BUILD_VER__/g, buildVer);
+  fs.writeFileSync(path.join(DIST_DIR, 'viewer.html'), html, 'utf-8');
 }
 
 // Copy fonts/ to dist/fonts/
