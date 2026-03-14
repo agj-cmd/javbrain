@@ -1,37 +1,124 @@
+==== Universal Book Scraper for bookreadfree.com ====
 
-JavBrain [
-	 \\Here I keep things worth remembering\\
-	Search [
-		 Press **Space**
-		 **Type** to filter across all file contents and filenames. Results auto-expand with highlighted snippets.
-		 Press **Escape** to close and return to the full list.
-		 **Tab** to cycle search modes: fuzzy, all, any, exact.
-		 **Ctrl+left** and **ctrl+right** to expand and collapse all groups.
-		 **Arrows** to traverse and expand/collapse groups
-	]
-	Navigate results [
-		 **Up/Down** moves through files and match lines.
-		 **Left** collapses a group or jumps to parent.
-		 **Right** expands a group.
-		 **Ctrl+Left** collapses all.
-		 **Ctrl+Right** expands all. Enter opens the selected file or match line.
-	]
-	Browse a file [
-		 **Click** or press **Enter** on any file to open it.
-		 **Space** focuses keyboard on the table of contents. Space again to focus back on the page.
-		 **Code files**: Each table of content header represents a separate file.
-		 **Enter** or **right click** to copy the table of content section.
-	]
-	Use the table of contents [
-		 **Space** to focus the Table of Contents sidebar.
-		 **Up/Down** to traverse sections.
-		 **Left/Right** to collapse/expand.
-		 **Ctrl+Left/Right** to collapse/expand all.
-		 **Enter** to copy the selected section.
-		 **Right-click** a section to copy it.
-		 **Space** or **Escape** to move focus to the page for keyboard scrolling.
-	]
-	Switch themes [
-		 **T** toggles theme.
-	]
-]
+// f12 ➢ console ➢ Run this on the book's main page
+// (e.g., https://bookreadfree.com/all/2202)
+
+async function scrapeBook() {
+  // Extract page links from current page
+  const pageLinks = Array.from(document.querySelectorAll('a[href*="/"]'))
+    .map(a => a.getAttribute('href'))
+    .filter(href => href && /\/\d+\/\d+/.test(href)) // Match pattern like /2202/51298
+    .filter((href, index, self) => self.indexOf(href) === index); // Remove duplicates
+
+  if (pageLinks.length === 0) {
+    console.error('No page links found! Make sure you\'re on the main book page.');
+    return;
+  }
+
+  console.log(`Found ${pageLinks.length} pages to scrape`);
+
+  // Get book title and author from current page
+  const titleEl = document.querySelector('h1, .book-title, title');
+  const bookTitle = titleEl ? titleEl.innerText.trim() : 'Book';
+
+  let fullText = `${bookTitle}\n${'='.repeat(bookTitle.length)}\n\n`;
+
+  const baseUrl = window.location.origin;
+
+  for (let i = 0; i < pageLinks.length; i++) {
+    const url = baseUrl + pageLinks[i];
+    console.log(`Fetching page ${i + 1}/${pageLinks.length}...`);
+
+    try {
+      const response = await fetch(url);
+      const html = await response.text();
+
+      // Parse HTML
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(html, 'text/html');
+
+      // Try multiple selectors to find the main content
+      let content = doc.querySelector('.chapter-content') ||
+                    doc.querySelector('.book-content') ||
+                    doc.querySelector('.text-content') ||
+                    doc.querySelector('article') ||
+                    doc.querySelector('main') ||
+                    doc.querySelector('#content') ||
+                    doc.body;
+
+      // Clone content to avoid modifying original
+      content = content.cloneNode(true);
+
+      // Remove unwanted elements
+      const unwanted = content.querySelectorAll('script, style, nav, header, footer, .navigation, .ads, .advertisement');
+      unwanted.forEach(el => el.remove());
+
+      // Add newlines after block elements for proper paragraph breaks
+      const blockElements = content.querySelectorAll('p, div, br, h1, h2, h3, h4, h5, h6, li, blockquote');
+      blockElements.forEach(el => {
+        if (el.tagName === 'BR') {
+          el.replaceWith(document.createTextNode('\n'));
+        } else if (el.tagName === 'P' || el.tagName.startsWith('H')) {
+          // Paragraphs and headings get double newlines
+          el.insertAdjacentText('afterend', '\n\n');
+        } else {
+          el.insertAdjacentText('afterend', '\n');
+        }
+      });
+
+      let pageText = content.innerText;
+
+      // Clean up common navigation text
+      pageText = pageText
+        .replace(/Page \d+/gi, '')
+        .replace(/Next (Page|Chapter)/gi, '')
+        .replace(/Previous (Page|Chapter)/gi, '')
+        .replace(/Advertisement/gi, '')
+        .replace(/Table of Contents/gi, '')
+        .replace(/Back to Index/gi, '');
+
+      // Normalize whitespace
+      pageText = pageText
+        .replace(/[ \t]+/g, ' ')           // Multiple spaces to single space
+        .replace(/\n[ \t]+/g, '\n')        // Remove spaces at start of lines
+        .replace(/[ \t]+\n/g, '\n')        // Remove spaces at end of lines
+        .replace(/\n{4,}/g, '\n\n\n')      // Max 3 newlines (section break)
+        .replace(/^\s+|\s+$/g, '');        // Trim start and end
+
+      // Only add if we got meaningful content
+      if (pageText.length > 50) {
+        fullText += pageText + '\n\n';
+        console.log(`  ✓ Extracted ${pageText.length} characters`);
+      } else {
+        console.log(`  ⚠ Skipped (too short: ${pageText.length} chars)`);
+      }
+
+      // Small delay to be polite to the server
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+    } catch (error) {
+      console.error(`  ✗ Error fetching page ${i + 1}:`, error);
+    }
+  }
+
+  console.log(`\n✓ Done! Total length: ${fullText.length.toLocaleString()} characters`);
+
+  // Download as text file
+  const filename = bookTitle.toLowerCase()
+    .replace(/[^a-z0-9]+/g, '_')
+    .replace(/^_|_$/g, '') + '.txt';
+
+  const blob = new Blob([fullText], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+
+  console.log(`✓ File downloaded: ${filename}`);
+  return fullText;
+}
+
+// Run the scraper
+scrapeBook();
