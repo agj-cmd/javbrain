@@ -350,28 +350,74 @@ Act without doing; [
 	Act without doing; work without effort. Think of the small as large and the few as many. Confront the difficult while it is still easy; accomplish the great task by a series of small acts. The Master never reaches for the great; thus she achieves greatness. When she runs into a difficulty, she stops and gives herself to it. She doesn’t cling to her own comfort; thus problems are no problem for her.
 ]
 What is rooted is easy to nourish. [
-	What is rooted is easy to nourish. What is recent is easy to correct. What is brittle is easy to break. What is small is easy to scatter. Prevent trouble before it arises. Put things in order before they exist. The giant pine tree grows from a tiny sprout. The journey of a thousand miles starts from beneath your feet. Rushing into action, you fail. Trying to grasp things, you lose them. Forcing a project to completion, you ruin what was almost ripe. Therefore the Master takes action by letting things take their course. He remains as calm at the end as at the beginning. He has nothing, thus has nothing to lose. What he desires is non-desire; what he learns is to unlearn. He simply reminds people of who they have always been. He cares about nothing but the Tao. Thus he can care for all things.
+	What is rooted is easy to nourish.
+	What is recent is easy to correct.
+	What is brittle is easy to break. What is small is easy to scatter.
+	Prevent trouble before it arises.
+	Put things in order before they exist.
+	The giant pine tree grows from a tiny sprout.
+	The journey of a thousand miles starts from beneath your feet.
+	Rushing into action, you fail.
+	Trying to grasp things, you lose them.
+	Forcing a project to completion, you ruin what was almost ripe.
+	Therefore the Master takes action by letting things take their course. He remains as calm at the end as at the beginning.
+	He has nothing, thus has nothing to lose.
+	What he desires is non-desire; what he learns is to unlearn.
+	He simply reminds people of who they have always been. He cares about nothing but the Tao.
+	Thus he can care for all things.
 ]
 The ancient Masters didn’t try to educate the people, [
-	The ancient Masters didn’t try to educate the people, but kindly taught them to not-know. When they think that they know the answers, people are difficult to guide. When they know that they don’t know, people can find their own way. If you want to learn how to govern, avoid being clever or rich. The simplest pattern is the clearest. Content with an ordinary life, you can show all people the way back to their own true nature.
+	The ancient Masters didn’t try to educate the people, but kindly taught them to not-know.
+	When they think that they know the answers, people are difficult to guide.
+	When they know that they don’t know, people can find their own way.
+	If you want to learn how to govern, avoid being clever or rich.
+	The simplest pattern is the clearest.
+	Content with an ordinary life, you can show all people the way back to their own true nature.
 ]
 All streams flow to the sea because it is lower than they are. [
-	All streams flow to the sea because it is lower than they are. Humility gives it its power. If you want to govern the people, you must place yourself below them. If you want to lead the people, you must learn how to follow them. The Master is above the people, and no one feels oppressed. She goes ahead of the people, and no one feels manipulated. The whole world is grateful to her. Because she competes with no one, no one can compete with her.
+	All streams flow to the sea because it is lower than they are. Humility gives it its power.
+	If you want to govern the people, you must place yourself below them.
+	If you want to lead the people, you must learn how to follow them.
+	The Master is above the people, and no one feels oppressed. She goes ahead of the people, and no one feels manipulated. The whole world is grateful to her.
+	Because she competes with no one, no one can compete with her.
 ]
 Some say that my teaching is nonsense. [
-	Some say that my teaching is nonsense. Others call it lofty but impractical. But to those who have looked inside themselves, this nonsense makes perfect sense. And to those who put it into practice, this loftiness has roots that go deep. I have just three things to teach: simplicity, patience, compassion. These three are your greatest treasures. Simple in actions and in thoughts, you return to the source of being. Patient with both friends and enemies, you accord with the way things are. Compassionate toward yourself, you reconcile all beings in the world.
+	Some say that my teaching is nonsense.
+	Others call it lofty but impractical.
+	But to those who have looked inside themselves, this nonsense makes perfect sense. And to those who put it into practice, this loftiness has roots that go deep.
+	I have just three things to teach: simplicity, patience, compassion.
+	These three are your greatest treasures.
+	Simple in actions and in thoughts, you return to the source of being.
+	Patient with both friends and enemies, you accord with the way things are.
+	Compassionate toward yourself, you reconcile all beings in the world.
 ]
 The best athlete wants his opponent at his best. [
-	The best athlete wants his opponent at his best. The best general enters the mind of his enemy. The best businessman serves the communal good. The best leader follows the will of the people. All of them embody the virtue of non-competition. Not that they don’t love to compete, but they do it in the spirit of play. In this they are like children and in harmony with the Tao.
+	The best athlete wants his opponent at his best.
+	The best general enters the mind of his enemy.
+	The best businessman serves the communal good.
+	The best leader follows the will of the people.
+	All of them embody the virtue of non-competition. Not that they don’t love to compete, but they do it in the spirit of play. In this they are like children and in harmony with the Tao.
 ]
 The generals have a saying: [
-	The generals have a saying: “Rather than make the first move it is better to wait and see. Rather than advance an inch it is better to retreat a yard.” This is called going forward without advancing, pushing back without using weapons. There is no greater misfortune than underestimating your enemy. Underestimating your enemy means thinking that he is evil. Thus you destroy your three treasures and become an enemy yourself. When two great forces oppose each other, the victory will go to the one that knows how to yield.
+	The generals have a saying: “Rather than make the first move it is better to wait and see. Rather than advance an inch it is better to retreat a yard.”
+	This is called going forward without advancing, pushing back without using weapons.
+	There is no greater misfortune than underestimating your enemy.
+	Underestimating your enemy means thinking that he is evil.
+	Thus you destroy your three treasures and become an enemy yourself.
+	When two great forces oppose each other, the victory will go to the one that knows how to yield.
 ]
 My teachings are easy to understand and easy to put into practice. [
-	My teachings are easy to understand and easy to put into practice. Yet your intellect will never grasp them, and if you try to practice them, you’ll fail. My teachings are older than the world. How can you grasp their meaning? If you want to know me, look inside your heart.
+	My teachings are easy to understand and easy to put into practice.
+	Yet your intellect will never grasp them, and if you try to practice them, you’ll fail.
+	My teachings are older than the world.
+	How can you grasp their meaning?
+	If you want to know me, look inside your heart.
 ]
-Not [
-	Not knowing is true knowledge. Presuming to know is a disease. First realize that you are sick; then you can move toward health. The Master is her own physician. She has healed herself of all knowing. Thus she is truly whole.
+Not knowing is true knowledge [
+	Not knowing is true knowledge.
+	Presuming to know is a disease.
+	First realize that you are sick; then you can move toward health.
+	The Master is her own physician. She has healed herself of all knowing. Thus she is truly whole.
 ]
 When they lose their sense of awe, [
 	When they lose their sense of awe, people turn to religion. When they no longer trust themselves, they begin to depend upon authority. Therefore the Master steps back so that people won’t be confused. He teaches without a teaching, so that people will have nothing to learn.

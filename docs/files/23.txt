@@ -1,22 +1,37 @@
-Mug Brownie Chocolate Peanut Butter [
+Poached Chicken with Scallion Ginger Sauce [
 	Tags [
-		Recipe
+		 Recipe. Good. Asian.
+	]
+	About [
+		 **Prep:** 20 min | **Cook:** 15 min | **Total:** 35 min
+		 7-ingredient poached chicken. Make ahead, serve room temperature. Sauce similar to Cantonese steamed fish.
 	]
 	Ingredients [
-		•  1/4 cup all-purpose flour
-		•  1/4 cup granulated sugar
-		•  2 tablespoons unsweetened cocoa powder
-		•  Pinch of salt
-		•  2 tablespoons vegetable oil (or melted butter)
-		•  3 tablespoons water
-		•  Optional: 1/4 teaspoon vanilla extract
-		•  Optional toppings: chocolate chips, nuts, or ice cream
+		Chicken [
+			- 5 chicken drumsticks (or 4 thighs; organic/kosher/free-range preferred)
+			- 3 slices ginger
+			- 1 scallion
+		]
+		Sauce [
+			- 3 tbsp vegetable oil
+			- 3 scallions (whites and greens separated, greens chopped)
+			- 2 tbsp light soy sauce
+			- 1/2 tsp sugar
+			- 1/2 cup cooking water
+			- 15g ginger (1.5 tbsp minced)
+		]
 	]
-	**Instructions:** [
-		•  **Mix Dry Ingredients:** In a microwave-safe mug (at least 12 ounces), combine the flour, sugar, cocoa powder, and a pinch of salt. Stir them together until well mixed.
-		•  **Add Wet Ingredients:** Add the vegetable oil and water to the dry ingredients. If using, also add the vanilla extract. Mix everything until smooth, ensuring there are no dry pockets at the bottom of the mug.
-		•  **Add Extras:** If you like, stir in some chocolate chips or chopped nuts for extra texture and flavor.
-		•  **Microwave:** Microwave on high for about 90 seconds. Start checking at 60 seconds, as microwave strengths can vary, and continue in 10-second increments until the brownie is set to your liking. It should still be moist when done, not dry.
-		•  **Serve:** Let the mug brownie cool for a couple of minutes as it will be very hot. You can top it with a scoop of ice cream or a drizzle of chocolate sauce for an extra indulgent treat.
+	Instructions [
+		1. Boil 4 cups water with 3 ginger slices and 1 scallion
+		2. Add chicken, return to boil
+		3. Reduce to low heat, cover, simmer 10 min (water moving, no rolling boil)
+		4. Turn off heat, leave covered 15 min
+		5. Ice bath chicken 5 min, then shred onto plate
+		6. Heat 3 tbsp oil on medium-low, fry scallion whites until crisp/brown
+		7. Place fried scallion whites on chicken
+		8. Add soy sauce, sugar, 1/2 cup cooking water to remaining oil, boil
+		9. Add ginger and scallion greens, adjust seasoning
+		10. Boil again, pour over chicken
+		 **Note:** For boneless skinless breast: 5 min simmer, still 15 min off-heat. Test doneness: clear juices from thickest part.
 	]
 ]
