@@ -1,5 +1,5 @@
 JAV Writing System [
-	VS Code-based writing system.
+	VS codium based writing system. Technical. Writing.
 	Recall and Find [
 		Computer locates all content. Author provides minimal hint. Keyboard-only operation from any location without losing position.
 		**Example:** Type "dragon fight" in search. System returns all scenes containing those terms across 50 chapters instantly. Select result. Jump to scene. Return to original position with single keystroke.
