@@ -1,0 +1,151 @@
+{
+	"name": "javprojectglossary",
+	"displayName": "javprojectglossary",
+	"publisher": "Jav",
+	"description": "Auto-syncs a list of words/phrases into global snippets and provides glossary search commands.",
+	"version": "1.0.0",
+	"engines": {
+		"vscode": "^1.80.0"
+	},
+	"activationEvents": [
+		"onStartupFinished"
+	],
+	"main": "./extension.js",
+	"contributes": {
+		"viewsContainers": {
+			"activitybar": [
+				{
+					"id": "javGlossary",
+					"title": "Glossary",
+					"icon": "$(book)"
+				}
+			]
+		},
+		"views": {
+			"javGlossary": [
+				{
+					"type": "webview",
+					"id": "javProjectGlossary.glossarySearchView",
+					"name": "Search"
+				}
+			]
+		},
+		"commands": [
+			{
+				"command": "javProjectGlossary.addToDictionary",
+				"title": "Glossary: Add Word to Glossary"
+			},
+			{
+				"command": "javProjectGlossary.projectSearch",
+				"title": "Glossary: Glossary Project Search"
+			},
+			{
+				"command": "javProjectGlossary.glossarySearch",
+				"title": "Glossary: Search Glossary Terms"
+			},
+			{
+				"command": "javProjectGlossary.openDashboard",
+				"title": "Glossary: Open Files Dashboard"
+			},
+			{
+				"command": "javProjectGlossary.focusDashboardSearch",
+				"title": "Glossary: Focus Dashboard Search"
+			},
+			{
+				"command": "javProjectGlossary.showUsageStats",
+				"title": "Glossary: Show Usage Statistics"
+			},
+			{
+				"command": "javProjectGlossary.resetUsageStats",
+				"title": "Glossary: Reset Usage Statistics"
+			},
+			{
+				"command": "javProjectGlossary.scanFolderTerms",
+				"title": "Glossary: Scan Folder for Glossary Terms"
+			},
+			{
+				"command": "javProjectGlossary.searchFocusInput",
+				"title": "Glossary: Focus Search Input"
+			}
+		],
+		"keybindings": [
+			{
+				"command": "javProjectGlossary.focusDashboardSearch",
+				"key": "ctrl+f",
+				"when": "activeWebviewPanelId == 'javFilesDashboard'"
+			},
+			{
+				"command": "javProjectGlossary.searchFocusInput",
+				"key": "f2",
+				"when": "focusedView == 'javProjectGlossary.glossarySearchView'"
+			}
+		],
+		"menus": {
+			"explorer/context": [
+				{
+					"command": "javProjectGlossary.scanFolderTerms",
+					"when": "explorerResourceIsFolder",
+					"group": "Jav"
+				}
+			]
+		},
+		"configuration": {
+			"type": "object",
+			"title": "JavProjectGlossary",
+			"properties": {
+				"javProjectGlossary.inputFiles": {
+					"type": "array",
+					"items": {
+						"type": "string"
+					},
+					"default": [],
+					"description": "Absolute paths to one or more text files. Each line becomes a glossary term (body[:description])."
+				},
+				"javProjectGlossary.includedScopes": {
+					"type": "array",
+					"items": {
+						"type": "string"
+					},
+					"default": [
+						"markdown",
+						"plaintext",
+						"jav"
+					],
+					"description": "Language scopes where glossary snippets apply"
+				},
+				"javProjectGlossary.entityColumns": {
+					"type": "object",
+					"default": {},
+					"description": "Entity columns for the dashboard. Key is column name. Value is an array of tag strings. Terms from inputFiles whose description (after ::) contains any of the tags will appear in that column.",
+					"additionalProperties": {
+						"type": "array",
+						"items": {
+							"type": "string"
+						}
+					}
+				},
+				"javProjectGlossary.snippetSpaceAfter": {
+					"type": "boolean",
+					"default": true,
+					"description": "Append a trailing space after each glossary snippet insertion."
+				},
+				"javProjectGlossary.readingWPM": {
+					"type": "number",
+					"default": 240,
+					"minimum": 1,
+					"maximum": 1000,
+					"description": "Words per minute for reading time calculation in the dashboard Stats column"
+				}
+			}
+		}
+	},
+	"devDependencies": {
+		"@types/vscode": "^1.80.0",
+		"vsce": "^2.17.0"
+	},
+	"__metadata": {
+		"installedTimestamp": 1773424694013,
+		"targetPlatform": "undefined",
+		"size": 127528
+	}
+}

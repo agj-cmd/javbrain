@@ -1,0 +1,33 @@
+{
+	"name": "toggle-settings-ext",
+	"displayName": "Toggle Settings Groups",
+	"description": "Quick-pick UI to toggle commented setting groups in your settings.json",
+	"version": "0.0.1",
+	"publisher": "your-publisher-id",
+	"engines": {
+		"vscode": "^1.60.0"
+	},
+	"main": "extension.js",
+	"activationEvents": [
+		"onCommand:toggleSettingsGroup.pickGroup"
+	],
+	"contributes": {
+		"commands": [
+			{
+				"command": "toggleSettingsGroup.pickGroup",
+				"title": "Toggle Settings Group…"
+			}
+		]
+	},
+	"scripts": {
+		"package": "echo. > LICENSE && vsce package --no-git-tag-version --allow-missing-repository && del LICENSE"
+	},
+	"devDependencies": {
+		"eslint": "^7.32.0"
+	},
+	"__metadata": {
+		"installedTimestamp": 1771280033093,
+		"targetPlatform": "undefined",
+		"size": 7049
+	}
+}

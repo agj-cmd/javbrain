@@ -1,0 +1,185 @@
+{
+	"name": "keyboard-autocorrect",
+	"displayName": "Keyboard Autocorrect",
+	"description": "iOS-style autocorrect using keyboard-distance-weighted edit distance",
+	"version": "0.1.0",
+	"engines": {
+		"vscode": "^1.75.0"
+	},
+	"categories": [
+		"Other"
+	],
+	"activationEvents": [
+		"onStartupFinished"
+	],
+	"main": "./extension.js",
+	"contributes": {
+		"configuration": {
+			"title": "Keyboard Autocorrect",
+			"properties": {
+				"autocorrect.enabled": {
+					"type": "boolean",
+					"default": true,
+					"description": "Enable or disable autocorrect"
+				},
+				"autocorrect.dictionaryPaths": {
+					"type": "array",
+					"items": {
+						"type": "string"
+					},
+					"default": [],
+					"description": "File paths to newline-delimited word lists (merged with built-in dictionary)"
+				},
+				"autocorrect.keyboardLayout": {
+					"type": "string",
+					"default": "qwlypjfou-\ncrstgmneia\nzxvdbkh,.?",
+					"description": "Keyboard layout: one row per line, characters in physical order"
+				},
+				"autocorrect.languageIds": {
+					"type": "array",
+					"items": {
+						"type": "string"
+					},
+					"default": [
+						"jav",
+						"markdown",
+						"plaintext"
+					],
+					"description": "Language IDs to activate autocorrect on"
+				},
+				"autocorrect.doublespacePeriod": {
+					"type": "boolean",
+					"default": true,
+					"description": "Double-space inserts a period and space (like iOS)"
+				},
+				"autocorrect.triplespaceComma": {
+					"type": "boolean",
+					"default": true,
+					"description": "Triple-space converts the period from double-space into a comma"
+				},
+				"autocorrect.capitalizeSentence": {
+					"type": "boolean",
+					"default": true,
+					"description": "Auto-capitalize first letter of sentences (after . ! ? : and at line start)"
+				},
+				"autocorrect.predictionEnabled": {
+					"type": "boolean",
+					"default": true,
+					"description": "Enable n-gram next-word prediction from corpus files"
+				},
+				"autocorrect.predictionCorpusPaths": {
+					"type": "array",
+					"items": {
+						"type": "string"
+					},
+					"default": [],
+					"description": "File or folder paths to text corpus for building n-gram predictions (supports ${execDir}, ${workspaceFolder}, ~)"
+				},
+				"autocorrect.predictionMaxSuggestions": {
+					"type": "integer",
+					"default": 5,
+					"minimum": 1,
+					"maximum": 20,
+					"description": "Maximum number of word predictions to show"
+				},
+				"autocorrect.correctionPreset": {
+					"type": "string",
+					"enum": [
+						"strict",
+						"balanced",
+						"aggressive",
+						"custom"
+					],
+					"default": "balanced",
+					"enumDescriptions": [
+						"Low threshold, high costs. Only corrects obvious typos.",
+						"Default tuning. Good for general writing.",
+						"High threshold, low costs. Catches more, risks more false positives.",
+						"Unlock individual cost/threshold settings below."
+					],
+					"description": "Correction aggressiveness preset"
+				},
+				"autocorrect.suffixesAllow": {
+					"type": "array",
+					"items": {
+						"type": "string"
+					},
+					"default": [
+						"s",
+						"es",
+						"ed",
+						"d",
+						"er",
+						"est",
+						"ing",
+						"ly",
+						"ment",
+						"ness",
+						"tion",
+						"sion",
+						"able",
+						"ible",
+						"ful",
+						"less",
+						"ous",
+						"ive",
+						"al",
+						"ial"
+					],
+					"description": "Suffixes that pass through uncorrected when the stem is in the dictionary (e.g. 'starts' = 'start' + 's')"
+				},
+				"autocorrect.costTransposition": {
+					"type": "number",
+					"default": 0.5,
+					"description": "(custom only) Cost for adjacent character swaps (e.g. hte→the)"
+				},
+				"autocorrect.costInsertDelete": {
+					"type": "number",
+					"default": 1,
+					"description": "(custom only) Cost for inserted or deleted characters"
+				},
+				"autocorrect.costSubstitutionMax": {
+					"type": "number",
+					"default": 2,
+					"description": "(custom only) Max cost for a single key substitution"
+				},
+				"autocorrect.costLengthPenalty": {
+					"type": "number",
+					"default": 0.5,
+					"description": "(custom only) Penalty multiplier per character of length difference"
+				},
+				"autocorrect.lengthFilterMax": {
+					"type": "integer",
+					"default": 3,
+					"description": "(custom only) Max character count difference to consider a candidate"
+				},
+				"autocorrect.thresholdBase": {
+					"type": "number",
+					"default": 2,
+					"description": "(custom only) Minimum distance threshold to accept a correction"
+				},
+				"autocorrect.thresholdScale": {
+					"type": "number",
+					"default": 0.6,
+					"description": "(custom only) Threshold scales with word length: max(thresholdBase, length * thresholdScale)"
+				},
+				"autocorrect.lengthWordMin": {
+					"type": "integer",
+					"default": 1,
+					"description": "(custom only) Minimum word length to attempt correction"
+				}
+			}
+		},
+		"commands": [
+			{
+				"command": "autocorrect.toggle",
+				"title": "Autocorrect: Toggle On/Off"
+			}
+		]
+	},
+	"__metadata": {
+		"installedTimestamp": 1773318597881,
+		"targetPlatform": "undefined",
+		"size": 37300
+	}
+}

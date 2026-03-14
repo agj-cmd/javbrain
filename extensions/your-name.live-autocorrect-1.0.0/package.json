@@ -1,0 +1,41 @@
+{
+	"name": "live-autocorrect",
+	"displayName": "Live AutoCorrect",
+	"description": "Live autocorrects completed words using a definition file.",
+	"version": "1.0.0",
+	"publisher": "your-name",
+	"engines": {
+		"vscode": "^1.80.0"
+	},
+	"activationEvents": [
+		"*"
+	],
+	"main": "./extension.js",
+	"contributes": {
+		"configuration": {
+			"title": "Live AutoCorrect",
+			"properties": {
+				"liveAutoCorrect.correctionFilePath": {
+					"type": "string",
+					"default": "",
+					"description": "Path to autocorrect definitions file"
+				}
+			}
+		},
+		"commands": [
+			{
+				"command": "liveAutoCorrect.toggle",
+				"title": "Toggle Live AutoCorrect"
+			},
+			{
+				"command": "liveAutoCorrect.applyToSelectionOrLine",
+				"title": "Apply AutoCorrect to Selection or Line"
+			}
+		]
+	},
+	"__metadata": {
+		"installedTimestamp": 1773154177865,
+		"targetPlatform": "undefined",
+		"size": 12222
+	}
+}

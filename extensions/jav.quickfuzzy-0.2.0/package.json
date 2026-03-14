@@ -1,0 +1,53 @@
+{
+	"name": "quickFuzzy",
+	"displayName": "Quick Fuzzy",
+	"description": "Quick fuzzy search",
+	"author": "jav",
+	"license": "MIT",
+	"version": "0.2.0",
+	"publisher": "jav",
+	"engines": {
+		"vscode": "^1.40.0"
+	},
+	"activationEvents": [
+		"onStartupFinished"
+	],
+	"main": "./extension.js",
+	"contributes": {
+		"commands": [
+			{
+				"title": "Fast Quick Fuzzy",
+				"category": "Search",
+				"command": "fuzzySearch.fastQuickFuzzy"
+			},
+			{
+				"command": "fuzzySearch.acceptSplitRight",
+				"title": "Fuzzy Search: Accept and Split Right"
+			},
+			{
+				"command": "fuzzySearch.acceptSplitInGroup",
+				"title": "Fuzzy Search: Accept and Split in Group"
+			}
+		],
+		"keybindings": [
+			{
+				"command": "fuzzySearch.acceptSplitRight",
+				"key": "ctrl+enter",
+				"when": "inQuickOpen"
+			},
+			{
+				"command": "fuzzySearch.acceptSplitInGroup",
+				"key": "alt+enter",
+				"when": "inQuickOpen"
+			}
+		]
+	},
+	"scripts": {
+		"package": "echo. > LICENSE && vsce package --no-git-tag-version --allow-missing-repository && del LICENSE"
+	},
+	"__metadata": {
+		"installedTimestamp": 1770994886309,
+		"targetPlatform": "undefined",
+		"size": 12511
+	}
+}

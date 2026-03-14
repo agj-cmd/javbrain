@@ -1,0 +1,277 @@
+{
+	"name": "javnavigation",
+	"displayName": "JavNavigation",
+	"description": "Clause-based navigation with visual highlighting",
+	"version": "2.1.0",
+	"publisher": "Jav",
+	"engines": {
+		"vscode": "^1.70.0"
+	},
+	"categories": [
+		"Other"
+	],
+	"activationEvents": [
+		"onStartupFinished"
+	],
+	"main": "./src/extension.js",
+	"contributes": {
+		"commands": [
+			{
+				"command": "JavNav.cycleHighlightMode",
+				"title": "JavNav: Cycle Highlight Mode"
+			},
+			{
+				"command": "JavNav.clauseRight",
+				"title": "JavNav: Move Clause Right"
+			},
+			{
+				"command": "JavNav.clauseLeft",
+				"title": "JavNav: Move Clause Left"
+			},
+			{
+				"command": "JavNav.right",
+				"title": "JavNav: Move Right"
+			},
+			{
+				"command": "JavNav.left",
+				"title": "JavNav: Move Left"
+			},
+			{
+				"command": "JavNav.up",
+				"title": "JavNav: Move Up"
+			},
+			{
+				"command": "JavNav.down",
+				"title": "JavNav: Move Down"
+			},
+			{
+				"command": "JavNav.sentenceSelectRight",
+				"title": "JavNav: Select Sentence Right"
+			},
+			{
+				"command": "JavNav.sentenceSelectLeft",
+				"title": "JavNav: Select Sentence Left"
+			},
+			{
+				"command": "JavNav.clauseSelectRight",
+				"title": "JavNav: Select Clause Right"
+			},
+			{
+				"command": "JavNav.clauseSelectLeft",
+				"title": "JavNav: Select Clause Left"
+			},
+			{
+				"command": "JavNav.upSelect",
+				"title": "JavNav: Move Up (Select)"
+			},
+			{
+				"command": "JavNav.downSelect",
+				"title": "JavNav: Move Down (Select)"
+			},
+			{
+				"command": "JavNav.toggleMode",
+				"title": "JavNav: Toggle Clause/Normal Mode"
+			},
+			{
+				"command": "JavNav.cycleScrollMode",
+				"title": "JavNav: Cycle Scroll Mode"
+			},
+			{
+				"command": "JavNav.selectBackQuick",
+				"title": "JavNav: Select Back Quick"
+			},
+			{
+				"command": "JavNav.selectForwardQuick",
+				"title": "JavNav: Select Forward Quick"
+			}
+		],
+		"configuration": {
+			"title": "JavNavigation",
+			"properties": {
+				"JavNavigation.segmentFade.startOpacity": {
+					"type": "number",
+					"default": 0.6,
+					"description": "Opacity at first word (0.0–1.0)"
+				},
+				"JavNavigation.segmentFade.endOpacity": {
+					"type": "number",
+					"default": 0,
+					"description": "Opacity at last word (0.0–1.0)"
+				},
+				"javnav.sentenceStopChars": {
+					"type": "array",
+					"items": {
+						"type": "string"
+					},
+					"default": [
+						".",
+						"?",
+						"!",
+						";",
+						":",
+						"\"",
+						"\n"
+					],
+					"description": "Stop characters for sentence-level selection."
+				},
+				"javnav.clauseStopChars": {
+					"type": "array",
+					"items": {
+						"type": "string"
+					},
+					"default": [
+						".",
+						"?",
+						"!",
+						";",
+						":",
+						",",
+						"\"",
+						"(",
+						")",
+						"[",
+						"]",
+						"{",
+						"}",
+						"\n"
+					],
+					"description": "Stop characters for clause-level selection and navigation."
+				},
+				"JavNavigation.highlightVisibleLines": {
+					"type": "boolean",
+					"default": false,
+					"description": "Highlight segments on all visible lines (true) or only the cursor line (false)"
+				},
+				"JavNavigation.selection": {
+					"type": "object",
+					"description": "Decoration for selection highlights.",
+					"default": {
+						"light": {
+							"backgroundColor": "hsl(0 0% 0% / 0.2)",
+							"borderColor": "hsl(0 0% 0%)",
+							"borderWidth": "1px",
+							"borderStyle": "solid"
+						},
+						"dark": {
+							"backgroundColor": "hsl(0 0% 100% / 0.2)",
+							"borderColor": "hsl(0 0% 100%)",
+							"borderWidth": "1px",
+							"borderStyle": "solid"
+						}
+					}
+				},
+				"JavNavigation.regexClause": {
+					"type": "string",
+					"description": "Regex for segment highlighting in clause mode.",
+					"default": "[.|,|\\\"|\\?|!|\\n|\\(\\)|-|:|/|\\{\\}]|[ ]{2,}|[.!?\"][ ]+\\w+"
+				},
+				"JavNavigation.segmentDecorations": {
+					"type": "object",
+					"description": "Decoration styles applied to segments on the current line, starting from the one under the cursor (index 0). Each level applies outward symmetrically. If more segments exist than styles, the last one is reused. Supports 'backgroundColor', 'color' (foreground), and other VS Code decoration properties.",
+					"default": {
+						"light": [
+							{
+								"backgroundColor": "hsl(112 100% 80%)",
+								"color": "hsl(112 100% 20%)"
+							},
+							{
+								"backgroundColor": "hsl(112 100% 60%)",
+								"color": "hsl(112 100% 10%)"
+							},
+							{
+								"backgroundColor": "hsl(112 100% 40%)",
+								"color": "hsl(0 0% 100%)"
+							}
+						],
+						"dark": [
+							{
+								"backgroundColor": "hsl(112 100% 30%)",
+								"color": "hsl(112 100% 90%)"
+							},
+							{
+								"backgroundColor": "hsl(112 100% 20%)",
+								"color": "hsl(112 100% 95%)"
+							},
+							{
+								"backgroundColor": "hsl(112 100% 10%)",
+								"color": "hsl(0 0% 100%)"
+							}
+						]
+					}
+				}
+			}
+		},
+		"keybindings": [
+			{
+				"command": "JavNav.clauseRight",
+				"key": "ctrl+right",
+				"when": "editorTextFocus && JavNav.clauseMode"
+			},
+			{
+				"command": "JavNav.clauseLeft",
+				"key": "ctrl+left",
+				"when": "editorTextFocus && JavNav.clauseMode"
+			},
+			{
+				"command": "JavNav.right",
+				"key": "right",
+				"when": "editorTextFocus && JavNav.clauseMode"
+			},
+			{
+				"command": "JavNav.left",
+				"key": "left",
+				"when": "editorTextFocus && JavNav.clauseMode"
+			},
+			{
+				"command": "JavNav.up",
+				"key": "up",
+				"when": "editorTextFocus && JavNav.clauseMode && !suggestWidgetVisible"
+			},
+			{
+				"command": "JavNav.down",
+				"key": "down",
+				"when": "editorTextFocus && JavNav.clauseMode && !suggestWidgetVisible"
+			},
+			{
+				"command": "JavNav.sentenceSelectRight",
+				"key": "shift+right",
+				"when": "editorTextFocus && JavNav.clauseMode"
+			},
+			{
+				"command": "JavNav.sentenceSelectLeft",
+				"key": "shift+left",
+				"when": "editorTextFocus && JavNav.clauseMode"
+			},
+			{
+				"command": "JavNav.clauseSelectRight",
+				"key": "ctrl+shift+right",
+				"when": "editorTextFocus && JavNav.clauseMode"
+			},
+			{
+				"command": "JavNav.clauseSelectLeft",
+				"key": "ctrl+shift+left",
+				"when": "editorTextFocus && JavNav.clauseMode"
+			},
+			{
+				"command": "JavNav.upSelect",
+				"key": "shift+up",
+				"when": "editorTextFocus && JavNav.clauseMode && !suggestWidgetVisible"
+			},
+			{
+				"command": "JavNav.downSelect",
+				"key": "shift+down",
+				"when": "editorTextFocus && JavNav.clauseMode && !suggestWidgetVisible"
+			},
+			{
+				"command": "JavNav.toggleMode",
+				"key": "alt+m",
+				"when": "editorTextFocus"
+			}
+		]
+	},
+	"__metadata": {
+		"installedTimestamp": 1771341908545,
+		"targetPlatform": "undefined",
+		"size": 40372
+	}
+}

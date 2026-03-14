@@ -1,0 +1,35 @@
+{
+	"name": "hsl-adjust",
+	"displayName": "HSL Adjust Hex Colors",
+	"description": "Batch adjust hue, saturation, and lightness of hex colors in selection",
+	"version": "1.0.0",
+	"engines": {
+		"vscode": "^1.74.0"
+	},
+	"categories": [
+		"Other"
+	],
+	"activationEvents": [],
+	"main": "./extension.js",
+	"contributes": {
+		"commands": [
+			{
+				"command": "hslAdjust.run",
+				"title": "HSL Adjust: Modify Hex Colors"
+			}
+		],
+		"keybindings": [
+			{
+				"command": "hslAdjust.run",
+				"key": "ctrl+shift+h",
+				"mac": "cmd+shift+h",
+				"when": "editorTextFocus && editorHasSelection"
+			}
+		]
+	},
+	"__metadata": {
+		"installedTimestamp": 1770308978102,
+		"targetPlatform": "undefined",
+		"size": 10648
+	}
+}

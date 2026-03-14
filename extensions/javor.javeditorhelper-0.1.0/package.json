@@ -1,0 +1,89 @@
+{
+	"name": "JavEditorHelper",
+	"publisher": "javor",
+	"displayName": "Jav Editor Helper",
+	"description": "Combined dialog editing, curly/straight quotes conversion, and text cleanup with auto-capitalization.",
+	"version": "0.1.0",
+	"engines": {
+		"vscode": "^1.85.0"
+	},
+	"categories": [
+		"Other"
+	],
+	"activationEvents": [
+		"onStartupFinished"
+	],
+	"main": "./src/extension.js",
+	"contributes": {
+		"commands": [
+			{
+				"command": "extension.toggleCase",
+				"title": "Toggle Case"
+			},
+			{
+				"command": "JavEditorHelper.nextEmptyLineDown",
+				"title": "Jav: Go to Next Empty Line Down"
+			},
+			{
+				"command": "JavEditorHelper.nextEmptyLineUp",
+				"title": "Jav: Go to Next Empty Line Up"
+			},
+			{
+				"command": "JavEditorHelper.editDialog",
+				"title": "Jav: Edit Dialog Quotes"
+			},
+			{
+				"command": "Jav.convertToCurlyQuotation",
+				"title": "Jav: Curly Quotation"
+			},
+			{
+				"command": "Jav.convertToStraightQuotation",
+				"title": "Jav: Straight Quotation"
+			},
+			{
+				"command": "Jav.textCleanup",
+				"title": "Jav: Text Cleanup"
+			},
+			{
+				"command": "JavEditorHelper.insertSpace",
+				"title": "Jav: Insert Space"
+			},
+			{
+				"command": "JavEditorHelper.goToLineNext",
+				"title": "Jav: Go to Line Next (Non-empty, Non-comment)"
+			},
+			{
+				"command": "JavEditorHelper.goToLinePrevious",
+				"title": "Jav: Go to Line Previous (Non-empty, Non-comment)"
+			},
+			{
+				"command": "JavEditorHelper.joinLineAbove",
+				"title": "Join Line Above"
+			}
+		],
+		"configuration": {
+			"title": "JavEditorHelper",
+			"properties": {
+				"JavEditorHelper.punctuationCharacters": {
+					"type": "string",
+					"default": ",.!?'\";:“”‘’",
+					"description": "Characters to cycle through in the 'Cycle Punctuation' command."
+				},
+				"JavEditorHelper.capitalizationFilePaths": {
+					"type": "array",
+					"items": {
+						"type": "string"
+					},
+					"default": [],
+					"description": "Array of absolute paths to .txt files containing words/phrases to force-capitalize, one per line."
+				}
+			}
+		}
+	},
+	"dependencies": {},
+	"__metadata": {
+		"installedTimestamp": 1770432228270,
+		"targetPlatform": "undefined",
+		"size": 36289
+	}
+}

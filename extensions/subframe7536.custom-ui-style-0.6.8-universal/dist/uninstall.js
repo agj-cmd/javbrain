@@ -1,0 +1,1 @@
+const e=require(`./cache-WSdMB583.js`),t=e.__toESM(require(`node:fs`));function n(e,n){t.default.existsSync(e)&&t.default.renameSync(n,e)}try{let r=JSON.parse(t.default.readFileSync(e.cacheFilePath,`utf-8`));Promise.all([...r.builtin,...r.extension].map(async([e,t])=>n(e,t)))}catch{}
