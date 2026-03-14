@@ -1,7 +1,6 @@
 Curry Place [
 	About [
-		Ttt: restaurant. Indian. Curry.
-		rrr:
+		restaurant. Indian. Curry. Silver Spring
 	]
 	2/23/2026, 5:11:23 PM [
 		- Alex got chicken fried rice. Excellent. Decent portion. Strong cilantro flavor. Pallavi liked it to.
