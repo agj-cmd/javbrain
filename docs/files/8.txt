@@ -1,61 +1,24 @@
-BBQ Ribs—Pressure Cooker [
-	Tags [
-		recipe, good, Our Best Bites
+JAV Writing System [
+	VS codium based writing system. Technical. Writing.
+	Recall and Find [
+		Computer locates all content. Author provides minimal hint. Keyboard-only operation from any location without losing position.
+		**Example:** Type "dragon fight" in search. System returns all scenes containing those terms across 50 chapters instantly. Select result. Jump to scene. Return to original position with single keystroke.
+		No manual tagging or categorization of scenes/chapters. Define keywords and phrases as needed. Data table parses from chapters. Filter by actual text content. Content stays current automatically. Filter search finds content instantly without requiring memory of physical location.
+		**Example:** Write "POV: Marcus" at chapter start. Data table auto-populates "Marcus" under POV column. Filter table to show only Marcus chapters. See all 23 Marcus scenes. No manual tagging required. Add new Marcus chapter—table updates automatically.
+		Fuzzy search within file and across files. Results appear immediately in separate, filterable view. Keyboard-driven—no mode switching for quick recall.
+		**Example:** Search "sword brok". System finds "sword broken", "broke his sword", "shattered blade". Results appear in sidebar. Narrow by typing "chapter 5". Hands never leave keyboard.
+		Glossaries function as autocomplete. Tag categories instead of remembering names. Retrieve characters/places/ideas by association.
+		**Example:** Type "knight from". Autocomplete suggests "Sir Aldric (Knight, Northlands)". Cannot remember character name but recall role and location. Select from filtered list of northern knights.
 	]
-	Ingredients [
-		For the ribs: [
-			• 2 racks baby back ribs (about 1.5–2 lbs each)
-		]
-		For the dry rub: [
-			• 2 tablespoons smoked paprika
-			• 2 tablespoons brown sugar
-			• 1.5 tablespoons chili powder
-			• 1 teaspoon kosher salt
-			• 1/2 teaspoon black pepper
-		]
-		For the BBQ sauce: [
-			• 1.5 cups ketchup
-			• 3 tablespoons brown sugar
-			• 3 tablespoons Worcestershire sauce
-			• 3 tablespoons apple cider vinegar
-			• 1 teaspoon dry mustard
-			• 3/4 teaspoon kosher salt
-			• 1 tablespoon vegetable or olive oil
-			• 1 large onion, diced
-			• 4 cloves garlic, minced or pressed
-		]
+	Navigation and Selection [
+		Sentence, clause, paragraph movement and selection. Direct word-level cursor jumping.
+		Select mode rather than hold—allows quicker, easier selection, less rsi and cognitive load.
 	]
-	Instructions [
-		Prepare the ribs: [
-			• Line a large baking sheet or cutting board with foil for easy cleanup.
-			• Cut the ribs into 2-rib sections and place them on the prepared foil.
-		]
-		Apply the dry rub: [
-			• In a bowl, combine all dry rub ingredients.
-			• Sprinkle the rub evenly over both sides of the rib sections, massaging it into the meat.
-		]
-		Prepare the BBQ sauce: [
-			• In a mixing bowl, whisk together ketchup, 3 tablespoons brown sugar, Worcestershire sauce, apple cider vinegar, dry mustard, and 3/4 teaspoon salt.
-			• Set your pressure cooker to the sauté function. Add oil and diced onion, sautéing for 3–4 minutes until softened.
-			• Add minced garlic and cook for an additional 30 seconds, stirring frequently.
-			• Pour in the ketchup mixture, stirring to combine.
-		]
-		Cook the ribs: [
-			• Place a few rib sections into the pressure cooker at a time, turning them to coat with the sauce. Arrange the coated ribs upright in the pot, meat-side facing outward.
-			• Secure the lid and set the pressure cooker to high pressure for 30 minutes.
-			• Once cooking is complete, allow the pressure to release naturally for 15 minutes, then manually release any remaining pressure.
-		]
-		Finish the sauce: [
-			• Carefully remove the ribs from the pressure cooker and set aside.
-			• Activate the sauté function again and simmer the remaining sauce for about 10 minutes to thicken, if necessary.
-		]
-		Optional broiling: [
-			• For a charred exterior, preheat your oven's broiler.
-			• Place the ribs on a baking sheet, meat-side up, and broil for a few minutes until the desired level of caramelization is achieved.
-		]
-		Serve: [
-			• Generously brush the ribs with the thickened BBQ sauce.
-			• Serve any extra sauce on the side.
-		]
+	Auto punctuation and cleanup. [
+		Hammer out the words, computer tidies up spacing, punctuation, capitalization. Auther never needs to press shift to capitalize words.
+	]
+	Compare Text [
+		Side-by-side or inline comparison for editing phase.
+		**Example:** Draft 1 shows "The battle raged for hours." Draft 2 shows "They fought until dawn broke." View versions side-by-side or see inline highlighting of changes. Toggle between versions to evaluate pacing differences.
 	]
 ]
