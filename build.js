@@ -9,6 +9,19 @@ const FILES_DIR = path.join(DIST_DIR, 'files');
 const PREVIEW_LENGTH = 200;
 const INDEX_CHUNK_SIZE = 5 * 1024 * 1024; // 5MB
 
+// Clean old output
+if (fs.existsSync(FILES_DIR)) {
+  fs.rmSync(FILES_DIR, { recursive: true });
+}
+// Clean old index/data files
+if (fs.existsSync(DIST_DIR)) {
+  for (const f of fs.readdirSync(DIST_DIR)) {
+    if (f.endsWith('.json') || f === 'index.html' || f === 'viewer.html') {
+      fs.unlinkSync(path.join(DIST_DIR, f));
+    }
+  }
+}
+
 // Ensure output dirs
 fs.mkdirSync(DIST_DIR, { recursive: true });
 fs.mkdirSync(FILES_DIR, { recursive: true });
@@ -64,14 +77,6 @@ files.forEach((filename, i) => {
 
 // Write data.json
 fs.writeFileSync(path.join(DIST_DIR, 'data.json'), JSON.stringify(data), 'utf-8');
-
-// Clean up old index files
-const oldIndex = path.join(DIST_DIR, 'index.json');
-const oldManifest = path.join(DIST_DIR, 'index-manifest.json');
-if (fs.existsSync(oldIndex)) fs.unlinkSync(oldIndex);
-if (fs.existsSync(oldManifest)) fs.unlinkSync(oldManifest);
-const oldChunks = fs.readdirSync(DIST_DIR).filter(f => f.match(/^index-[a-z0-9]\.json$/));
-for (const f of oldChunks) fs.unlinkSync(path.join(DIST_DIR, f));
 
 // Write index — split into chunks if too large
 const indexStr = JSON.stringify(invertedIndex);
