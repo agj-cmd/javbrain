@@ -5,44 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>javbrain</title>
 <style>
-@font-face {
-  font-family: 'iA Writer Quattro S';
-  src: url('fonts/iAWriterQuattroS-Regular.woff2') format('woff2'), url('fonts/iAWriterQuattroS-Regular.woff') format('woff');
-  font-weight: normal;
-  font-style: normal;
-}
-@font-face {
-  font-family: 'iA Writer Quattro S';
-  src: url('fonts/iAWriterQuattroS-Italic.woff2') format('woff2'), url('fonts/iAWriterQuattroS-Italic.woff') format('woff');
-  font-weight: normal;
-  font-style: italic;
-}
-@font-face {
-  font-family: 'iA Writer Quattro S';
-  src: url('fonts/iAWriterQuattroS-Bold.woff2') format('woff2'), url('fonts/iAWriterQuattroS-Bold.woff') format('woff');
-  font-weight: bold;
-  font-style: normal;
-}
-@font-face {
-  font-family: 'iA Writer Quattro S';
-  src: url('fonts/iAWriterQuattroS-BoldItalic.woff2') format('woff2'), url('fonts/iAWriterQuattroS-BoldItalic.woff') format('woff');
-  font-weight: bold;
-  font-style: italic;
-}
-@font-face {
-  font-family: 'TT2020 Style E';
-  src: url('fonts/TT2020StyleE-Regular.ttf') format('truetype');
-  font-weight: normal;
-  font-style: normal;
-}
-@font-face {
-  font-family: 'TT2020 Style E';
-  src: url('fonts/TT2020StyleE-Italic.ttf') format('truetype');
-  font-weight: normal;
-  font-style: italic;
-}
 :root {
-  --font-body: 'iA Writer Quattro S', sans-serif;
+  --font-body: sans-serif;
   --font-size: 18px;
   --line-height: 1.4;
   --cell-padding: 4px 8px;
@@ -174,10 +138,12 @@ mark { background: var(--highlight-bg); color: var(--highlight-text); padding: 0
   position: fixed; bottom: 32px; background: var(--bg-primary);
   border: 1px solid var(--border-color); padding: 4px 0; z-index: 100;
   font-size: calc(var(--font-size) - 1px); box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
+  max-height: 60vh; overflow-y: auto;
 }
 .setting-dropdown .opt { padding: 2px 12px; cursor: pointer; white-space: nowrap; }
 .setting-dropdown .opt:hover { background: var(--row-hover); }
 .setting-dropdown .opt.active { font-weight: 700; }
+.setting-dropdown .opt.focused { background: var(--highlight-bg); color: var(--highlight-text); }
 </style>
 </head>
 <body>
@@ -199,8 +165,8 @@ mark { background: var(--highlight-bg); color: var(--highlight-text); padding: 0
 
 <div id="bottom-bar">
   <span class="bar-cmd"><kbd>Space</kbd> Search</span>
-  <span class="bar-cmd"><kbd>T</kbd> Theme</span>
-  <span class="bar-cmd"><kbd>F</kbd> Font</span>
+  <span class="bar-cmd"><kbd>T</kbd> <span id="theme-label">Theme</span></span>
+  <span class="bar-cmd"><kbd>F</kbd> <span id="font-label">Font</span></span>
   <span class="bar-cmd"><kbd>&uarr;&darr;</kbd> Navigate</span>
   <span class="bar-cmd"><kbd>&larr;&rarr;</kbd> Fold</span>
   <span class="bar-cmd"><kbd>Enter</kbd> Open</span>
@@ -238,21 +204,9 @@ mark { background: var(--highlight-bg); color: var(--highlight-text); padding: 0
   let themeKeys = [];
   let currentTheme = localStorage.getItem('jb-theme') || 'dark';
 
-  // Font cycling — add entries here when you drop new fonts in fonts/
-  const FONTS = [
-    { label: 'Quattro', value: "'iA Writer Quattro S', sans-serif" },
-    { label: 'TT2020', value: "'TT2020 Style E', serif" },
-    { label: 'System', value: "-apple-system, 'Segoe UI', system-ui, sans-serif" },
-    { label: 'Georgia', value: "Georgia, 'Times New Roman', serif" },
-    { label: 'Mono', value: "'SF Mono', 'Cascadia Code', Consolas, 'Liberation Mono', monospace" },
-    { label: 'Palatino', value: "'Palatino Linotype', Palatino, 'Book Antiqua', serif" },
-    { label: 'Garamond', value: "Garamond, 'EB Garamond', serif" },
-    { label: 'Verdana', value: "Verdana, Geneva, sans-serif" },
-    { label: 'Bookman', value: "'Bookman Old Style', Bookman, serif" },
-    { label: 'Charter', value: "Charter, 'Bitstream Charter', Georgia, serif" }
-];
+  // Fonts — populated at init from fontfaces.json
+  let FONTS = [];
   let currentFont = parseInt(localStorage.getItem('jb-font') || '0');
-  if (currentFont >= FONTS.length) currentFont = 0;
 
   const tbody = document.getElementById('tbody');
   const bottomBar = document.getElementById('bottom-bar');
@@ -262,15 +216,55 @@ mark { background: var(--highlight-bg); color: var(--highlight-text); padding: 0
   const searchInfo = document.getElementById('search-info');
   const fileCount = document.getElementById('file-count');
 
+  // Inject @font-face rules from fontfaces.json data
+  function injectFontFaces(fontfaces) {
+    let css = '';
+    for (const family of fontfaces) {
+      for (const face of family.faces) {
+        const srcParts = face.src.map(s => "url('" + s.url + "') format('" + s.format + "')").join(', ');
+        css += '@font-face {\n' +
+          "  font-family: '" + family.family + "';\n" +
+          '  src: ' + srcParts + ';\n' +
+          '  font-weight: ' + face.weight + ';\n' +
+          '  font-style: ' + face.style + ';\n' +
+          '}\n';
+      }
+    }
+    const style = document.createElement('style');
+    style.textContent = css;
+    document.head.appendChild(style);
+  }
+
   async function init() {
+    // Load config (themes.json — restructured with defaults + themes)
+    let config;
     try {
       const res = await vfetch('themes.json');
-      themes = await res.json();
+      config = await res.json();
     } catch(e) {
-      themes = { light: { name: 'Light', vars: {} }, dark: { name: 'Dark', vars: {} } };
+      config = { defaults: {}, themes: { light: { name: 'Light', vars: {} }, dark: { name: 'Dark', vars: {} } } };
     }
+    const defaults = config.defaults || {};
+    themes = config.themes || {};
     themeKeys = Object.keys(themes);
+    if (!defaults.theme) defaults.theme = 'dark';
+    if (!themes[currentTheme]) currentTheme = defaults.theme;
     if (!themes[currentTheme]) currentTheme = themeKeys[0];
+
+    // Apply display defaults
+    if (defaults.fontSize) document.documentElement.style.setProperty('--font-size', defaults.fontSize);
+    if (defaults.lineHeight) document.documentElement.style.setProperty('--line-height', defaults.lineHeight);
+
+    // Load fontfaces.json — auto-generated by build.js from fonts/ dir
+    try {
+      const res = await vfetch('fontfaces.json');
+      const fontfaces = await res.json();
+      injectFontFaces(fontfaces);
+      FONTS = fontfaces.map(f => ({ label: f.label || f.family, value: "'" + f.family + "', sans-serif" }));
+    } catch(e) {
+      FONTS = [];
+    }
+    if (currentFont >= FONTS.length) currentFont = 0;
 
     const dataRes = await vfetch('data.json');
     fileData = await dataRes.json();
@@ -302,6 +296,7 @@ mark { background: var(--highlight-bg); color: var(--highlight-text); padding: 0
     const t = themes[currentTheme]; if (!t) return;
     for (const [k, v] of Object.entries(t.vars)) document.documentElement.style.setProperty(k, v);
     localStorage.setItem('jb-theme', currentTheme);
+    document.getElementById('theme-label').textContent = t.name || currentTheme;
   }
   function cycleTheme() {
     currentTheme = themeKeys[(themeKeys.indexOf(currentTheme) + 1) % themeKeys.length];
@@ -309,87 +304,122 @@ mark { background: var(--highlight-bg); color: var(--highlight-text); padding: 0
   }
 
   function applyFont() {
+    if (FONTS.length === 0) return;
     document.documentElement.style.setProperty('--font-body', FONTS[currentFont].value);
     localStorage.setItem('jb-font', currentFont);
+    document.getElementById('font-label').textContent = FONTS[currentFont].label;
   }
   function cycleFont() {
+    if (FONTS.length === 0) return;
     currentFont = (currentFont + 1) % FONTS.length;
     applyFont();
   }
 
-  function showDropdown(id, opts) {
+  let dropdownIdx = -1;
+  let dropdownAction = null;
+
+  function openDropdown(opts, onSelect) {
     closeDropdown();
     const el = document.createElement('div');
-    el.className = 'setting-dropdown'; el.id = 'dropdown-' + id;
-    opts.forEach(o => {
+    el.className = 'setting-dropdown';
+    dropdownIdx = opts.findIndex(o => o.active);
+    if (dropdownIdx < 0) dropdownIdx = 0;
+    dropdownAction = onSelect;
+    opts.forEach((o, i) => {
       const d = document.createElement('div');
-      d.className = 'opt' + (o.active ? ' active' : '');
-      d.textContent = o.label; el.appendChild(d);
+      d.className = 'opt' + (o.active ? ' active' : '') + (i === dropdownIdx ? ' focused' : '');
+      d.textContent = o.label;
+      d.addEventListener('click', () => { onSelect(i); closeDropdown(); });
+      el.appendChild(d);
     });
-    document.body.appendChild(el); activeDropdown = el; el.style.left = '8px';
-    setTimeout(() => { if (activeDropdown === el) closeDropdown(); }, 1500);
+    document.body.appendChild(el);
+    activeDropdown = el;
+    el.style.left = '8px';
+    const f = el.querySelector('.opt.focused');
+    if (f) f.scrollIntoView({ block: 'nearest' });
   }
-  function closeDropdown() { if (activeDropdown) { activeDropdown.remove(); activeDropdown = null; } }
+  function closeDropdown() {
+    if (activeDropdown) { activeDropdown.remove(); activeDropdown = null; dropdownAction = null; }
+  }
+  function dropdownNav(key) {
+    if (!activeDropdown) return false;
+    const items = activeDropdown.querySelectorAll('.opt');
+    if (key === 'ArrowDown' || key === 'ArrowRight') {
+      dropdownIdx = Math.min(dropdownIdx + 1, items.length - 1);
+    } else if (key === 'ArrowUp' || key === 'ArrowLeft') {
+      dropdownIdx = Math.max(dropdownIdx - 1, 0);
+    } else if (key === 'Enter') {
+      if (dropdownAction) dropdownAction(dropdownIdx);
+      closeDropdown(); return true;
+    } else if (key === 'Escape' || key === 'Tab') {
+      closeDropdown(); return true;
+    } else { return false; }
+    items.forEach((el, i) => el.classList.toggle('focused', i === dropdownIdx));
+    items[dropdownIdx].scrollIntoView({ block: 'nearest' });
+    return true;
+  }
+  function openThemeDropdown() {
+    if (activeDropdown) { closeDropdown(); return; }
+    openDropdown(
+      themeKeys.map(k => ({ label: themes[k].name || k, active: k === currentTheme })),
+      i => { currentTheme = themeKeys[i]; applyTheme(); }
+    );
+  }
+  function openFontDropdown() {
+    if (FONTS.length === 0) return;
+    if (activeDropdown) { closeDropdown(); return; }
+    openDropdown(
+      FONTS.map((f, i) => ({ label: f.label, active: i === currentFont })),
+      i => { currentFont = i; applyFont(); }
+    );
+  }
 
-  async function getFileContent(fileIndex) {
-    if (fileContentCache[fileIndex] !== undefined) return fileContentCache[fileIndex];
+  function escHtml(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  async function getFileContent(fi) {
+    if (fileContentCache[fi] !== undefined) return fileContentCache[fi];
     try {
-      const res = await vfetch('files/' + fileIndex + '.txt');
+      const res = await vfetch('files/' + fi + '.txt');
       const text = await res.text();
-      fileContentCache[fileIndex] = text;
+      fileContentCache[fi] = text;
       return text;
     } catch(e) { return ''; }
   }
 
   function findMatchingLines(content, query) {
     const mode = searchModes[searchModeIdx];
+    const lines = content.split('\n');
     const terms = query.toLowerCase().split(/\s+/).filter(Boolean);
     if (terms.length === 0) return [];
-    const lines = content.split('\n');
-    const matches = [];
-    for (let i = 0; i < lines.length && matches.length < 50; i++) {
+
+    const results = [];
+    for (let i = 0; i < lines.length; i++) {
       const lower = lines[i].toLowerCase();
-      let hit = false;
-      if (mode === 'exact') hit = lower.includes(query.toLowerCase());
-      else if (mode === 'any' || mode === 'fuzzy') hit = terms.some(t => lower.includes(t));
-      else hit = terms.every(t => lower.includes(t));
-      if (hit) matches.push({ lineNum: i + 1, text: lines[i] });
-    }
-    return matches;
-  }
-
-  function snippetAroundMatch(lineText, query) {
-    const terms = query.toLowerCase().split(/\s+/).filter(Boolean);
-    const lower = lineText.toLowerCase();
-    let firstIdx = lineText.length;
-    for (const t of terms) {
-      const i = lower.indexOf(t);
-      if (i !== -1 && i < firstIdx) firstIdx = i;
-    }
-    if (firstIdx === lineText.length) firstIdx = 0;
-    const start = Math.max(0, firstIdx - SNIPPET_RADIUS);
-    const end = Math.min(lineText.length, firstIdx + SNIPPET_RADIUS);
-    let snippet = lineText.slice(start, end);
-    if (start > 0) snippet = '\u2026' + snippet;
-    if (end < lineText.length) snippet = snippet + '\u2026';
-    return snippet;
-  }
-
-  async function toggleExpand(fileIndex) {
-    if (expandedFiles.has(fileIndex)) {
-      expandedFiles.delete(fileIndex);
-      // Adjust selectedRow to stay on the file row
-      for (let i = 0; i < flatRows.length; i++) {
-        if (flatRows[i].type === 'file' && flatRows[i].fi === fileIndex) {
-          selectedRow = i; break;
-        }
+      let match = false;
+      if (mode === 'exact') {
+        match = lower.includes(query.toLowerCase());
+      } else if (mode === 'any') {
+        match = terms.some(t => lower.includes(t));
+      } else {
+        match = terms.every(t => lower.includes(t));
       }
-      renderTable(); return;
+      if (match) results.push({ lineNum: i + 1, text: lines[i] });
     }
-    const content = await getFileContent(fileIndex);
-    fileMatchLines[fileIndex] = findMatchingLines(content, searchInput.value);
-    expandedFiles.add(fileIndex);
-    renderTable();
+    return results;
+  }
+
+  async function toggleExpand(fi) {
+    if (expandedFiles.has(fi)) {
+      expandedFiles.delete(fi);
+      renderTable();
+    } else {
+      const content = await getFileContent(fi);
+      fileMatchLines[fi] = findMatchingLines(content, searchInput.value);
+      expandedFiles.add(fi);
+      renderTable();
+    }
   }
 
   function fileRowForFlat(flatIdx) {
@@ -401,60 +431,76 @@ mark { background: var(--highlight-bg); color: var(--highlight-text); padding: 0
 
   function renderTable() {
     const indices = filteredIndices !== null ? filteredIndices : fileData.map((_, i) => i);
-    if (indices.length === 0) {
-      tbody.innerHTML = '<tr><td class="no-results">No matches</td></tr>';
-      flatRows = []; return;
-    }
-    const query = searchActive ? searchInput.value : '';
-    let html = '';
     flatRows = [];
+    let html = '';
+    const query = searchActive ? searchInput.value : '';
+    const terms = query.toLowerCase().split(/\s+/).filter(Boolean);
 
-    indices.forEach((fi) => {
+    for (const fi of indices) {
       const f = fileData[fi];
-      const rowIdx = flatRows.length;
-      const sel = rowIdx === selectedRow ? ' selected' : '';
-      const nameBase = f.filename.replace(/\.[^.]+$/, '');
-      const ext = f.filename.match(/\.[^.]+$/)?.[0] || '';
-      const isExpanded = searchActive && expandedFiles.has(fi);
-      const arrow = (searchActive && query) ? (isExpanded ? '&#9660;' : '&#9654;') : '';
+      const flatIdx = flatRows.length;
+      flatRows.push({ type: 'file', fi });
+      const sel = (flatIdx === selectedRow) ? ' selected' : '';
+      const nameParts = f.filename.match(/^(.+?)(\.[^.]+)$/) || [f.filename, f.filename, ''];
+      const arrow = expandedFiles.has(fi) ? '&#9660;' : (searchActive && query ? '&#9654;' : '');
+      html += '<tr class="' + sel + '" data-fi="' + fi + '" data-type="file" data-flat="' + flatIdx + '">';
+      html += '<td class="cell-name"><span class="arrow">' + arrow + '</span>' +
+        highlightText(nameParts[1], query, terms) +
+        '<span class="ext">' + escHtml(nameParts[2] || '') + '</span></td>';
+      html += '</tr>';
 
-      let nameHtml;
-      if (query && searchActive) {
-        nameHtml = '<span class="arrow">' + arrow + '</span>' +
-          highlightText(nameBase, query) + '<span class="ext">' + highlightText(ext, query) + '</span>';
-      } else {
-        nameHtml = escHtml(nameBase) + '<span class="ext">' + escHtml(ext) + '</span>';
-      }
-
-      flatRows.push({ type: 'file', fi: fi });
-      html += '<tr class="' + sel + '" data-flat="' + rowIdx + '" data-fi="' + fi + '" data-type="file" role="row">' +
-        '<td class="cell-name">' + nameHtml + '</td></tr>';
-
-      if (isExpanded && fileMatchLines[fi]) {
-        for (const ml of fileMatchLines[fi]) {
-          const lineRowIdx = flatRows.length;
-          const lineSel = lineRowIdx === selectedRow ? ' selected' : '';
-          const snippet = snippetAroundMatch(ml.text, query);
-          const lineText = highlightText(snippet, query);
-          flatRows.push({ type: 'line', fi: fi, lineNum: ml.lineNum });
-          html += '<tr class="match-line' + lineSel + '" data-flat="' + lineRowIdx + '" data-fi="' + fi + '" data-line="' + ml.lineNum + '" data-type="line">' +
-            '<td>' + lineText + '</td></tr>';
+      if (expandedFiles.has(fi)) {
+        const lines = fileMatchLines[fi] || [];
+        for (const line of lines) {
+          const mflatIdx = flatRows.length;
+          flatRows.push({ type: 'line', fi, lineNum: line.lineNum });
+          const msel = (mflatIdx === selectedRow) ? ' selected' : '';
+          const snippet = getSnippet(line.text, query, terms);
+          html += '<tr class="match-line' + msel + '" data-fi="' + fi + '" data-type="line" data-line="' + line.lineNum + '" data-flat="' + mflatIdx + '">';
+          html += '<td>' + snippet + '</td></tr>';
         }
-        if (fileMatchLines[fi].length === 0) {
-          flatRows.push({ type: 'empty', fi: fi });
-          html += '<tr class="match-line"><td style="padding-left:30px;opacity:0.4"><em>name match only</em></td></tr>';
+        if (lines.length === 0) {
+          const eflatIdx = flatRows.length;
+          flatRows.push({ type: 'empty', fi });
+          html += '<tr class="match-line" data-fi="' + fi + '" data-type="empty" data-flat="' + eflatIdx + '"><td style="color:var(--text-muted);opacity:0.5">no matches in content</td></tr>';
         }
       }
-    });
+    }
+
+    if (indices.length === 0 && searchActive) {
+      html = '<tr><td class="no-results">No matching files</td></tr>';
+    }
+
     tbody.innerHTML = html;
-    const selTr = tbody.querySelector('tr.selected');
-    if (selTr) selTr.scrollIntoView({ block: 'nearest' });
+
+    // Scroll selected into view
+    const selEl = tbody.querySelector('tr.selected');
+    if (selEl) selEl.scrollIntoView({ block: 'nearest' });
   }
 
-  function escHtml(s) { return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+  function getSnippet(text, query, terms) {
+    if (!query) return escHtml(text.slice(0, 120));
+    const lower = text.toLowerCase();
+    let firstIdx = text.length;
+    if (searchModes[searchModeIdx] === 'exact') {
+      const i = lower.indexOf(query.toLowerCase());
+      if (i >= 0) firstIdx = i;
+    } else {
+      for (const t of terms) {
+        const i = lower.indexOf(t);
+        if (i >= 0 && i < firstIdx) firstIdx = i;
+      }
+    }
+    const start = Math.max(0, firstIdx - SNIPPET_RADIUS);
+    const end = Math.min(text.length, firstIdx + SNIPPET_RADIUS * 2);
+    let snippet = text.slice(start, end);
+    if (start > 0) snippet = '…' + snippet;
+    if (end < text.length) snippet += '…';
+    return highlightText(snippet, query, terms);
+  }
 
-  function highlightText(text, query) {
-    const terms = query.toLowerCase().split(/\s+/).filter(Boolean);
+  function highlightText(text, query, terms) {
+    if (!query || terms.length === 0) return escHtml(text);
     if (terms.length === 0) return escHtml(text);
     let positions = [];
     const lower = text.toLowerCase();
@@ -614,7 +660,11 @@ mark { background: var(--highlight-bg); color: var(--highlight-text); padding: 0
   }
 
   document.addEventListener('keydown', function(e) {
-    closeDropdown();
+    if (activeDropdown) {
+      e.preventDefault();
+      dropdownNav(e.key);
+      return;
+    }
     if (searchActive) {
       if (e.key === 'Escape') {
         e.preventDefault();
@@ -646,8 +696,8 @@ mark { background: var(--highlight-bg); color: var(--highlight-text); padding: 0
       bottomBar.style.display = 'none'; searchInput.focus(); return;
     }
     const k = e.key.toLowerCase();
-    if (k === 't' && !e.ctrlKey && !e.metaKey) { e.preventDefault(); cycleTheme(); return; }
-    if (k === 'f' && !e.ctrlKey && !e.metaKey) { e.preventDefault(); cycleFont(); return; }
+    if (k === 't' && !e.ctrlKey && !e.metaKey) { e.preventDefault(); openThemeDropdown(); return; }
+    if (k === 'f' && !e.ctrlKey && !e.metaKey) { e.preventDefault(); openFontDropdown(); return; }
     if (['ArrowDown','ArrowUp'].includes(e.key)) {
       e.preventDefault(); handleNav(e.key, e.ctrlKey); return;
     }

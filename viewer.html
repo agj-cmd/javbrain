@@ -5,38 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>javbrain — viewer</title>
 <style>
-@font-face {
-  font-family: 'iA Writer Quattro S';
-  src: url('fonts/iAWriterQuattroS-Regular.woff2') format('woff2'), url('fonts/iAWriterQuattroS-Regular.woff') format('woff');
-  font-weight: normal; font-style: normal;
-}
-@font-face {
-  font-family: 'iA Writer Quattro S';
-  src: url('fonts/iAWriterQuattroS-Italic.woff2') format('woff2'), url('fonts/iAWriterQuattroS-Italic.woff') format('woff');
-  font-weight: normal; font-style: italic;
-}
-@font-face {
-  font-family: 'iA Writer Quattro S';
-  src: url('fonts/iAWriterQuattroS-Bold.woff2') format('woff2'), url('fonts/iAWriterQuattroS-Bold.woff') format('woff');
-  font-weight: bold; font-style: normal;
-}
-@font-face {
-  font-family: 'iA Writer Quattro S';
-  src: url('fonts/iAWriterQuattroS-BoldItalic.woff2') format('woff2'), url('fonts/iAWriterQuattroS-BoldItalic.woff') format('woff');
-  font-weight: bold; font-style: italic;
-}
-@font-face {
-  font-family: 'TT2020 Style E';
-  src: url('fonts/TT2020StyleE-Regular.ttf') format('truetype');
-  font-weight: normal; font-style: normal;
-}
-@font-face {
-  font-family: 'TT2020 Style E';
-  src: url('fonts/TT2020StyleE-Italic.ttf') format('truetype');
-  font-weight: normal; font-style: italic;
-}
 :root {
-  --font-body: 'iA Writer Quattro S', sans-serif;
+  --font-body: sans-serif;
   --font-size: 18px;
   --line-height: 1.4;
   --bg-primary: #ffffff;
@@ -284,6 +254,17 @@ pre.txt-content {
 }
 
 mark { background: var(--highlight-bg); color: var(--highlight-text); padding: 0 1px; border-radius: 1px; }
+
+.setting-dropdown {
+  position: fixed; bottom: 8px; left: 8px; background: var(--bg-primary);
+  border: 1px solid var(--border-color); padding: 4px 0; z-index: 100;
+  font-size: calc(var(--font-size) - 1px); box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
+  max-height: 60vh; overflow-y: auto;
+}
+.setting-dropdown .opt { padding: 2px 12px; cursor: pointer; white-space: nowrap; }
+.setting-dropdown .opt:hover { background: var(--row-hover); }
+.setting-dropdown .opt.active { font-weight: 700; }
+.setting-dropdown .opt.focused { background: var(--highlight-bg); color: var(--highlight-text); }
 </style>
 </head>
 <body>
@@ -319,24 +300,69 @@ mark { background: var(--highlight-bg); color: var(--highlight-text); padding: 0
   let themeKeys = [];
   let currentTheme = localStorage.getItem('jb-theme') || 'dark';
 
-  // Font cycling — add entries here when you drop new fonts in fonts/
-  const FONTS = [
-    { label: 'Quattro', value: "'iA Writer Quattro S', sans-serif" },
-    { label: 'TT2020', value: "'TT2020 Style E', serif" }
-  ];
+  // Fonts — populated at init from fontfaces.json
+  let FONTS = [];
   let currentFont = parseInt(localStorage.getItem('jb-font') || '0');
-  if (currentFont >= FONTS.length) currentFont = 0;
 
   const tocEl = document.getElementById('toc');
   const viewerEl = document.getElementById('viewer');
 
-  async function loadThemes() {
+  // Inject @font-face rules from fontfaces.json data
+  function injectFontFaces(fontfaces) {
+    let css = '';
+    for (const family of fontfaces) {
+      for (const face of family.faces) {
+        const srcParts = face.src.map(s => "url('" + s.url + "') format('" + s.format + "')").join(', ');
+        css += '@font-face {\n' +
+          "  font-family: '" + family.family + "';\n" +
+          '  src: ' + srcParts + ';\n' +
+          '  font-weight: ' + face.weight + ';\n' +
+          '  font-style: ' + face.style + ';\n' +
+          '}\n';
+      }
+    }
+    const style = document.createElement('style');
+    style.textContent = css;
+    document.head.appendChild(style);
+  }
+
+  async function applySettings() {
+    // Load config (themes.json — restructured with defaults + themes)
+    let config;
     try {
       const res = await vfetch('themes.json');
-      themes = await res.json();
-      themeKeys = Object.keys(themes);
-      if (!themes[currentTheme]) currentTheme = themeKeys[0];
-    } catch(e) {}
+      config = await res.json();
+    } catch(e) {
+      config = { defaults: {}, themes: { light: { name: 'Light', vars: {} }, dark: { name: 'Dark', vars: {} } } };
+    }
+    const defaults = config.defaults || {};
+    themes = config.themes || {};
+    themeKeys = Object.keys(themes);
+    if (!defaults.theme) defaults.theme = 'dark';
+    if (!themes[currentTheme]) currentTheme = defaults.theme;
+    if (!themes[currentTheme]) currentTheme = themeKeys[0];
+
+    // Apply display defaults
+    if (defaults.fontSize) document.documentElement.style.setProperty('--font-size', defaults.fontSize);
+    if (defaults.lineHeight) document.documentElement.style.setProperty('--line-height', defaults.lineHeight);
+    if (defaults.textLineHeight) document.documentElement.style.setProperty('--text-line-height', defaults.textLineHeight);
+    if (defaults.textMargin) document.documentElement.style.setProperty('--text-margin', defaults.textMargin);
+    if (defaults.textAlign) document.documentElement.style.setProperty('--text-align', defaults.textAlign);
+    if (defaults.tocWidth) document.documentElement.style.setProperty('--toc-width', defaults.tocWidth);
+
+    // Load fontfaces.json — auto-generated by build.js from fonts/ dir
+    try {
+      const res = await vfetch('fontfaces.json');
+      const fontfaces = await res.json();
+      injectFontFaces(fontfaces);
+      FONTS = fontfaces.map(f => ({ label: f.label || f.family, value: "'" + f.family + "', sans-serif" }));
+    } catch(e) {
+      FONTS = [];
+    }
+    if (currentFont >= FONTS.length) currentFont = 0;
+
+    applyTheme();
+    applyFont();
   }
 
   function applyTheme() {
@@ -344,6 +370,7 @@ mark { background: var(--highlight-bg); color: var(--highlight-text); padding: 0
     if (!t) return;
     for (const [k, v] of Object.entries(t.vars)) document.documentElement.style.setProperty(k, v);
     localStorage.setItem('jb-theme', currentTheme);
+    updateHint();
   }
 
   function cycleTheme() {
@@ -352,18 +379,83 @@ mark { background: var(--highlight-bg); color: var(--highlight-text); padding: 0
   }
 
   function applyFont() {
+    if (FONTS.length === 0) return;
     document.documentElement.style.setProperty('--font-body', FONTS[currentFont].value);
     localStorage.setItem('jb-font', currentFont);
+    updateHint();
+  }
+
+  function updateHint() {
+    const hint = tocEl.querySelector('.toc-hint');
+    if (!hint) return;
+    const tn = (themes[currentTheme] || {}).name || currentTheme;
+    const fn = FONTS.length > 0 ? FONTS[currentFont].label : 'system';
+    hint.textContent = '[Space] focus · [Enter] copy · [Right-click] copy · [T] ' + tn + ' · [F] ' + fn + ' · [L] lines';
   }
   function cycleFont() {
+    if (FONTS.length === 0) return;
     currentFont = (currentFont + 1) % FONTS.length;
     applyFont();
   }
 
-  async function applySettings() {
-    await loadThemes();
-    applyTheme();
-    applyFont();
+  // --- Dropdown ---
+  let activeDropdown = null;
+  let dropdownIdx = -1;
+  let dropdownAction = null;
+
+  function openDropdown(opts, onSelect) {
+    closeDropdown();
+    const el = document.createElement('div');
+    el.className = 'setting-dropdown';
+    dropdownIdx = opts.findIndex(o => o.active);
+    if (dropdownIdx < 0) dropdownIdx = 0;
+    dropdownAction = onSelect;
+    opts.forEach((o, i) => {
+      const d = document.createElement('div');
+      d.className = 'opt' + (o.active ? ' active' : '') + (i === dropdownIdx ? ' focused' : '');
+      d.textContent = o.label;
+      d.addEventListener('click', () => { onSelect(i); closeDropdown(); });
+      el.appendChild(d);
+    });
+    document.body.appendChild(el);
+    activeDropdown = el;
+    const f = el.querySelector('.opt.focused');
+    if (f) f.scrollIntoView({ block: 'nearest' });
+  }
+  function closeDropdown() {
+    if (activeDropdown) { activeDropdown.remove(); activeDropdown = null; dropdownAction = null; }
+  }
+  function dropdownNav(key) {
+    if (!activeDropdown) return false;
+    const items = activeDropdown.querySelectorAll('.opt');
+    if (key === 'ArrowDown' || key === 'ArrowRight') {
+      dropdownIdx = Math.min(dropdownIdx + 1, items.length - 1);
+    } else if (key === 'ArrowUp' || key === 'ArrowLeft') {
+      dropdownIdx = Math.max(dropdownIdx - 1, 0);
+    } else if (key === 'Enter') {
+      if (dropdownAction) dropdownAction(dropdownIdx);
+      closeDropdown(); return true;
+    } else if (key === 'Escape' || key === 'Tab') {
+      closeDropdown(); return true;
+    } else { return false; }
+    items.forEach((el, i) => el.classList.toggle('focused', i === dropdownIdx));
+    items[dropdownIdx].scrollIntoView({ block: 'nearest' });
+    return true;
+  }
+  function openThemeDropdown() {
+    if (activeDropdown) { closeDropdown(); return; }
+    openDropdown(
+      themeKeys.map(k => ({ label: themes[k].name || k, active: k === currentTheme })),
+      i => { currentTheme = themeKeys[i]; applyTheme(); }
+    );
+  }
+  function openFontDropdown() {
+    if (FONTS.length === 0) return;
+    if (activeDropdown) { closeDropdown(); return; }
+    openDropdown(
+      FONTS.map((f, i) => ({ label: f.label, active: i === currentFont })),
+      i => { currentFont = i; applyFont(); }
+    );
   }
 
   async function loadAndRender() {
@@ -485,7 +577,7 @@ mark { background: var(--highlight-bg); color: var(--highlight-text); padding: 0
     });
 
     renderToc();
-    tocEl.innerHTML += '<div class="toc-hint">[Space] focus · [Enter] copy · [Right-click] copy · [T] theme · [F] font · [L] lines</div>';
+    tocEl.innerHTML += '<div class="toc-hint"></div>'; updateHint();
   }
 
   function highlightSearchTerms(container, query) {
@@ -673,7 +765,7 @@ mark { background: var(--highlight-bg); color: var(--highlight-text); padding: 0
     });
 
     renderToc();
-    tocEl.innerHTML += '<div class="toc-hint">[Space] focus · [Enter] copy · [Right-click] copy · [T] theme · [F] font · [L] lines</div>';
+    tocEl.innerHTML += '<div class="toc-hint"></div>'; updateHint();
   }
 
   function renderToc() {
@@ -781,6 +873,12 @@ mark { background: var(--highlight-bg); color: var(--highlight-text); padding: 0
 
   // --- Keyboard ---
   document.addEventListener('keydown', function(e) {
+    if (activeDropdown) {
+      e.preventDefault();
+      dropdownNav(e.key);
+      return;
+    }
+
     if (e.key === ' ' || e.code === 'Space') {
       // Don't intercept if user is in an input
       if (document.activeElement && document.activeElement.tagName === 'INPUT') return;
@@ -848,17 +946,17 @@ mark { background: var(--highlight-bg); color: var(--highlight-text); padding: 0
       return;
     }
 
-    // Theme toggle (always works)
+    // Theme dropdown
     if (e.key.toLowerCase() === 't' && !e.ctrlKey && !e.metaKey) {
       e.preventDefault();
-      cycleTheme();
+      openThemeDropdown();
       return;
     }
 
-    // Font toggle
+    // Font dropdown
     if (e.key.toLowerCase() === 'f' && !e.ctrlKey && !e.metaKey) {
       e.preventDefault();
-      cycleFont();
+      openFontDropdown();
       return;
     }
 
