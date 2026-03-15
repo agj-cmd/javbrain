@@ -29,6 +29,18 @@
   font-weight: bold;
   font-style: italic;
 }
+@font-face {
+  font-family: 'TT2020 Style E';
+  src: url('fonts/TT2020StyleE-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'TT2020 Style E';
+  src: url('fonts/TT2020StyleE-Italic.ttf') format('truetype');
+  font-weight: normal;
+  font-style: italic;
+}
 :root {
   --font-body: 'iA Writer Quattro S', sans-serif;
   --font-size: 18px;
@@ -188,6 +200,7 @@ mark { background: var(--highlight-bg); color: var(--highlight-text); padding: 0
 <div id="bottom-bar">
   <span class="bar-cmd"><kbd>Space</kbd> Search</span>
   <span class="bar-cmd"><kbd>T</kbd> Theme</span>
+  <span class="bar-cmd"><kbd>F</kbd> Font</span>
   <span class="bar-cmd"><kbd>&uarr;&darr;</kbd> Navigate</span>
   <span class="bar-cmd"><kbd>&larr;&rarr;</kbd> Fold</span>
   <span class="bar-cmd"><kbd>Enter</kbd> Open</span>
@@ -224,6 +237,22 @@ mark { background: var(--highlight-bg); color: var(--highlight-text); padding: 0
   let themes = {};
   let themeKeys = [];
   let currentTheme = localStorage.getItem('jb-theme') || 'dark';
+
+  // Font cycling — add entries here when you drop new fonts in fonts/
+  const FONTS = [
+    { label: 'Quattro', value: "'iA Writer Quattro S', sans-serif" },
+    { label: 'TT2020', value: "'TT2020 Style E', serif" },
+    { label: 'System', value: "-apple-system, 'Segoe UI', system-ui, sans-serif" },
+    { label: 'Georgia', value: "Georgia, 'Times New Roman', serif" },
+    { label: 'Mono', value: "'SF Mono', 'Cascadia Code', Consolas, 'Liberation Mono', monospace" },
+    { label: 'Palatino', value: "'Palatino Linotype', Palatino, 'Book Antiqua', serif" },
+    { label: 'Garamond', value: "Garamond, 'EB Garamond', serif" },
+    { label: 'Verdana', value: "Verdana, Geneva, sans-serif" },
+    { label: 'Bookman', value: "'Bookman Old Style', Bookman, serif" },
+    { label: 'Charter', value: "Charter, 'Bitstream Charter', Georgia, serif" }
+];
+  let currentFont = parseInt(localStorage.getItem('jb-font') || '0');
+  if (currentFont >= FONTS.length) currentFont = 0;
 
   const tbody = document.getElementById('tbody');
   const bottomBar = document.getElementById('bottom-bar');
@@ -264,6 +293,7 @@ mark { background: var(--highlight-bg); color: var(--highlight-text); padding: 0
     }
 
     applyTheme();
+    applyFont();
     renderTable();
     fileCount.textContent = fileData.length + ' files';
   }
@@ -276,6 +306,15 @@ mark { background: var(--highlight-bg); color: var(--highlight-text); padding: 0
   function cycleTheme() {
     currentTheme = themeKeys[(themeKeys.indexOf(currentTheme) + 1) % themeKeys.length];
     applyTheme();
+  }
+
+  function applyFont() {
+    document.documentElement.style.setProperty('--font-body', FONTS[currentFont].value);
+    localStorage.setItem('jb-font', currentFont);
+  }
+  function cycleFont() {
+    currentFont = (currentFont + 1) % FONTS.length;
+    applyFont();
   }
 
   function showDropdown(id, opts) {
@@ -608,6 +647,7 @@ mark { background: var(--highlight-bg); color: var(--highlight-text); padding: 0
     }
     const k = e.key.toLowerCase();
     if (k === 't' && !e.ctrlKey && !e.metaKey) { e.preventDefault(); cycleTheme(); return; }
+    if (k === 'f' && !e.ctrlKey && !e.metaKey) { e.preventDefault(); cycleFont(); return; }
     if (['ArrowDown','ArrowUp'].includes(e.key)) {
       e.preventDefault(); handleNav(e.key, e.ctrlKey); return;
     }

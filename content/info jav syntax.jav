@@ -1,83 +1,87 @@
 What is jav syntax? [
 	SIMPLE • VISUAL • FLEXIBLE • FAST [
-		• A simple bracket-based language for writing and outlining in VS Code/Codium.
-		• To be used in conjunction with a suite of extensions to turn the worlds best code editor into the best prose editor
-		• All free and open source
-		• Similar to markdown, but even simpler and adds visual aid to make outlining fast and simple.
-		• Easily organize and review your work in a way that feels natural, like colored sticky notes on a whiteboard.
-		• Sections nest visually and create collapsible colored blocks.
-		• All markup text is hidden so your text looks close to how it would look in a book as you write it.
-		• One text file holds your entire outline, notes, and manuscript.
-		• But at the same time, keeping the speed and editing power of working in a text editor, not a clunky graphical interface that looks pretty but is a nightmare to actually write a novel in.
+		• A **simple plain text language** for **structured novel writing** in VS Code/Codium.
+		• Is used to create and style the content for this website.
+		• **Free** and **open source**. Local. Transferrable. Universal.
+			• Universal? Jav files can simply be renamed to .txt and will work anywhere. They can also be converted to markdown formatting easily, and vice versa.
+		• To be used in conjunction with a suite of extensions which turn the world's best code editor into the **world's best novel editor**.
+		• **Simpler than markdown** as it is strictly for novel writing. Adds **visual aids** which highlight arbitrary sections with colors blocks.
+		• Like **colored sticky notes** on a whiteboard. **Easily organize** and review your work in a way that **feels natural**.
+		• All markup text is hidden so your text looks close to how it would look in a book while you write it.
+		• One text file holds your outline, notes, and manuscript. **Pure, elegant, simple**. Abandon the fight against complex, closed systems, e.g. Scrivener, Word.
 	]
-]
-Who is jav for? [
-	 I want...
-		• The **easiest way to outline and write without friction between my brain and the computer**.
-		• Everything to just be simple text **on my own computer**.
-		• To use **free, open source tools**.
-		• To use the **top of the line tools**.
-		• My outlining, prose, and notes all contained in a **simple text file**.
-		• To **manage structure easily** without a billion buttons and menus. No toolbars, no formatting dialogs. Just text.
-		• To **write prose as fast as I can** think without having to stop to remember where anything is or perform tedious edits. Every commercial app catered to writers is 20 years behind what text editors like VS Code can do. You may as well chisel your novel in stone if you use Microsoft Word, Google Docs, Scrivener, etc.
-		• To adjust my **outline easily and immediately at any time**. Jav sections nest freely, so you can go from a top-level act down to a single beat without switching tools or views or taking your hand off the keyboard.
+	Compared to Markdown [
+		• **Purpose-built strictly for narrative prose**.
+		• **Outline sections** can easily be added **before, during, or after prose writing** without difficulty. If you arrange sections you do not need to adjust other headers since relationship is via nesting, not numbering.
+		• Sections are indented and colored so **structure is easy to track** at a glance. \\This website is rendered in jav style\\
+		• **No render view and clean text**. All rendering is accomplished in the VS Code viewport simply by collapsing markup characters when the cursor is not near. Achieve visual clarity without splitting the view for a side-by-side render.
+		• **More compact**. Single line break is a paragraph, not double line break. Renders the same as an e-book with indented paragraphs and no extra space between. Seeing more of your text on the screen helps avoid getting lost during that structuring phase when you are deciding what to put in your chapters.
+		• **More structural visual clarity**. Nested colored sections instead of flat ## headers. Easier to organize into scenes and beats and know where you are.
+	]
 ]
 How to write .jav files [
-	Create an outline before or after you type your prose [
-		 \\Note: creation of sections done with hotkey, and formatting is as well. So you don't ever have to type brackets or manually indentat. You can just type and then later select text and wrap into the sections that make sense, or begin by auto-inserting sections to build an outline and then fill it in. I usually do a bit of both.\\
-		 \\Sections automatically colored by nested level so colors always tell you where you are structurally.\\
-		 \\Sections generate table of contents.\\
-		 \\Brackets hidden in the editor so they do not pollute your prose.\\
-		 Write a title followed by a bracket. Everything inside is the section content. Close with a bracket.
-		 Title \[\
-		 content
-		 \]\
-		 Sections nest freely. Content can live at any level: chapter, scene, beat, whatever you need.
-		 Chapter \[\
-		 Scene \[\
-		 Beat \[\
-		 text
-		 \]\
-		 \]\
-		 \]\
-		 \\That's pretty much it!\\
-	]
+	**Create an outline before, during, or after you type your prose**
+	• Create outline sections with hotkey. You are never required to type brackets or manually format.
+	• You type regular text, then later select text wrap into sections that make sense, or you may begin by auto-inserting outline sections first and fill it in after.
+	• Sections are colored by nested level, so colors inform where you are structurally.
+	\\Press L to toggle section colors on and off for a demonstration\\
+	• Sections generate table of contents.
+	• Brackets and asteriks are hidden in the editor so they do not pollute your prose. You only see the section titles and prose.
+	**How to**
+	1. Hotkey creates a bracketed section.
+	2. Add a title.
+	3. Type prose inside the brackets.
+	My brilliant title \[\
+	My words. I've got the best words.
+	\]\
+	• Sections nest infinitely. Book, chapter, scene, beat, minibeat... Whatever makes sense to you, there are no rules.
+	Chapter \[\
+	Scene \[\
+	Beat \[\
+	Do nostrud sit esse enim ex excepteur. "Sunt minim amet laborum exercitation fugiat dolor culpa aim."
+	\]\
+	\]\
+	\]\
+	• If you add a section within a section, or wrap a section around a section, just press the format key and all of the indentation and cleanup happens automatically.
+	• That's it!
 	Example [
-		 \\Your structure is your outline. Nest as deep as you need.\\
-		Chapter 1 [
-			 \\Chapter notes.\\
-			Scene: The morning after Bubba had his ordeal [
-				 \\Scene notes.\\
-				Intro the hungry woman [
-					 She walked into the room. She was a big, tall, ugly woman. \First time we meet her, add more description.\
-					 "I ate the entire pie," she said.
-					 Bubba recoiled. "The entire pie? Have you lost your damn mind?"
-				]
+		\\I might leave scene notes up here.\\
+		Scene. The morning after bubba had his ordeal. He's hung-over and grouchy. [
+			\\Reminder: Bubba heard about this mysterious woman in the last chapter but he was drunk.\\
+			Beat. Bubba meets the mysterious woman. [
+				She walked into the room. She was wider than Bubba, and taller than him, and twice as ugly. \inline note. First time we mention how she looks. Should we do this earlier?\
+				"I ate Loyd's pie," she said. "And don't say nothing bout it to no one or you'll be sorry."
+				Bubba recoiled, then shouted, "You ate his special pie? Heavens woman, you play a dangerous game."
+			]
+			Beat. Bubba falls in love. [
+				Suddenly she sprang upon him and squeezed his head in a vice-like hold.
+				Bubba cried out, "Damn woman! You're a crazy one, ain't ya?"
+				She responded by poking him in the eye, and in that moment, Bubba knew he had met his soul mate.
+				\\Review with test readers, they might not buy it.\\
+			]
+		]
+		Scene. Jump ahead to the wedding. [
+			Misdirection, make it seem that Bubba ended up with Rosaline. [
+				\\todo\\
+			]
+			Have jimbo reveal the truth after he flies in on his heli-boat [
+				\\Or consider doing it with Sarah because of some reason.\\
 			]
 		]
 	]
 	Inline formatting [
-		 *Italic. Consider it carefully.*
-		 **Bold. This matters.**
-		 \Subdued note. Useful for inline placeholder notes when drafting.\
-		 \\CALLOUT BLOCKS: Leave yourself a note.\\
-		 "Dialogue gets it's own colors and quotes are replaced with smart quotes (non-destructively)."
+		*Italic*
+		**Bold**
+		\General note. Useful for inline placeholder notes when drafting.\
+		\\CALLOUT BLOCKS: Leave yourself a big, bright note.\\
+		"Dialogue gets it's own colors and quotes are replaced with smart quotes (non-destructively)."
 		- List can be colored and styled as well, and do not indent like paragraph text.
 		• Bullet list
 		1. Numbered list
 	]
 	Paragraphs [
 		• Each line is a paragraph.
-		• No empty lines. Paragraphs are indented like in an ebook.
-		• List are not indented
-	]
-	Compared to Markdown [
-		• **Designed only for outline-driven prose**.
-		• The **outlining** can easily be added **before, during, or after prose writing** without difficulty.
-		• All markup is hidden so you only see your text
-		• Sections are indented and colored so structure is easy to track at a glance. (This website is rendered in jav style)
-		• **What you see is what you get in the text editor**. All rendering is accomplished in the VS Code viewport so you have the benefit of working in a text editor.
-		• **More compact**. Line break is paragraph, not double line break. Renders the same as an e-book with indented paragraphs and no extra space between.
-		• **More visual**. Nested colored sections instead of flat headers. Easier to organize into scenes and beats without glancing back and forth at a table of contents or scrolling around to reorient.
+		• No empty lines. Paragraphs are indented like in an ebook. This indentation is non-destructive and you can toggle it on an off.
+		• List are indented differently, just to make them stand apart from regular text.
 	]
 ]

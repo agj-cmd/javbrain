@@ -25,6 +25,16 @@
   src: url('fonts/iAWriterQuattroS-BoldItalic.woff2') format('woff2'), url('fonts/iAWriterQuattroS-BoldItalic.woff') format('woff');
   font-weight: bold; font-style: italic;
 }
+@font-face {
+  font-family: 'TT2020 Style E';
+  src: url('fonts/TT2020StyleE-Regular.ttf') format('truetype');
+  font-weight: normal; font-style: normal;
+}
+@font-face {
+  font-family: 'TT2020 Style E';
+  src: url('fonts/TT2020StyleE-Italic.ttf') format('truetype');
+  font-weight: normal; font-style: italic;
+}
 :root {
   --font-body: 'iA Writer Quattro S', sans-serif;
   --font-size: 18px;
@@ -158,22 +168,23 @@ pre.txt-content {
 
 .jav-block-label {
   display: block;
-  text-align: center;
+  text-align: left;
   font-weight: 600; color: var(--text-muted);
   letter-spacing: 0.03em; margin-bottom: 2px;
   font-size: calc(var(--font-size) * 2);
 }
-.jav-block[data-depth="1"] > .jav-block-label { font-size: calc(var(--font-size) * 1.85); }
-.jav-block[data-depth="2"] > .jav-block-label { font-size: calc(var(--font-size) * 1.7); }
-.jav-block[data-depth="3"] > .jav-block-label { font-size: calc(var(--font-size) * 1.55); }
-.jav-block[data-depth="4"] > .jav-block-label { font-size: calc(var(--font-size) * 1.4); }
-.jav-block[data-depth="5"] > .jav-block-label { font-size: calc(var(--font-size) * 1.25); }
+.jav-block[data-depth="0"] > .jav-block-label { text-align: center; }
+.jav-block[data-depth="1"] > .jav-block-label { font-size: calc(var(--font-size) * 1.3); }
+.jav-block[data-depth="2"] > .jav-block-label { font-size: calc(var(--font-size) * 1.2); }
+.jav-block[data-depth="3"] > .jav-block-label { font-size: calc(var(--font-size) * 1.15); }
+.jav-block[data-depth="4"] > .jav-block-label { font-size: calc(var(--font-size) * 1.1); }
+.jav-block[data-depth="5"] > .jav-block-label,
 .jav-block[data-depth="6"] > .jav-block-label,
 .jav-block[data-depth="7"] > .jav-block-label,
 .jav-block[data-depth="8"] > .jav-block-label,
 .jav-block[data-depth="9"] > .jav-block-label,
 .jav-block[data-depth="10"] > .jav-block-label,
-.jav-block[data-depth="11"] > .jav-block-label { font-size: calc(var(--font-size) * 1.1); }
+.jav-block[data-depth="11"] > .jav-block-label { font-size: calc(var(--font-size) * 1.05); }
 
 
 /* Depth-based tinting — 6 colors from theme, repeating */
@@ -201,6 +212,17 @@ pre.txt-content {
 .jav-block-body > .jav-para,
 .jav-block-body > .jav-block > .jav-block-label {
   border-bottom: 1px solid var(--rule-color, transparent);
+}
+
+/* Toggle off depth styling */
+.depth-lines-off .jav-block-body {
+  background: transparent !important;
+  border-color: transparent !important;
+  --rule-color: transparent !important;
+}
+.depth-lines-off .jav-block-body > .jav-para,
+.depth-lines-off .jav-block-body > .jav-block > .jav-block-label {
+  border-bottom-color: transparent !important;
 }
 
 .jav-para {
@@ -297,6 +319,14 @@ mark { background: var(--highlight-bg); color: var(--highlight-text); padding: 0
   let themeKeys = [];
   let currentTheme = localStorage.getItem('jb-theme') || 'dark';
 
+  // Font cycling — add entries here when you drop new fonts in fonts/
+  const FONTS = [
+    { label: 'Quattro', value: "'iA Writer Quattro S', sans-serif" },
+    { label: 'TT2020', value: "'TT2020 Style E', serif" }
+  ];
+  let currentFont = parseInt(localStorage.getItem('jb-font') || '0');
+  if (currentFont >= FONTS.length) currentFont = 0;
+
   const tocEl = document.getElementById('toc');
   const viewerEl = document.getElementById('viewer');
 
@@ -321,9 +351,19 @@ mark { background: var(--highlight-bg); color: var(--highlight-text); padding: 0
     applyTheme();
   }
 
+  function applyFont() {
+    document.documentElement.style.setProperty('--font-body', FONTS[currentFont].value);
+    localStorage.setItem('jb-font', currentFont);
+  }
+  function cycleFont() {
+    currentFont = (currentFont + 1) % FONTS.length;
+    applyFont();
+  }
+
   async function applySettings() {
     await loadThemes();
     applyTheme();
+    applyFont();
   }
 
   async function loadAndRender() {
@@ -445,7 +485,7 @@ mark { background: var(--highlight-bg); color: var(--highlight-text); padding: 0
     });
 
     renderToc();
-    tocEl.innerHTML += '<div class="toc-hint">[Space] focus · [Enter] copy · [Right-click] copy</div>';
+    tocEl.innerHTML += '<div class="toc-hint">[Space] focus · [Enter] copy · [Right-click] copy · [T] theme · [F] font · [L] lines</div>';
   }
 
   function highlightSearchTerms(container, query) {
@@ -633,7 +673,7 @@ mark { background: var(--highlight-bg); color: var(--highlight-text); padding: 0
     });
 
     renderToc();
-    tocEl.innerHTML += '<div class="toc-hint">[Space] focus · [Enter] copy · [Right-click] copy</div>';
+    tocEl.innerHTML += '<div class="toc-hint">[Space] focus · [Enter] copy · [Right-click] copy · [T] theme · [F] font · [L] lines</div>';
   }
 
   function renderToc() {
@@ -808,10 +848,25 @@ mark { background: var(--highlight-bg); color: var(--highlight-text); padding: 0
       return;
     }
 
-    // Theme toggle (when TOC not focused)
-    if (!tocFocused && e.key.toLowerCase() === 't' && !e.ctrlKey && !e.metaKey) {
+    // Theme toggle (always works)
+    if (e.key.toLowerCase() === 't' && !e.ctrlKey && !e.metaKey) {
       e.preventDefault();
       cycleTheme();
+      return;
+    }
+
+    // Font toggle
+    if (e.key.toLowerCase() === 'f' && !e.ctrlKey && !e.metaKey) {
+      e.preventDefault();
+      cycleFont();
+      return;
+    }
+
+    // Toggle depth styling (bg, borders, rules)
+    if (e.key.toLowerCase() === 'l' && !e.ctrlKey && !e.metaKey) {
+      e.preventDefault();
+      document.body.classList.toggle('depth-lines-off');
+      localStorage.setItem('jb-lines', document.body.classList.contains('depth-lines-off') ? 'off' : 'on');
       return;
     }
   });
@@ -862,7 +917,12 @@ mark { background: var(--highlight-bg); color: var(--highlight-text); padding: 0
     setTimeout(() => { item.innerHTML = orig; }, 800);
   });
 
-  loadAndRender().then(() => { viewerEl.focus(); });
+  loadAndRender().then(() => {
+    viewerEl.focus();
+    if (localStorage.getItem('jb-lines') === 'off') {
+      document.body.classList.add('depth-lines-off');
+    }
+  });
 })();
 </script>
 </body>
