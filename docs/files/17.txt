@@ -1,6 +1,6 @@
 Homemade Hamburger Helper Recipe [
 	Tags [
-		Recipe. Good.
+		 Recipe. Good.
 	]
 	Ingredients: [
 		• 1 pound extra lean ground beef

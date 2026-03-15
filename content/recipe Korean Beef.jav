@@ -1,6 +1,6 @@
 Korean Beef [
 	About [
-		**Prep:** 10 minutes | **Cook:** 10 minutes | **Servings:** 6
+		 **Prep:** 10 minutes | **Cook:** 10 minutes | **Servings:** 6
 	]
 	Notes [
 				•  Use lean ground beef or substitute turkey/chicken

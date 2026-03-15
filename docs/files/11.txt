@@ -1,5 +1,5 @@
-Bisquick Sausage Balls
-Recipe, Sausage Ball, thanksgiving, 🟢good
+ Bisquick Sausage Balls
+ Recipe, Sausage Ball, thanksgiving, 🟢good
 Ingredients [
 	• 1 pound pork breakfast sausage (herb seasoned, maple, spicy, or regular)
 	• 1 cup shredded cheddar cheese (preferably sharp)

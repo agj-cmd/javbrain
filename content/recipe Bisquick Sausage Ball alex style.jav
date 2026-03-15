@@ -1,5 +1,5 @@
-Bisquick Sausage Balls : Alex's style
-Recipe, Sausage Ball, thanksgiving, 🟢good
+ Bisquick Sausage Balls : Alex's style
+ Recipe, Sausage Ball, thanksgiving, 🟢good
 Ingredients [
 	• 1 pound italian sweet
 	• 8oz mozarella

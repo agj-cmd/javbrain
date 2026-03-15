@@ -1,10 +1,10 @@
 Beef and Daikon Radish Soup [
 	About [
-		This comforting Korean-style Beef and Daikon Radish Soup is simple, nourishing, and perfect for cold evenings. Rich in flavor and tradition, it's a light yet satisfying dish the whole family will enjoy.
-		Make this soup ahead and enjoy even deeper flavors the next day. Add tofu or gochugaru for extra variety.
+		 This comforting Korean-style Beef and Daikon Radish Soup is simple, nourishing, and perfect for cold evenings. Rich in flavor and tradition, it's a light yet satisfying dish the whole family will enjoy.
+		 Make this soup ahead and enjoy even deeper flavors the next day. Add tofu or gochugaru for extra variety.
 	]
 	Servings: [
-		4 bowls, Soup, Korean
+		 4 bowls, Soup, Korean
 		• Prep Time 15 minutes mins
 		• Cook Time 50 minutes mins
 		• Soaking Time 10 minutes mins
