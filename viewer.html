@@ -51,7 +51,7 @@
   --callout-bg: #2a1f00;
   --callout-border: #b8960e;
   --quote-color: #a0b0c0;
-  --toc-width: 260px;
+  --toc-width: 30%;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -84,7 +84,8 @@ body { display: flex; flex-direction: column; }
 /* TOC sidebar */
 #toc {
   width: var(--toc-width);
-  min-width: var(--toc-width);
+  min-width: 25%;
+  max-width: 40%;
   border-right: 1px solid var(--border-color);
   overflow-y: auto;
   padding: 12px 0;

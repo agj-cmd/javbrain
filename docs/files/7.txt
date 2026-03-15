@@ -2,29 +2,29 @@ JAV Writing System [
 	 \\IN PROGRESS\\
 	 \\VS codium based writing system. Technical. Writing.\\
 	Recall and Find [
-		**Immediate fuzzy search within file and across files.**
-		 • Computer is the finder and rememberer. No spatial memory or exact phrasing required. Author provides only minimal hint.
+		 **Immediate fuzzy search within file and across files.**
+		• Computer is the finder and rememberer. No spatial memory or exact phrasing required. Author provides only minimal hint.
 			• Hotkey driven. Immediate access. Does not intefere with current place in editor.
-		**Glossary search by name and definitions**:
+		 **Glossary search by name and definitions**:
 			• Search "sword brok".
 				•  System finds "sword broken", "broke his sword", etc.
 			• User tags categories instead of remembering names or using folders/multiple files.
 			• Retrieve characters/places/ideas by associated terms.
 			• Immediately find what you want • Don't lose focus • Hands never leave keyboard
-			**Example**:
-			 		• Cannot remember character name but recall role and location.
-			 		• Type "knight lands, old".
-			 Glossary returns:
-			 		• "Sir Aldric, Knight, Northlands, old and ugly".
-			 		• "Sir Faldric, Knight, Northlands, old but handsome".
-			 		• "Sir Baldric, Knight, Southlands, the old bastard".
-			 		• "Sir Caldric, Knight, Eastlands, the old sage".
+		 **Example**:
+		 • Cannot remember character name but recall role and location.
+		 • Type "knight lands, old".
+		 Glossary returns:
+		 • "Sir Aldric, Knight, Northlands, old and ugly".
+		 • "Sir Faldric, Knight, Northlands, old but handsome".
+		 • "Sir Baldric, Knight, Southlands, the old bastard".
+		 • "Sir Caldric, Knight, Eastlands, the old sage".
 	]
 	Navigation and Selection. [
-		**Javnav extension**
-		Move and select by clause:
+		 **Javnav extension**
+		 Move and select by clause:
 				• For editing, most work is rearranging clauses, not words, so the default movement unit should be clause.
-		Immediate and intuitive move/select by:
+		 Immediate and intuitive move/select by:
 					• Word, clause, paragraph, region.
 					• Immediate select quotes, notes, regions.
 	]
@@ -48,14 +48,14 @@ JAV Writing System [
 	]
 ]
 Typing [
-	**Project glossary**
-	Glossary autocomplete:
+	 **Project glossary**
+	 Glossary autocomplete:
 				• Key terms appear as completion items
 				• By frequency and recency.
 						• Type a characters name, next time you press the first letter, it will be first thing to popup.
 							• Thus, almost never type entire names.
 				• Usually you should only need to type first two or three characters of any word.
-	Glossary search:
+	 Glossary search:
 				• Find all
 				• Find in file(s)
 ]

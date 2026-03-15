@@ -12,7 +12,7 @@ What is jav syntax? [
 	]
 ]
 Who is jav for? [
-	I want...
+	 I want...
 		• The **easiest way to outline and write without friction between my brain and the computer**.
 		• Everything to just be simple text **on my own computer**.
 		• To use **free, open source tools**.
@@ -23,64 +23,61 @@ Who is jav for? [
 		• To adjust my **outline easily and immediately at any time**. Jav sections nest freely, so you can go from a top-level act down to a single beat without switching tools or views or taking your hand off the keyboard.
 ]
 How to write .jav files [
-	Create a named section [
-		Write a title followed by a bracket. Everything inside is the section content. Close with a bracket.
-		Title \[\
-		content
-		\]\
-		Sections nest freely. Content can live at any level: chapter, scene, beat, whatever you need.
-		Chapter \[\
-		Scene \[\
-		Beat \[\
-		text
-		\]\
-		\]\
-		\]\
+	Create an outline before or after you type your prose [
+		 \\Note: creation of sections done with hotkey, and formatting is as well. So you don't ever have to type brackets or manually indentat. You can just type and then later select text and wrap into the sections that make sense, or begin by auto-inserting sections to build an outline and then fill it in. I usually do a bit of both.\\
+		 \\Sections automatically colored by nested level so colors always tell you where you are structurally.\\
+		 \\Sections generate table of contents.\\
+		 \\Brackets hidden in the editor so they do not pollute your prose.\\
+		 Write a title followed by a bracket. Everything inside is the section content. Close with a bracket.
+		 Title \[\
+		 content
+		 \]\
+		 Sections nest freely. Content can live at any level: chapter, scene, beat, whatever you need.
+		 Chapter \[\
+		 Scene \[\
+		 Beat \[\
+		 text
+		 \]\
+		 \]\
+		 \]\
+		 \\That's pretty much it!\\
 	]
 	Example [
-		\\Your structure is your outline. Nest as deep as you need.\\
+		 \\Your structure is your outline. Nest as deep as you need.\\
 		Chapter 1 [
-			\\Chapter notes.\\
+			 \\Chapter notes.\\
 			Scene: The morning after Bubba had his ordeal [
-				\\Scene notes.\\
+				 \\Scene notes.\\
 				Intro the hungry woman [
-					She walked into the room. She was a big, tall, ugly woman. \First time we meet her, add more description.\
-					"I ate the entire pie," she said.
-					Bubba recoiled. "The entire pie? Have you lost your damn mind?"
+					 She walked into the room. She was a big, tall, ugly woman. \First time we meet her, add more description.\
+					 "I ate the entire pie," she said.
+					 Bubba recoiled. "The entire pie? Have you lost your damn mind?"
 				]
 			]
 		]
 	]
 	Inline formatting [
-		Wrap text in single asterisks for italic:
-		\\asterisk text asterisk\\
-		*She knew it was over.*
-		Wrap text in double asterisks for bold:
-		\\asterisk asterisk text asterisk asterisk\\
-		**This matters.**
-		Wrap text in single backslashes for inline notes:
-		\\backslash text backslash\\
-		\Check timeline here.\
-		Wrap text in double backslashes for callout blocks:
-		\\backslash backslash text backslash backslash\\
-		\\UNRESOLVED: motivations unclear at this point.\\
-		Straight quotes render as curly automatically.
-		"He said goodbye" becomes curly on render.
-	]
-	Paragraphs and lists [
-		Each line is a paragraph. No empty lines needed between them like in markdown, so files are much more compact.
-		Paragraphs are indented like in a printed book.
-		Lines starting with a list marker skip the indent:
-		\\• or number followed by dot\\
+		 *Italic. Consider it carefully.*
+		 **Bold. This matters.**
+		 \Subdued note. Useful for inline placeholder notes when drafting.\
+		 \\CALLOUT BLOCKS: Leave yourself a note.\\
+		 "Dialogue gets it's own colors and quotes are replaced with smart quotes (non-destructively)."
+		- List can be colored and styled as well, and do not indent like paragraph text.
 		• Bullet list
 		1. Numbered list
 	]
-	Compared to markdown [
+	Paragraphs [
+		• Each line is a paragraph.
+		• No empty lines. Paragraphs are indented like in an ebook.
+		• List are not indented
+	]
+	Compared to Markdown [
 		• **Designed only for outline-driven prose**.
-		• The **outlining** can easily be added **before, during, or after prose writing** without difficulty. Simple shortcuts to turn a selection into a section.
+		• The **outlining** can easily be added **before, during, or after prose writing** without difficulty.
+		• All markup is hidden so you only see your text
+		• Sections are indented and colored so structure is easy to track at a glance. (This website is rendered in jav style)
 		• **What you see is what you get in the text editor**. All rendering is accomplished in the VS Code viewport so you have the benefit of working in a text editor.
 		• **More compact**. Line break is paragraph, not double line break. Renders the same as an e-book with indented paragraphs and no extra space between.
 		• **More visual**. Nested colored sections instead of flat headers. Easier to organize into scenes and beats without glancing back and forth at a table of contents or scrolling around to reorient.
-		• **Auto-formatting, auto-grammar/capitalization, auto-complete**. Type as fast as you can, typos and punctuation don't matter, it is all automatically cleaned up via hotkeys. Accomplished without AI, just scripting.
 	]
 ]
