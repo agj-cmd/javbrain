@@ -77,7 +77,6 @@ Word helper [
 			• Sound-alike (e.g. Close spelling)
 			• Rhyming
 ]
-]
 Editing. [
 	Find things fast without remembering exact word/phrase [
 		 **Quick fuzzy extension**
@@ -91,5 +90,4 @@ Editing. [
 		 **Example:** Draft 1 shows "The battle raged for hours."
 		 Draft 2 shows "They fought until dawn broke." View versions side-by-side or see inline highlighting of changes.
 	]
-]
 ]
