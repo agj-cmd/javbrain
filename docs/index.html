@@ -31,6 +31,7 @@ html, body {
   line-height: var(--line-height);
   background: var(--bg-primary);
   color: var(--text-primary);
+  overflow-x: hidden;
 }
 
 body { display: flex; flex-direction: column; }
@@ -161,25 +162,20 @@ mark { background: var(--highlight-bg); color: var(--highlight-text); padding: 0
 #touch-bar .bar-spacer { flex: 1; }
 #touch-bar .bar-status { color: var(--text-muted); font-size: calc(var(--font-size) - 2px); }
 
-#search-touch-bar {
-  display: none; flex-shrink: 0; align-items: center; justify-content: center; gap: 2px;
-  padding: 4px 8px; background: var(--bottom-bar-bg);
-  border-top: 1px solid var(--border-color); min-height: 36px;
-}
-#search-touch-bar .tb {
-  padding: 4px 10px; border: 1px solid var(--border-color); border-radius: 3px;
+/* Inline mobile search buttons — hidden on desktop */
+.search-m {
+  display: none; padding: 4px 10px; border: 1px solid var(--border-color); border-radius: 3px;
   background: var(--bg-primary); color: var(--text-primary); font-family: inherit;
   font-size: calc(var(--font-size) - 2px); cursor: pointer; user-select: none;
   white-space: nowrap; line-height: 1.4;
 }
-#search-touch-bar .tb:active { background: var(--highlight-bg); color: var(--highlight-text); }
+.search-m:active { background: var(--highlight-bg); color: var(--highlight-text); }
 
 @media (max-width: 600px) {
   #bottom-bar { display: none !important; }
   #touch-bar { display: flex; }
-  #touch-bar.hidden { display: none; }
   #search-bar .bar-cmd { display: none; }
-  #search-touch-bar.active { display: flex; }
+  #search-bar .search-m { display: inline-block; }
   .no-results { padding: 20px; }
 }
 </style>
@@ -199,6 +195,8 @@ mark { background: var(--highlight-bg); color: var(--highlight-text); padding: 0
   <div id="search-info"></div>
   <span class="bar-cmd" style="color:var(--text-muted)"><kbd>Tab</kbd> mode</span>
   <span class="bar-cmd" style="color:var(--text-muted)"><kbd>Esc</kbd> close</span>
+  <button class="tb search-m" data-act="mode">mode</button>
+  <button class="tb search-m" data-act="close">&#x2715;</button>
 </div>
 
 <div id="bottom-bar">
@@ -225,21 +223,11 @@ mark { background: var(--highlight-bg); color: var(--highlight-text); padding: 0
   <span class="bar-status" id="file-count-m"></span>
 </div>
 
-<div id="search-touch-bar">
-  <button class="tb" data-act="mode">mode</button>
-  <button class="tb" data-act="up">&uarr;</button>
-  <button class="tb" data-act="down">&darr;</button>
-  <button class="tb" data-act="left">&larr;</button>
-  <button class="tb" data-act="right">&rarr;</button>
-  <button class="tb" data-act="open">&#x23CE;</button>
-  <button class="tb" data-act="close">&#x2715;</button>
-</div>
-
 <script>
 (function() {
   'use strict';
 
-  const V = 'mms1813d';
+  const V = 'mms27qvk';
   function vfetch(url) { return fetch(url + '?v=' + V); }
 
   let fileData = [];
@@ -247,7 +235,7 @@ mark { background: var(--highlight-bg); color: var(--highlight-text); padding: 0
   let filteredIndices = null;
   let selectedRow = 0;
   let searchActive = false;
-  let searchModes = ['fuzzy', 'all', 'any', 'exact'];
+  let searchModes = ['fuzzy', 'all', 'any', 'exact', 'names'];
   let searchModeIdx = 0;
   let activeDropdown = null;
   let debounceTimer = null;
@@ -601,7 +589,14 @@ mark { background: var(--highlight-bg); color: var(--highlight-text); padding: 0
       searchInfo.textContent = ''; selectedRow = 0; renderTable(); return;
     }
     let matchingFiles;
-    if (mode === 'exact') {
+    if (mode === 'names') {
+      // Filename-only search — fast, no index scan
+      matchingFiles = [];
+      fileData.forEach((f, i) => {
+        const fn = f.filename.toLowerCase();
+        if (terms.every(t => fn.includes(t))) matchingFiles.push(i);
+      });
+    } else if (mode === 'exact') {
       const firstWord = (query.toLowerCase().match(/[a-z0-9]+/) || [''])[0];
       if (!firstWord) { filteredIndices = []; renderTable(); return; }
       const entries = searchIndex ? (searchIndex[firstWord] || []) : [];
@@ -646,7 +641,8 @@ mark { background: var(--highlight-bg); color: var(--highlight-text); padding: 0
     searchInfo.textContent = matchingFiles.length + ' match' + (matchingFiles.length !== 1 ? 'es' : '');
     renderTable();
 
-    // Auto-expand all
+    // Auto-expand all — skip on mobile or names mode
+    if (mode === 'names' || isMobile()) return;
     const expandPromises = matchingFiles.map(fi =>
       getFileContent(fi).then(content => {
         fileMatchLines[fi] = findMatchingLines(content, query);
@@ -780,14 +776,16 @@ mark { background: var(--highlight-bg); color: var(--highlight-text); padding: 0
   });
 
   // --- Search open/close helpers ---
-  const touchBar = document.getElementById('touch-bar');
-  const searchTouchBar = document.getElementById('search-touch-bar');
+  function isMobile() { return window.innerWidth <= 600; }
 
   function openSearch() {
     searchActive = true; searchBar.classList.add('active');
-    bottomBar.style.display = 'none'; searchInput.focus();
-    touchBar.classList.add('hidden');
-    searchTouchBar.classList.add('active');
+    bottomBar.style.display = 'none';
+    if (isMobile() && searchModes[searchModeIdx] !== 'names') {
+      searchModeIdx = searchModes.indexOf('names');
+      searchModeEl.textContent = 'names';
+    }
+    searchInput.focus();
   }
   function closeSearch() {
     const wrap = document.getElementById('table-wrap');
@@ -798,12 +796,10 @@ mark { background: var(--highlight-bg); color: var(--highlight-text); padding: 0
     expandedFiles.clear(); fileMatchLines = {};
     searchInfo.textContent = ''; renderTable();
     wrap.scrollTop = scrollPos;
-    searchTouchBar.classList.remove('active');
-    touchBar.classList.remove('hidden');
   }
 
   // --- Touch bar wiring ---
-  document.querySelectorAll('#touch-bar .tb, #search-touch-bar .tb').forEach(btn => {
+  document.querySelectorAll('#touch-bar .tb, .search-m').forEach(btn => {
     btn.addEventListener('click', function(e) {
       e.preventDefault();
       const act = this.dataset.act;
