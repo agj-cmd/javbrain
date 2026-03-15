@@ -144,6 +144,44 @@ mark { background: var(--highlight-bg); color: var(--highlight-text); padding: 0
 .setting-dropdown .opt:hover { background: var(--row-hover); }
 .setting-dropdown .opt.active { font-weight: 700; }
 .setting-dropdown .opt.focused { background: var(--highlight-bg); color: var(--highlight-text); }
+
+/* Touch bar — hidden on desktop */
+#touch-bar {
+  display: none; flex-shrink: 0; align-items: center; justify-content: center; gap: 2px;
+  padding: 4px 8px; background: var(--bottom-bar-bg);
+  border-top: 1px solid var(--border-color); min-height: 36px;
+}
+#touch-bar .tb {
+  padding: 4px 10px; border: 1px solid var(--border-color); border-radius: 3px;
+  background: var(--bg-primary); color: var(--text-primary); font-family: inherit;
+  font-size: calc(var(--font-size) - 2px); cursor: pointer; user-select: none;
+  white-space: nowrap; line-height: 1.4;
+}
+#touch-bar .tb:active { background: var(--highlight-bg); color: var(--highlight-text); }
+#touch-bar .bar-spacer { flex: 1; }
+#touch-bar .bar-status { color: var(--text-muted); font-size: calc(var(--font-size) - 2px); }
+
+#search-touch-bar {
+  display: none; flex-shrink: 0; align-items: center; justify-content: center; gap: 2px;
+  padding: 4px 8px; background: var(--bottom-bar-bg);
+  border-top: 1px solid var(--border-color); min-height: 36px;
+}
+#search-touch-bar .tb {
+  padding: 4px 10px; border: 1px solid var(--border-color); border-radius: 3px;
+  background: var(--bg-primary); color: var(--text-primary); font-family: inherit;
+  font-size: calc(var(--font-size) - 2px); cursor: pointer; user-select: none;
+  white-space: nowrap; line-height: 1.4;
+}
+#search-touch-bar .tb:active { background: var(--highlight-bg); color: var(--highlight-text); }
+
+@media (max-width: 600px) {
+  #bottom-bar { display: none !important; }
+  #touch-bar { display: flex; }
+  #touch-bar.hidden { display: none; }
+  #search-bar .bar-cmd { display: none; }
+  #search-touch-bar.active { display: flex; }
+  .no-results { padding: 20px; }
+}
 </style>
 </head>
 <body>
@@ -172,6 +210,29 @@ mark { background: var(--highlight-bg); color: var(--highlight-text); padding: 0
   <span class="bar-cmd"><kbd>Enter</kbd> Open</span>
   <span class="bar-spacer"></span>
   <span class="bar-status" id="file-count"></span>
+</div>
+
+<div id="touch-bar">
+  <button class="tb" data-act="search">&#x2315;</button>
+  <button class="tb" data-act="theme">T</button>
+  <button class="tb" data-act="font">F</button>
+  <button class="tb" data-act="up">&uarr;</button>
+  <button class="tb" data-act="down">&darr;</button>
+  <button class="tb" data-act="left">&larr;</button>
+  <button class="tb" data-act="right">&rarr;</button>
+  <button class="tb" data-act="open">&#x23CE;</button>
+  <span class="bar-spacer"></span>
+  <span class="bar-status" id="file-count-m"></span>
+</div>
+
+<div id="search-touch-bar">
+  <button class="tb" data-act="mode">mode</button>
+  <button class="tb" data-act="up">&uarr;</button>
+  <button class="tb" data-act="down">&darr;</button>
+  <button class="tb" data-act="left">&larr;</button>
+  <button class="tb" data-act="right">&rarr;</button>
+  <button class="tb" data-act="open">&#x23CE;</button>
+  <button class="tb" data-act="close">&#x2715;</button>
 </div>
 
 <script>
@@ -290,6 +351,8 @@ mark { background: var(--highlight-bg); color: var(--highlight-text); padding: 0
     applyFont();
     renderTable();
     fileCount.textContent = fileData.length + ' files';
+    const fcm = document.getElementById('file-count-m');
+    if (fcm) fcm.textContent = fileData.length;
   }
 
   function applyTheme() {
@@ -668,14 +731,7 @@ mark { background: var(--highlight-bg); color: var(--highlight-text); padding: 0
     if (searchActive) {
       if (e.key === 'Escape') {
         e.preventDefault();
-        const wrap = document.getElementById('table-wrap');
-        const scrollPos = wrap.scrollTop;
-        searchActive = false; searchBar.classList.remove('active');
-        bottomBar.style.display = 'flex'; searchInput.value = '';
-        filteredIndices = null; selectedRow = 0;
-        expandedFiles.clear(); fileMatchLines = {};
-        searchInfo.textContent = ''; renderTable();
-        wrap.scrollTop = scrollPos;
+        closeSearch();
         return;
       }
       if (e.key === 'Tab') {
@@ -692,8 +748,7 @@ mark { background: var(--highlight-bg); color: var(--highlight-text); padding: 0
       return;
     }
     if (e.key === ' ' || e.code === 'Space') {
-      e.preventDefault(); searchActive = true; searchBar.classList.add('active');
-      bottomBar.style.display = 'none'; searchInput.focus(); return;
+      e.preventDefault(); openSearch(); return;
     }
     const k = e.key.toLowerCase();
     if (k === 't' && !e.ctrlKey && !e.metaKey) { e.preventDefault(); openThemeDropdown(); return; }
@@ -722,6 +777,51 @@ mark { background: var(--highlight-bg); color: var(--highlight-text); padding: 0
       if (searchActive && searchInput.value) toggleExpand(parseInt(fi));
       else openFile(parseInt(fi));
     }
+  });
+
+  // --- Search open/close helpers ---
+  const touchBar = document.getElementById('touch-bar');
+  const searchTouchBar = document.getElementById('search-touch-bar');
+
+  function openSearch() {
+    searchActive = true; searchBar.classList.add('active');
+    bottomBar.style.display = 'none'; searchInput.focus();
+    touchBar.classList.add('hidden');
+    searchTouchBar.classList.add('active');
+  }
+  function closeSearch() {
+    const wrap = document.getElementById('table-wrap');
+    const scrollPos = wrap.scrollTop;
+    searchActive = false; searchBar.classList.remove('active');
+    bottomBar.style.display = 'flex'; searchInput.value = '';
+    filteredIndices = null; selectedRow = 0;
+    expandedFiles.clear(); fileMatchLines = {};
+    searchInfo.textContent = ''; renderTable();
+    wrap.scrollTop = scrollPos;
+    searchTouchBar.classList.remove('active');
+    touchBar.classList.remove('hidden');
+  }
+
+  // --- Touch bar wiring ---
+  document.querySelectorAll('#touch-bar .tb, #search-touch-bar .tb').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      const act = this.dataset.act;
+      if (act === 'search') openSearch();
+      else if (act === 'theme') openThemeDropdown();
+      else if (act === 'font') openFontDropdown();
+      else if (act === 'up') handleNav('ArrowUp', false);
+      else if (act === 'down') handleNav('ArrowDown', false);
+      else if (act === 'left') handleNav('ArrowLeft', false);
+      else if (act === 'right') handleNav('ArrowRight', false);
+      else if (act === 'open') handleNav('Enter', false);
+      else if (act === 'mode') {
+        searchModeIdx = (searchModeIdx + 1) % searchModes.length;
+        searchModeEl.textContent = searchModes[searchModeIdx];
+        if (searchInput.value) { clearTimeout(debounceTimer); doSearch(searchInput.value); }
+      }
+      else if (act === 'close') closeSearch();
+    });
   });
 
   init();

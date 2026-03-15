@@ -31,6 +31,8 @@
   --callout-bg: #2a1f00;
   --callout-border: #b8960e;
   --quote-color: #a0b0c0;
+  --bottom-bar-bg: #f0f0f0;
+  --row-hover: #f7f7f7;
   --toc-width: 30%;
 }
 
@@ -265,6 +267,36 @@ mark { background: var(--highlight-bg); color: var(--highlight-text); padding: 0
 .setting-dropdown .opt:hover { background: var(--row-hover); }
 .setting-dropdown .opt.active { font-weight: 700; }
 .setting-dropdown .opt.focused { background: var(--highlight-bg); color: var(--highlight-text); }
+
+/* Touch bar — hidden on desktop */
+#touch-bar {
+  display: none; flex-shrink: 0; align-items: center; justify-content: center; gap: 2px;
+  padding: 4px 8px; background: var(--bottom-bar-bg);
+  border-top: 1px solid var(--border-color); min-height: 36px;
+}
+#touch-bar .tb {
+  padding: 4px 10px; border: 1px solid var(--border-color); border-radius: 3px;
+  background: var(--bg-primary); color: var(--text-primary); font-family: inherit;
+  font-size: calc(var(--font-size) - 2px); cursor: pointer; user-select: none;
+  white-space: nowrap; line-height: 1.4;
+}
+#touch-bar .tb:active { background: var(--highlight-bg); color: var(--highlight-text); }
+#touch-bar .bar-spacer { flex: 1; }
+
+@media (max-width: 600px) {
+  #touch-bar { display: flex; }
+  #toc .toc-hint { display: none; }
+  #toc {
+    display: none; position: fixed; left: 0; top: 0; bottom: 36px;
+    width: 80%; max-width: 80%; min-width: 60%;
+    z-index: 200; border-right: 1px solid var(--border-color);
+    background: var(--bg-primary);
+  }
+  #toc.mobile-open { display: block; }
+  #toc.empty.mobile-open { display: none; }
+  #viewer { padding: 12px; }
+  .flat-content { margin: -12px; margin-bottom: 0; }
+}
 </style>
 </head>
 <body>
@@ -276,11 +308,18 @@ mark { background: var(--highlight-bg); color: var(--highlight-text); padding: 0
   </div>
 </div>
 
+<div id="touch-bar">
+  <button class="tb" data-act="toc">&#x2261;</button>
+  <button class="tb" data-act="theme">T</button>
+  <button class="tb" data-act="font">F</button>
+  <button class="tb" data-act="lines">L</button>
+</div>
+
 <script>
 (function() {
   'use strict';
 
-  const V = 'mmrzvz63';
+  const V = 'mms1813d';
   function vfetch(url) { return fetch(url + '?v=' + V); }
 
   const hashRaw = window.location.hash ? window.location.hash.slice(1) : null;
@@ -887,11 +926,13 @@ mark { background: var(--highlight-bg); color: var(--highlight-text); padding: 0
       if (tocFocused) {
         tocFocused = false;
         tocEl.classList.remove('focused');
+        tocEl.classList.remove('mobile-open');
         renderToc();
         viewerEl.focus();
       } else {
         tocFocused = true;
         tocEl.classList.add('focused');
+        tocEl.classList.add('mobile-open');
         renderToc();
         scrollToBlock(tocItems[tocSelected].id);
       }
@@ -902,6 +943,7 @@ mark { background: var(--highlight-bg); color: var(--highlight-text); padding: 0
       e.preventDefault();
       tocFocused = false;
       tocEl.classList.remove('focused');
+      tocEl.classList.remove('mobile-open');
       renderToc();
       viewerEl.focus();
       return;
@@ -1013,6 +1055,44 @@ mark { background: var(--highlight-bg); color: var(--highlight-text); padding: 0
     const orig = item.innerHTML;
     item.innerHTML = '<span style="opacity:0.5">copied</span>';
     setTimeout(() => { item.innerHTML = orig; }, 800);
+  });
+
+  // --- Touch bar wiring ---
+  document.querySelectorAll('#touch-bar .tb').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      if (activeDropdown) { closeDropdown(); return; }
+      const act = this.dataset.act;
+      if (act === 'toc') {
+        const isOpen = tocEl.classList.toggle('mobile-open');
+        if (isOpen) {
+          tocFocused = true;
+          tocEl.classList.add('focused');
+          renderToc();
+          if (tocItems[tocSelected]) scrollToBlock(tocItems[tocSelected].id);
+        } else {
+          tocFocused = false;
+          tocEl.classList.remove('focused');
+          renderToc();
+          viewerEl.focus();
+        }
+      }
+      else if (act === 'theme') openThemeDropdown();
+      else if (act === 'font') openFontDropdown();
+      else if (act === 'lines') {
+        document.body.classList.toggle('depth-lines-off');
+        localStorage.setItem('jb-lines', document.body.classList.contains('depth-lines-off') ? 'off' : 'on');
+      }
+    });
+  });
+
+  // Close mobile TOC on item click (mobile only)
+  tocEl.addEventListener('click', function() {
+    if (window.innerWidth <= 600) {
+      setTimeout(() => {
+        tocEl.classList.remove('mobile-open');
+      }, 150);
+    }
   });
 
   loadAndRender().then(() => {
