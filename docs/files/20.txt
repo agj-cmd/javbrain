@@ -5,23 +5,23 @@ Beef and Daikon Radish Soup [
 	]
 	Servings: [
 		4 bowls, Soup, Korean
-		- Prep Time 15 minutes mins
-		- Cook Time 50 minutes mins
-		- Soaking Time 10 minutes mins
-		- Total Time 1 hour hr 5 minutes mins
+		• Prep Time 15 minutes mins
+		• Cook Time 50 minutes mins
+		• Soaking Time 10 minutes mins
+		• Total Time 1 hour hr 5 minutes mins
 	]
 	Main Ingredients [
-		-   1 lb beef brisket or short ribs cut into bite-sized pieces
-		-   1 tbsp sesame oil
-		-   4 cloves garlic minced
-		-   1 tbsp ginger minced
-		-   5 cups water or beef broth
-		-   2 cups daikon radish peeled and sliced into thick half-moons
-		-   2 tbsp soy sauce
-		-   1 tsp salt to taste
-		-   1/2 tsp black pepper
-		-   2 green onions chopped for garnish
-		-   Soup Pot
+		•   1 lb beef brisket or short ribs cut into bite-sized pieces
+		•   1 tbsp sesame oil
+		•   4 cloves garlic minced
+		•   1 tbsp ginger minced
+		•   5 cups water or beef broth
+		•   2 cups daikon radish peeled and sliced into thick half-moons
+		•   2 tbsp soy sauce
+		•   1 tsp salt to taste
+		•   1/2 tsp black pepper
+		•   2 green onions chopped for garnish
+		•   Soup Pot
 	]
 	Steps [
 			1.  Soak beef in cold water for 10 minutes to remove excess blood. Drain and set aside.

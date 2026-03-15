@@ -1,29 +1,29 @@
-Pozole
-Recipe, mexican, soup, good, favorite
+ Pozole
+ Recipe, mexican, soup, good, favorite
 **Ingredients:** [
-	- 3 lb pork loin or 4 lb bone-in pork shoulder, cut into 4 pieces
-	- Salt and pepper to taste
-	- 4 tbsp avocado oil, divided
-	- 8 cups chicken broth
-	- 2 bay leaves
-	- 2 tsp ground cumin
-	- 2 tsp dried oregano
-	- 8 tomatillos, husks removed and halved
-	- 3 poblano peppers, stems and seeds removed, halved
-	- 2 jalapeño peppers, stems and seeds removed, halved
-	- 1 large onion, quartered
-	- 6 garlic cloves, peeled
-	- 1 cup cilantro leaves and stems, tightly packed
-	- 25 oz can of hominy, strained and rinsed
-	- Shredded cabbage
-	- Radish slices
-	- Diced avocados
-	- Diced onion
-	- Cilantro
-	- Cotija cheese
-	- Lime wedges
-	- Jalapeño slices
-	- Tortilla chips
+	• 3 lb pork loin or 4 lb bone-in pork shoulder, cut into 4 pieces
+	• Salt and pepper to taste
+	• 4 tbsp avocado oil, divided
+	• 8 cups chicken broth
+	• 2 bay leaves
+	• 2 tsp ground cumin
+	• 2 tsp dried oregano
+	• 8 tomatillos, husks removed and halved
+	• 3 poblano peppers, stems and seeds removed, halved
+	• 2 jalapeño peppers, stems and seeds removed, halved
+	• 1 large onion, quartered
+	• 6 garlic cloves, peeled
+	• 1 cup cilantro leaves and stems, tightly packed
+	• 25 oz can of hominy, strained and rinsed
+	• Shredded cabbage
+	• Radish slices
+	• Diced avocados
+	• Diced onion
+	• Cilantro
+	• Cotija cheese
+	• Lime wedges
+	• Jalapeño slices
+	• Tortilla chips
 ]
 **Instructions:** [
 	1. **Preheat Oven:** Set oven to 425°F (220°C).

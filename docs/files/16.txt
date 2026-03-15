@@ -6,7 +6,7 @@ Haupia [
 		•  1 can coconut milk
 		        •  full fat
 		•  5 tablespoons cornstarch
-		        •  +|- tablespoon for firmness
+		        •  +|• tablespoon for firmness
 		•  4 tablespoons sugar
 		•  1/2 cup water
 	]

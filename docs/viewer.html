@@ -50,6 +50,7 @@
   --depth-rule-mix: 15%;
   --callout-bg: #2a1f00;
   --callout-border: #b8960e;
+  --quote-color: #a0b0c0;
   --toc-width: 260px;
 }
 
@@ -157,10 +158,21 @@ pre.txt-content {
 .jav-block-label {
   display: block;
   text-align: center;
-  font-size: calc(var(--font-size) - 1px);
   font-weight: 600; color: var(--text-muted);
   letter-spacing: 0.03em; margin-bottom: 2px;
+  font-size: calc(var(--font-size) * 2);
 }
+.jav-block[data-depth="1"] > .jav-block-label { font-size: calc(var(--font-size) * 1.85); }
+.jav-block[data-depth="2"] > .jav-block-label { font-size: calc(var(--font-size) * 1.7); }
+.jav-block[data-depth="3"] > .jav-block-label { font-size: calc(var(--font-size) * 1.55); }
+.jav-block[data-depth="4"] > .jav-block-label { font-size: calc(var(--font-size) * 1.4); }
+.jav-block[data-depth="5"] > .jav-block-label { font-size: calc(var(--font-size) * 1.25); }
+.jav-block[data-depth="6"] > .jav-block-label,
+.jav-block[data-depth="7"] > .jav-block-label,
+.jav-block[data-depth="8"] > .jav-block-label,
+.jav-block[data-depth="9"] > .jav-block-label,
+.jav-block[data-depth="10"] > .jav-block-label,
+.jav-block[data-depth="11"] > .jav-block-label { font-size: calc(var(--font-size) * 1.1); }
 
 
 /* Depth-based tinting — 6 colors from theme, repeating */
@@ -195,16 +207,17 @@ pre.txt-content {
   line-height: var(--text-line-height);
   text-indent: 10px;
 }
-.jav-para.list-line { text-indent: 0; text-align: left; }
+.jav-para.list-line { text-indent: 0; text-align: left; padding-left: 2em; }
 
 .txt-line {
   display: block; padding: 2px 0;
   text-indent: 10px;
 }
-.txt-line.list-line { text-indent: 0; text-align: left; }
+.txt-line.list-line { text-indent: 0; text-align: left; padding-left: 2em; }
 
 .jav-italic { font-style: italic; }
 .jav-bold { font-weight: 700; }
+.jav-quote { color: var(--quote-color); }
 .jav-note { color: var(--text-muted); font-size: calc(var(--font-size) - 1px); }
 .jav-callout {
   display: block; background: var(--callout-bg);
@@ -263,7 +276,7 @@ mark { background: var(--highlight-bg); color: var(--highlight-text); padding: 0
 (function() {
   'use strict';
 
-  const V = 'mmqzmokm';
+  const V = 'mmr2t4ch';
   function vfetch(url) { return fetch(url + '?v=' + V); }
 
   const hashRaw = window.location.hash ? window.location.hash.slice(1) : null;
@@ -573,6 +586,8 @@ mark { background: var(--highlight-bg); color: var(--highlight-text); padding: 0
     s = s.replace(/\\([^\\]+?)\\/g, '<span class="jav-note">$1</span>');
     s = s.replace(/\*\*([^*]+?)\*\*/g, '<span class="jav-bold">$1</span>');
     s = s.replace(/\*([^*]+?)\*/g, '<span class="jav-italic">$1</span>');
+    // Wrap curly-quoted text
+    s = s.replace(/\u201c([^\u201d]*?)\u201d/g, '<span class="jav-quote">\u201c$1\u201d</span>');
     return s;
   }
 

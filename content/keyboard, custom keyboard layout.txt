@@ -5,9 +5,11 @@
 
 
 Key layer:
-	B W L Y Z    X F O U -
-	C R S T G    M N E I A
-	Q J V D P    K H , . ?
+	'   B W L Y Z    X F O U -  ctrl+backspace
+	ESC C R S T G    M N E I A  Enter
+	OSM Q J V D P    K H , . ?  OSM
+
+  Tab space f22  f23 backspace delete
 
 ====QMK JSON====
 {

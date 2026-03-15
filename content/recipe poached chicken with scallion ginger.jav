@@ -8,17 +8,17 @@ Poached Chicken with Scallion Ginger Sauce [
 	]
 	Ingredients [
 		Chicken [
-			- 5 chicken drumsticks (or 4 thighs; organic/kosher/free-range preferred)
-			- 3 slices ginger
-			- 1 scallion
+			• 5 chicken drumsticks (or 4 thighs; organic/kosher/free-range preferred)
+			• 3 slices ginger
+			• 1 scallion
 		]
 		Sauce [
-			- 3 tbsp vegetable oil
-			- 3 scallions (whites and greens separated, greens chopped)
-			- 2 tbsp light soy sauce
-			- 1/2 tsp sugar
-			- 1/2 cup cooking water
-			- 15g ginger (1.5 tbsp minced)
+			• 3 tbsp vegetable oil
+			• 3 scallions (whites and greens separated, greens chopped)
+			• 2 tbsp light soy sauce
+			• 1/2 tsp sugar
+			• 1/2 cup cooking water
+			• 15g ginger (1.5 tbsp minced)
 		]
 	]
 	Instructions [

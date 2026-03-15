@@ -1,6 +1,7 @@
 Kati Roll Wala
 
-Indian, Restaurant
-decent flavors, good value, look for BOGOs, not amazing but decent
-🟢good
+Indian, restaurant
+Decent flavors. Good value. Look for bogos. Not amazing but decent.
+This the place has naan pizza
+🟢 Good.
 Silver Spring

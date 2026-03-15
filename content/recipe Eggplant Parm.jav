@@ -1,41 +1,41 @@
 Eggplant Parmigiana [
 	About [
 		Tags [
-			Recipe. Italian. Good.
+			 Recipe. Italian. Good.
 		]
 		About [
-			**Prep:** 50 min | **Cook:** 30 min | **Total:** 1 hr 20 min
-			**Servings:** 6 | **Calories:** 403/serving
-			**Freezer Friendly:** Yes
-			Tender eggplant coated in breadcrumbs, layered with cheese and marinara. Bake or fry method included.
+			 **Prep:** 50 min | **Cook:** 30 min | **Total:** 1 hr 20 min
+			 **Servings:** 6 | **Calories:** 403/serving
+			 **Freezer Friendly:** Yes
+			 Tender eggplant coated in breadcrumbs, layered with cheese and marinara. Bake or fry method included.
 		]
 		Notes [
 			**Bread options:** Grain bread, white bread, gluten-free, Ezekiel. Use homemade or 1.5 cups store-bought breadcrumbs.
-			**Flour options:** All-purpose, white whole wheat, gluten-free blend, oat flour.
-			**Gluten-free:** Use gluten-free flour and breadcrumbs (store-bought or homemade with gluten-free bread).
+			 **Flour options:** All-purpose, white whole wheat, gluten-free blend, oat flour.
+			 **Gluten-free:** Use gluten-free flour and breadcrumbs (store-bought or homemade with gluten-free bread).
 		]
 	]
 	Ingredients [
 		Eggplant [
-			- 2 medium-large eggplants
-			- 1/2 cup all-purpose flour
-			- 3-4 eggs
-			- 1/4 cup olive oil (fried method only)
+			• 2 medium-large eggplants
+			• 1/2 cup all-purpose flour
+			• 3-4 eggs
+			• 1/4 cup olive oil (fried method only)
 		]
 		Breadcrumbs [
-			- 6 bread slices (1.5 cups)
-			- 1/2 cup parmesan cheese, shredded
-			- 2 tsp Italian herb blend
-			- 1 tsp garlic powder
-			- 1/2 tsp salt
-			- 1/2 tsp black pepper
+			• 6 bread slices (1.5 cups)
+			• 1/2 cup parmesan cheese, shredded
+			• 2 tsp Italian herb blend
+			• 1 tsp garlic powder
+			• 1/2 tsp salt
+			• 1/2 tsp black pepper
 		]
 		Toppings [
-			- 1.5 cups marinara (2-2.5 cups for extra sauce)
-			- 1 lb mozzarella cheese
-			- 1/3 cup parmesan cheese, shredded
-			- 1-2 tbsp fresh basil, chopped
-			- 1 tsp fresh oregano, chopped
+			• 1.5 cups marinara (2-2.5 cups for extra sauce)
+			• 1 lb mozzarella cheese
+			• 1/3 cup parmesan cheese, shredded
+			• 1-2 tbsp fresh basil, chopped
+			• 1 tsp fresh oregano, chopped
 		]
 	]
 	Instructions [

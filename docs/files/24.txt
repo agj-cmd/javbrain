@@ -8,7 +8,7 @@ Ingredients [
 	• 1/2 teaspoon ground cumin
 	• 1/4 teaspoon ground cinnamon
 	• 1 tablespoon olive or vegetable oil
-	• 1 (4-1/2- to 5-pound) boneless or bone-in pork shoulder or pork butt
+	• 1 (4-1/2• to 5-pound) boneless or bone-in pork shoulder or pork butt
 	• 1 cup low-sodium chicken broth or water
 	• 1 1/2 to 2 cups tomato-based barbecue sauce (optional, if making pulled BBQ pork)
 ]
