@@ -1,9 +1,9 @@
 {
   "defaults": {
     "theme": "dark",
-    "fontSize": "18px",
+    "fontSize": "22px",
     "lineHeight": 1.4,
-    "textLineHeight": 1.6,
+    "textLineHeight": 2,
     "textMargin": "80px",
     "textAlign": "justify",
     "tocWidth": "30%"
