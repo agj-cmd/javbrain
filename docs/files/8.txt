@@ -1,383 +1,105 @@
-====Custom keyboard layout====
-• Modified from Canary for ortho CRKBD keyboard
-• Tuned for English fiction writing
-• Tuning process:
-    1. Type until RSI flare up.
-    2. Run analysis of character frequencies on actual writing content (shown below)
-    3. Tweak keys to place most used characters in most comfortable positions. Avoid movements which cause stress.
-    4. Test typing with most common words. Should feel comfortable and natural. Go by feeling, not programmatic keyboard analyzers.
-
-
-
-Key layer:
-	'   Q W L Y X    Z F O U -  ctrl+backspace
-	ESC C R S T G    M N E I A  Enter
-	OSM J P V D B    K H , . ?  OSM
-
-  Tab space f22 f23 backspace delete
-
-====Char Frequency: Book 1/====
-Unique: 72   Total: 942672
-
-Key      Count      %
-------  --------  -----
-e       113578   12.0%
-a        77195    8.2%
-t        75220    8.0%
-s        64957    6.9%
-o        62854    6.7%
-h        60724    6.4%
-n        58512    6.2%
-i        57430    6.1%
-r        55706    5.9%
-d        43245    4.6%
-l        35477    3.8%
-u        27623    2.9%
-w        24120    2.6%
-m        21641    2.3%
-g        18951    2.0%
-y        17376    1.8%
-c        16704    1.8%
-,        15778    1.7%
-f        15755    1.7%
-.        15577    1.7%
-p        13624    1.4%
-b        12886    1.4%
-k         8797    0.9%
-v         6970    0.7%
-"         5145    0.5%
-z         2042    0.2%
-'         1728    0.2%
-?         1632    0.2%
-”         1296    0.1%
-“         1279    0.1%
-q         1040    0.1%
-x          982    0.1%
--          978    0.1%
-—          776    0.1%
-j          738    0.1%
-’          696    0.1%
-*          656    0.1%
-!          588    0.1%
-
-
-====QMK JSON====
-{
-  "documentation": "\"This file is a QMK Configurator export. You can import this at <https://config.qmk.fm>. It can also be used directly with QMK's source code.\n\nTo setup your QMK environment check out the tutorial: <https://docs.qmk.fm/#/newbs>\n\nYou can convert this file to a keymap.c using this command: `qmk json2c {keymap}`\n\nYou can compile this keymap using this command: `qmk compile {keymap}`\"\n",
-  "notes": "",
-  "version": 1,
-  "keyboard": "crkbd/rev1",
-  "keymap": "canary_new",
-  "layout": "LAYOUT_split_3x6_3",
-  "layers": [
-    [
-      "KC_QUOT",
-      "KC_B",
-      "KC_W",
-      "KC_L",
-      "KC_Y",
-      "KC_Z",
-      "KC_X",
-      "KC_F",
-      "KC_O",
-      "KC_U",
-      "KC_MINS",
-      "LCTL(KC_BSPC)",
-      "KC_ESC",
-      "LSFT_T(KC_C)",
-      "LGUI_T(KC_R)",
-      "LALT_T(KC_S)",
-      "LCTL_T(KC_T)",
-      "KC_G",
-      "KC_M",
-      "RCTL_T(KC_N)",
-      "RALT_T(KC_E)",
-      "RGUI_T(KC_I)",
-      "RSFT_T(KC_A)",
-      "KC_ENT",
-      "OS_LSFT",
-      "KC_Q",
-      "KC_J",
-      "KC_V",
-      "KC_D",
-      "KC_P",
-      "KC_K",
-      "KC_H",
-      "KC_COMM",
-      "KC_DOT",
-      "KC_QUES",
-      "OS_RSFT",
-      "LT(1,KC_TAB)",
-      "LT(2,KC_SPC)",
-      "LT(3,KC_F22)",
-      "LT(4,KC_F23)",
-      "LT(5,KC_BSPC)",
-      "LT(6,KC_DEL)"
-    ],
-    [
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_LPRN",
-      "KC_RPRN",
-      "KC_LCBR",
-      "KC_RCBR",
-      "KC_LT",
-      "KC_GT",
-      "KC_TRNS",
-      "KC_DLR",
-      "KC_PERC",
-      "KC_CIRC",
-      "KC_GRV",
-      "KC_TRNS",
-      "KC_LBRC",
-      "KC_RBRC",
-      "KC_AMPR",
-      "KC_ASTR",
-      "KC_SCLN",
-      "KC_COLN",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_PIPE",
-      "KC_EXLM",
-      "KC_AT",
-      "KC_HASH",
-      "KC_UNDS",
-      "KC_TILD",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_MINS",
-      "KC_SLSH",
-      "KC_EQL"
-    ],
-    [
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_PAST",
-      "KC_7",
-      "KC_8",
-      "KC_9",
-      "KC_PLUS",
-      "LGUI(KC_Z)",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_BSLS",
-      "KC_4",
-      "KC_5",
-      "KC_6",
-      "KC_MINS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_PSLS",
-      "KC_1",
-      "KC_2",
-      "KC_3",
-      "KC_EQL",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_COMM",
-      "KC_0",
-      "KC_DOT"
-    ],
-    [
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "LCA(KC_F24)",
-      "LCA(KC_F19)",
-      "LCA(KC_F20)",
-      "LCA(KC_F21)",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "LCA(KC_F23)",
-      "LCA(KC_F16)",
-      "LCA(KC_F17)",
-      "LCA(KC_F18)",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "LCA(KC_F22)",
-      "LCA(KC_F13)",
-      "LCA(KC_F14)",
-      "LCA(KC_F15)",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS"
-    ],
-    [
-      "KC_TRNS",
-      "KC_TRNS",
-      "LSA(KC_F19)",
-      "LSA(KC_F20)",
-      "LSA(KC_F21)",
-      "LSA(KC_F24)",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "LSA(KC_F16)",
-      "LSA(KC_F17)",
-      "LSA(KC_F18)",
-      "LSA(KC_F23)",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "LSA(KC_F13)",
-      "LSA(KC_F14)",
-      "LSA(KC_F15)",
-      "LSA(KC_F22)",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS"
-    ],
-    [
-      "KC_F4",
-      "KC_F5",
-      "KC_F6",
-      "KC_F7",
-      "KC_F8",
-      "KC_F9",
-      "LCTL(KC_A)",
-      "KC_HOME",
-      "KC_UP",
-      "KC_END",
-      "KC_TRNS",
-      "LCTL(KC_DEL)",
-      "KC_F10",
-      "LSFT_T(KC_F11)",
-      "LGUI_T(KC_F12)",
-      "LALT_T(KC_F13)",
-      "LCTL_T(KC_F14)",
-      "KC_F15",
-      "LALT(KC_LEFT)",
-      "KC_LEFT",
-      "KC_DOWN",
-      "KC_RGHT",
-      "LALT(KC_RGHT)",
-      "LCTL(KC_Z)",
-      "KC_F16",
-      "KC_F17",
-      "KC_F18",
-      "KC_F19",
-      "KC_F20",
-      "KC_F21",
-      "LALT(KC_DEL)",
-      "KC_PGDN",
-      "KC_PGUP",
-      "KC_TRNS",
-      "KC_APP",
-      "LCS(KC_Z)",
-      "LCS_T(KC_F1)",
-      "LSFT_T(KC_F2)",
-      "LCA_T(KC_F3)",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS"
-    ],
-    [
-      "LALT(KC_F4)",
-      "LGUI(KC_Q)",
-      "LCTL(KC_W)",
-      "LGUI(KC_L)",
-      "LGUI(KC_Y)",
-      "LGUI(KC_P)",
-      "LGUI(KC_J)",
-      "LGUI(KC_7)",
-      "LGUI(KC_8)",
-      "LGUI(KC_9)",
-      "LGUI(KC_MINS)",
-      "LGUI(KC_BSPC)",
-      "LGUI(KC_ESC)",
-      "LGUI(KC_C)",
-      "LGUI(KC_R)",
-      "LGUI(KC_S)",
-      "LGUI(KC_T)",
-      "LGUI(KC_G)",
-      "LGUI(KC_M)",
-      "LGUI(KC_4)",
-      "LGUI(KC_5)",
-      "LGUI(KC_6)",
-      "LGUI(KC_A)",
-      "LGUI(KC_ENT)",
-      "KC_TRNS",
-      "LGUI(KC_Z)",
-      "LGUI(KC_X)",
-      "LGUI(KC_V)",
-      "LGUI(KC_D)",
-      "LGUI(KC_B)",
-      "LGUI(KC_K)",
-      "LGUI(KC_1)",
-      "LGUI(KC_2)",
-      "LGUI(KC_3)",
-      "LGUI(KC_QUES)",
-      "KC_TRNS",
-      "LSFT(KC_TAB)",
-      "LALT(KC_TAB)",
-      "LCTL(KC_TAB)",
-      "KC_TRNS",
-      "KC_TRNS",
-      "KC_TRNS"
-    ]
-  ],
-  "author": ""
-}
+JAV Writing System [
+	About [
+		• A suite of extensions for vs code/codium to turn the code editor into ideal narrative writing editor
+		• This document in progress. Aim is to provide user experience based wiki style document along with the extensions.
+		• TODO: Likely want inline, folding, copyable code blocks so that I can put extensions right in here along with info
+	]
+	Recall and Find [
+		GOAL [
+			• Author never needs to think where information is stored, or spend more than a few seconds searching for anything they wrote in the past.
+			• Computer aids in recalling and finding information.
+			• The author only needs to provide vague hints.
+		]
+		IMPLEMENTATION [
+			 \\Computer is the finder and rememberer. No spatial memory or exact phrasing required. Author provides only minimal hint.\\
+			• Hotkey driven immediate-response fuzzy search within file and across files.
+			• Fuzzy search words in file(s), or glossary terms. Immediately setup glossary search within filtered set of files, all keyboard driven and does not intefere with work at hand. Once found what you want, easily close all the "extra" stuff and get back to work at hand.
+			 **EXAMPLE 1**:
+				• In some other chapter, did the hero break his sword?
+				• Multi-file search "sword brok".
+					•  System finds "sword broken", "broke his sword", "shattered cleaver of Ares" in different files. It returns any word or phrase tagged with associated terms.
+				• Found by user tags categories.
+				• Retrieve characters/places/ideas by associated terms and find where implemented quickly.
+			 **EXAMPLE 2:**
+			• Cannot remember character name but recall role and location.
+			• Hotkey for glossary search.
+			• Type "knight lands, old".
+			 Glossary search returns:
+			• "Sir Aldric, Knight, Northlands, old and ugly".
+			• "Sir Faldric, Knight, Northlands, old but handsome".
+			• "Sir Baldric, Knight, Southlands, the old bastard".
+			• "Sir Caldric, Knight, Eastlands, the old sage".
+			• Select desired and enter to insert at cursor.
+		]
+	]
+	Navigation and Selection. [
+		 **Javnav extension**
+		 Move and select by clause:
+				• For editing, most work is rearranging clauses, not words, so the default movement unit should be clause.
+		 Immediate and intuitive move/select by:
+					• Word, clause, paragraph, region.
+					• Immediate select quotes, notes, regions.
+	]
+	Traverse by structure [
+		 **Outline peek extension**
+			• Immediate traverse by outline units.
+			• Expand/collapse to see how units fit into the larger structure intuitively.
+			• Traverse chapter, scenes, beats, fast and fluid without losing focu.
+	]
+	Visual aid. Colors highlighting and ruler [
+		 **Jav scope extension**
+			• Highlight unit with colors to easily show stucture
+			• Ruler lines for visual clarity and aid reading when moving up and down the file
+			• Toggle easily. For editing, these things help, but for reading and prose writing, it may be preferred to turn them off.
+	]
+	Chapter order, filter by chapter content [
+		 **Glossary dashboard extension**
+			• View chapters, change order, filter by content (e.g. character, location, theme, any tags you define).
+			• Per chapter read time
+			• All chapters read time
+	]
+	Typing [
+		 **Project glossary**
+		 Glossary autocomplete:
+				• Key terms appear as completion items
+				• By frequency and recency.
+						• Type a characters name, next time you press the first letter, it will be first thing to popup.
+							• Thus, almost never type entire names.
+				• Usually you should only need to type first two or three characters of any word.
+		 Glossary search:
+				• Find all
+				• Find in file(s)
+	]
+	Auto punctuation, text cleanup, formatting. [
+		 **Editor Helper**
+		 Hammer out the words, computer tidies up spacing, punctuation, capitalization.
+		 **Never need to press shift** to capitalize words.
+	]
+	Advanced autocorrect [
+			• Like IOS autocorrect, but uses user glossary and keyboard layout so you won't have surprises
+			• Confidently mistype words and don't worry about it.
+			• Quickly and easily add words to your dictionary or dump more dictionaries into it easily
+			• Automatically capitalizes sentences, corrects typos live
+	]
+	Word helper [
+		 **Via shortcut**
+			• Dictionary lookup
+			• Synonym lookup and replace
+			• Sound-alike (e.g. Close spelling)
+			• Rhyming
+	]
+	Editing. [
+		Find things fast without remembering exact word/phrase [
+			 **Quick fuzzy extension**
+			• Find fast from fuzzy memory
+			• Typo tolerant
+			• Any word order
+			• Split editor ➢ Find ➢ Return to spot
+		]
+		Compare with saved. [
+			 Side-by-side or inline comparison for editing phase.
+			 **Example:** Draft 1 shows "The battle raged for hours."
+			 Draft 2 shows "They fought until dawn broke." View versions side-by-side or see inline highlighting of changes.
+		]
+	]
+]

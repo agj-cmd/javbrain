@@ -1,5 +1,5 @@
 ====Custom keyboard layout====
-• Modified from Canary for ortho CRKBD keyboard
+• minor Modification from Canary for ortho CRKBD keyboard
 • Tuned for English fiction writing
 • Tuning process:
     1. Type until RSI flare up.
@@ -10,13 +10,12 @@
 
 
 Key layer:
-	'   Q W L Y X    Z F O U -  ctrl+backspace
-	ESC C R S T G    M N E I A  Enter
-	OSM J P V D B    K H , . ?  OSM
+	W L Y P B   J F O U -
+	C R S T G   M N E I A
+	Q X V D K   Z H , . ?
 
-  Tab space f22 f23 backspace delete
 
-====Char Frequency: Book 1/====
+====Char Frequency====
 Unique: 72   Total: 942672
 
 Key      Count      %

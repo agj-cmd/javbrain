@@ -1,105 +1,87 @@
-JAV Writing System [
-	About [
-		• A suite of extensions for vs code/codium to turn the code editor into ideal narrative writing editor
-		• This document in progress. Aim is to provide user experience based wiki style document along with the extensions.
-		• TODO: Likely want inline, folding, copyable code blocks so that I can put extensions right in here along with info
+What is jav syntax? [
+	SIMPLE • VISUAL • FLEXIBLE • FAST [
+		• A **simple plain text language** for **structured novel writing** in VS Code/Codium.
+		• Is used to create and style the content for this website.
+		• **Free** and **open source**. Local. Transferrable. Universal.
+			• Universal? Jav files can simply be renamed to .txt and will work anywhere. They can also be converted to markdown formatting easily, and vice versa.
+		• To be used in conjunction with a suite of extensions which turn the world's best code editor into the **world's best novel editor**.
+		• **Simpler than markdown** as it is strictly for novel writing. Adds **visual aids** which highlight arbitrary sections with colors blocks.
+		• Like **colored sticky notes** on a whiteboard. **Easily organize** and review your work in a way that **feels natural**.
+		• All markup text is hidden so your text looks close to how it would look in a book while you write it.
+		• One text file holds your outline, notes, and manuscript. **Pure, elegant, simple**. Abandon the fight against complex, closed systems, e.g. Scrivener, Word.
 	]
-	Recall and Find [
-		GOAL [
-			• Author never needs to think where information is stored, or spend more than a few seconds searching for anything they wrote in the past.
-			• Computer aids in recalling and finding information.
-			• The author only needs to provide vague hints.
+	Compared to Markdown [
+		• **Purpose-built strictly for narrative prose**.
+		• **Outline sections** can easily be added **before, during, or after prose writing** without difficulty. If you arrange sections you do not need to adjust other headers since relationship is via nesting, not numbering.
+		• Sections are indented and colored so **structure is easy to track** at a glance. \\This website is rendered in jav style\\
+		• **No render view and clean text**. All rendering is accomplished in the VS Code viewport simply by collapsing markup characters when the cursor is not near. Achieve visual clarity without splitting the view for a side-by-side render.
+		• **More compact**. Single line break is a paragraph, not double line break. Renders the same as an e-book with indented paragraphs and no extra space between. Seeing more of your text on the screen helps avoid getting lost during that structuring phase when you are deciding what to put in your chapters.
+		• **More structural visual clarity**. Nested colored sections instead of flat ## headers. Easier to organize into scenes and beats and know where you are.
+	]
+]
+How to write .jav files [
+	**Create an outline before, during, or after you type your prose**
+	• Create outline sections with hotkey. You are never required to type brackets or manually format.
+	• You type regular text, then later select text wrap into sections that make sense, or you may begin by auto-inserting outline sections first and fill it in after.
+	• Sections are colored by nested level, so colors inform where you are structurally.
+	\\Press L to toggle section colors on and off for a demonstration\\
+	• Sections generate table of contents.
+	• Brackets and asteriks are hidden in the editor so they do not pollute your prose. You only see the section titles and prose.
+	**How to**
+	1. Hotkey creates a bracketed section.
+	2. Add a title.
+	3. Type prose inside the brackets.
+	My brilliant title \[\
+	My words. I've got the best words.
+	\]\
+	• Sections nest infinitely. Book, chapter, scene, beat, minibeat... Whatever makes sense to you, there are no rules.
+	Chapter \[\
+	Scene \[\
+	Beat \[\
+	Do nostrud sit esse enim ex excepteur. "Sunt minim amet laborum exercitation fugiat dolor culpa aim."
+	\]\
+	\]\
+	\]\
+	• If you add a section within a section, or wrap a section around a section, just press the format key and all of the indentation and cleanup happens automatically.
+	• That's it!
+	Example [
+		\\I might leave scene notes up here.\\
+		Scene. The morning after bubba had his ordeal. He's hung-over and grouchy. [
+			\\Reminder: Bubba heard about this mysterious woman in the last chapter but he was drunk.\\
+			Beat. Bubba meets the mysterious woman. [
+				She walked into the room. She was wider than Bubba, and taller than him, and twice as ugly. \inline note. First time we mention how she looks. Should we do this earlier?\
+				"I ate Loyd's pie," she said. "And don't say nothing bout it to no one or you'll be sorry."
+				Bubba recoiled, then shouted, "You ate his special pie? Heavens woman, you play a dangerous game."
+			]
+			Beat. Bubba falls in love. [
+				Suddenly she sprang upon him and squeezed his head in a vice-like hold.
+				Bubba cried out, "Damn woman! You're a crazy one, ain't ya?"
+				She responded by poking him in the eye, and in that moment, Bubba knew he had met his soul mate.
+				\\Review with test readers, they might not buy it.\\
+			]
 		]
-		IMPLEMENTATION [
-			 \\Computer is the finder and rememberer. No spatial memory or exact phrasing required. Author provides only minimal hint.\\
-			• Hotkey driven immediate-response fuzzy search within file and across files.
-			• Fuzzy search words in file(s), or glossary terms. Immediately setup glossary search within filtered set of files, all keyboard driven and does not intefere with work at hand. Once found what you want, easily close all the "extra" stuff and get back to work at hand.
-			 **EXAMPLE 1**:
-				• In some other chapter, did the hero break his sword?
-				• Multi-file search "sword brok".
-					•  System finds "sword broken", "broke his sword", "shattered cleaver of Ares" in different files. It returns any word or phrase tagged with associated terms.
-				• Found by user tags categories.
-				• Retrieve characters/places/ideas by associated terms and find where implemented quickly.
-			 **EXAMPLE 2:**
-			• Cannot remember character name but recall role and location.
-			• Hotkey for glossary search.
-			• Type "knight lands, old".
-			 Glossary search returns:
-			• "Sir Aldric, Knight, Northlands, old and ugly".
-			• "Sir Faldric, Knight, Northlands, old but handsome".
-			• "Sir Baldric, Knight, Southlands, the old bastard".
-			• "Sir Caldric, Knight, Eastlands, the old sage".
-			• Select desired and enter to insert at cursor.
+		Scene. Jump ahead to the wedding. [
+			Misdirection, make it seem that Bubba ended up with Rosaline. [
+				\\todo\\
+			]
+			Have jimbo reveal the truth after he flies in on his heli-boat [
+				\\Or consider doing it with Sarah because of some reason.\\
+			]
 		]
 	]
-	Navigation and Selection. [
-		 **Javnav extension**
-		 Move and select by clause:
-				• For editing, most work is rearranging clauses, not words, so the default movement unit should be clause.
-		 Immediate and intuitive move/select by:
-					• Word, clause, paragraph, region.
-					• Immediate select quotes, notes, regions.
+	Inline formatting [
+		*Italic*
+		**Bold**
+		\General note. Useful for inline placeholder notes when drafting.\
+		\\CALLOUT BLOCKS: Leave yourself a big, bright note.\\
+		"Dialogue gets it's own colors and quotes are replaced with smart quotes (non-destructively)."
+		- List can be colored and styled as well, and do not indent like paragraph text.
+		• Bullet list
+		1. Numbered list
 	]
-	Traverse by structure [
-		 **Outline peek extension**
-			• Immediate traverse by outline units.
-			• Expand/collapse to see how units fit into the larger structure intuitively.
-			• Traverse chapter, scenes, beats, fast and fluid without losing focu.
-	]
-	Visual aid. Colors highlighting and ruler [
-		 **Jav scope extension**
-			• Highlight unit with colors to easily show stucture
-			• Ruler lines for visual clarity and aid reading when moving up and down the file
-			• Toggle easily. For editing, these things help, but for reading and prose writing, it may be preferred to turn them off.
-	]
-	Chapter order, filter by chapter content [
-		 **Glossary dashboard extension**
-			• View chapters, change order, filter by content (e.g. character, location, theme, any tags you define).
-			• Per chapter read time
-			• All chapters read time
-	]
-	Typing [
-		 **Project glossary**
-		 Glossary autocomplete:
-				• Key terms appear as completion items
-				• By frequency and recency.
-						• Type a characters name, next time you press the first letter, it will be first thing to popup.
-							• Thus, almost never type entire names.
-				• Usually you should only need to type first two or three characters of any word.
-		 Glossary search:
-				• Find all
-				• Find in file(s)
-	]
-	Auto punctuation, text cleanup, formatting. [
-		 **Editor Helper**
-		 Hammer out the words, computer tidies up spacing, punctuation, capitalization.
-		 **Never need to press shift** to capitalize words.
-	]
-	Advanced autocorrect [
-			• Like IOS autocorrect, but uses user glossary and keyboard layout so you won't have surprises
-			• Confidently mistype words and don't worry about it.
-			• Quickly and easily add words to your dictionary or dump more dictionaries into it easily
-			• Automatically capitalizes sentences, corrects typos live
-	]
-	Word helper [
-		 **Via shortcut**
-			• Dictionary lookup
-			• Synonym lookup and replace
-			• Sound-alike (e.g. Close spelling)
-			• Rhyming
-	]
-	Editing. [
-		Find things fast without remembering exact word/phrase [
-			 **Quick fuzzy extension**
-			• Find fast from fuzzy memory
-			• Typo tolerant
-			• Any word order
-			• Split editor ➢ Find ➢ Return to spot
-		]
-		Compare with saved. [
-			 Side-by-side or inline comparison for editing phase.
-			 **Example:** Draft 1 shows "The battle raged for hours."
-			 Draft 2 shows "They fought until dawn broke." View versions side-by-side or see inline highlighting of changes.
-		]
+	Paragraphs [
+		• Each line is a paragraph.
+		• No empty lines. Paragraphs are indented like in an ebook. This indentation is non-destructive and you can toggle it on an off.
+		• List are indented differently, just to make them stand apart from regular text.
 	]
 ]
