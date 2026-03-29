@@ -1,11 +1,11 @@
-Backyard west nonfenced [
+Backyard West Nonfenced [
  
 	Skirret [
 		• Planted: 3/29/2026, 11:24:53 AM
 		• Seed Cult
 	]
  
-	Fat hen [
+	Fat Hen [
 		• Planted: 3/29/2026, 11:24:53 AM
 		• Seed Cult
 		• Sprout time: 7-14 days
@@ -14,7 +14,7 @@ Backyard west nonfenced [
 		• Self sowing annual.
 	]
  
-	Good king henry [
+	Good King Henry [
 		• Planted: 3/29/2026, 11:24:53 AM
 		• Seed Cult
 		• Sprout time: 14-21 days, erratic
@@ -26,7 +26,7 @@ Backyard west nonfenced [
  
 ]
  
-Backyard west fenced area [
+Backyard West Fenced Area [
  
 	Salsify [
 		• Planted: 3/29/2026, 11:24:53 AM
@@ -56,9 +56,9 @@ Backyard west fenced area [
  
 ]
  
-Backyard immediate right [
+Backyard Immediate Right [
  
-	French corn onion salad [
+	French Corn Onion Salad [
 		• Planted: 3/29/2026, 11:24:53 AM
 		• Seed Cult
 		• Sprout time: 7-14 days
@@ -68,9 +68,9 @@ Backyard immediate right [
  
 ]
  
-Backyard raised garden [
+Backyard Raised Garden [
  
-	Welsh onion [
+	Welsh Onion [
 		• Planted: 3/29/2026, 11:24:53 AM
 		• Seed Cult
 		• Bunching onion does not form large bulbs.
@@ -80,9 +80,9 @@ Backyard raised garden [
  
 ]
  
-Backyard along east side fence [
+Backyard Along East Side Fence [
  
-	Sea kale [
+	Sea Kale [
 		• Planted: 3/29/2026, 11:24:53 AM
 		• Seed Cult
 		• Sprout time: 30-90 days after cold period. Can be sown in fall or spring.
@@ -91,7 +91,7 @@ Backyard along east side fence [
  
 ]
  
-Front yard east side [
+Front Yard East Side [
  
 	Broad-leaved Sorrel [
 		• Planted: 3/29/2026, 11:24:53 AM
@@ -106,6 +106,6 @@ Front yard east side [
  
 ]
  
-Front yard left side [
+Front Yard Left Side [
  
 ]
