@@ -1,34 +1,33 @@
-Beef and Daikon Radish Soup [
+Korean Beef [
 	About [
-		 This comforting Korean-style Beef and Daikon Radish Soup is simple, nourishing, and perfect for cold evenings. Rich in flavor and tradition, it's a light yet satisfying dish the whole family will enjoy.
-		 Make this soup ahead and enjoy even deeper flavors the next day. Add tofu or gochugaru for extra variety.
+		 **Prep:** 10 minutes | **Cook:** 10 minutes | **Servings:** 6
 	]
-	Servings: [
-		 4 bowls, Soup, Korean
-		• Prep Time 15 minutes mins
-		• Cook Time 50 minutes mins
-		• Soaking Time 10 minutes mins
-		• Total Time 1 hour hr 5 minutes mins
+	Notes [
+				•  Use lean ground beef or substitute turkey/chicken
+				•  Serve over rice (white, brown, jasmine, or cauliflower)
+				•  Add cooked vegetables for fiber
+				•  Verify amounts when using recipe multiplier
 	]
-	Main Ingredients [
-		•   1 lb beef brisket or short ribs cut into bite-sized pieces
-		•   1 tbsp sesame oil
-		•   4 cloves garlic minced
-		•   1 tbsp ginger minced
-		•   5 cups water or beef broth
-		•   2 cups daikon radish peeled and sliced into thick half-moons
-		•   2 tbsp soy sauce
-		•   1 tsp salt to taste
-		•   1/2 tsp black pepper
-		•   2 green onions chopped for garnish
-		•   Soup Pot
+	Ingredients [
+				•  ½ cup soy sauce
+				•  ⅓ cup brown sugar
+				•  2 teaspoons sesame oil
+				•  2 tablespoons rice vinegar
+				•  2 ½ teaspoons corn starch
+				•  2 pounds ground beef
+				•  salt and pepper, to taste
+				•  3 garlic cloves, minced
+				•  1 ½ knob fresh ginger, peeled and minced
+				•  ½ cup green onion, sliced
+				•  sesame seeds (optional, for garnish)
 	]
-	Steps [
-			1.  Soak beef in cold water for 10 minutes to remove excess blood. Drain and set aside.
-			2.  Heat sesame oil in a large pot. Sear beef until lightly browned.
-			3.  Add garlic and ginger. Sauté until fragrant.
-			4.  Pour in water or broth. Bring to a boil, skim off foam, then simmer for 20–30 minutes.
-			5.  Add daikon, soy sauce, salt, and pepper. Simmer for another 20 minutes until daikon is translucent and tender.
-			6.  Garnish with chopped green onions and serve hot with steamed rice.
+	Instructions [
+				1. Heat large skillet over medium heat.
+				2. Mix soy sauce, brown sugar, sesame oil, rice vinegar, and cornstarch in bowl. Set aside.
+				3. Add ground beef to skillet. Season with salt and pepper. Cook 5-7 minutes until no pink remains. Drain excess fat.
+				4. Add garlic and ginger. Cook 1 minute.
+				5. Reduce heat to low. Add sauce. Stir until thickened and mixed with beef.
+				6. Stir in green onions.
+				7. Serve and garnish.
 	]
 ]
