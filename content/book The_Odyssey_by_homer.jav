@@ -5766,9 +5766,9 @@ Book 11 [
 	 Yet he kept straining and heaving, while the sweat streamed down
 	 from his limbs, and the dust rose swirling around his head.
 	 "After him I became aware of powerful Herakles,
-	 [his phantom, for he himself among the immortal gods
+	 his phantom, for he himself among the immortal gods
 	 takes joy in the feast, and has the elegant-ankled Hebe,
-	 child of great Zeus and the golden-sandaled Here:]13
+	 child of great Zeus and the golden-sandaled Here:
 	 around him arose a bird like clamor from the dead
 	 as they scattered in terror, while he, as dark as night,
 	 holding a bare bow with an arrow at the string,
@@ -7312,7 +7312,7 @@ Book 15 [
 	 hurriedly clothed himself in his shining tunic, and flung
 	 a great cloak over his sturdy shoulders, and went out
 	 and approached Menelaos and stood before him and said:
-	 [did Telemachos, the dear son of godlike Odysseus, saying:]2
+	 did Telemachos, the dear son of godlike Odysseus, saying:
 	 "Atreus' son Menelaos, Zeus' scion, leader of hosts,
 	 send me back right away to my own dear country,
 	 for already my heart is impatient for the homeward journey."
@@ -7545,7 +7545,7 @@ Book 15 [
 	 Grey-eyed Athene now sent them a blustery tailwind,
 	 gusting through the bright air, so the ship might swiftly
 	 complete her journey, speeding over the briny deep.
-	 [They voyaged past The Springs, and sweet-streamed Chalkis],6
+	 They voyaged past The Springs, and sweet-streamed Chalkis,
 	 till the sun went down and all the ways were in shadow,
 	 and the ship reached Pheai, driven on by the wind of Zeus,
 	 then skirted bright Elis, where the Epeians hold sway.
@@ -7595,7 +7595,7 @@ Book 15 [
 	 as to me, whom you've saved from wandering and distress!
 	 There's no worse evil for mortals than vagrancy; and yet
 	 for the sake of their cursed bellies men incur grim hardship
-	 [when wandering, grief, and pain assail any one of them].
+	 when wandering, grief, and pain assail any one of them
 	 But now, since you're keeping me here, and want me to wait
 	 for him, your master, now tell me of godlike Odysseus' mother
 	 and father, whom he left here on the edge of old age—
