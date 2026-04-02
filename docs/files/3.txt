@@ -960,7 +960,7 @@ Book 3 [
 	 Sagacious Telemachos then responded to him, greatly
 	 encouraged: Athene herself now put fresh confidence
 	 into his heart, to enquire about his long-absent father,
-	 [and win a good reputation among men at large]:1
+	 and win a good reputation among men at large.
 	 "Nestor, son of Neleus, great glory of the Achaians,
 	 you want to know where we come from? Then I shall tell you.
 	 We're here from that part of Ithake under Mount Neion,
