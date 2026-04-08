@@ -1,49 +1,51 @@
-CANE [
-	 Caribbean. Good but expensive.
-]
-CHICO [
-	 Korean. Very good but not on Uber eats anymore. Spicy bulgogi stir fry was good.
-	 **3/14/2026**: On Uber eats again.
-]
-CURRY PLACE [
-	 Indian.
-	• **2/23/2026, 5:11:23 Pm**
-		• Alex got chicken fried rice. Excellent. Decent portion. Strong cilantro flavor. Pallavi liked it to.
-		• Pallavi got malai kofta. 8/10. Got it mild, not enough spice for her liking. She was scared. Now her heart is full of regret. But not that much, because eight out of ten is still pretty good.
-]
-FALAFEL INC [
-	 Greek, baklava taste like shortbread, no honey. Dont get the toum, too garlicky. Might be good but those things not good. 😑 Okay.
-]
-KATI ROLL WALA [
-	 Indian. Decent flavors. Good value. Look for bogos. Not amazing but decent. This the place has naan pizza. 🟢 Good.
-]
-KUNGFU KITCHEN [
-	 Chinese. Meat is bones with skin. Too greasy. Bad🔴
-]
-LA CASITA PUPUSERIA AND MARKET [
-	 Mexican. Utter shit. Bad🔴
-]
-LAMOON THAI [
-	 Good. A bit greasy. Pallavi got pad see ew, had lot of grease in bottom but flavor good. Alex got pineapple fried rice, it was heavy with meats. The lychee tea good and does have actual lychee in it. Curry puff good.
-]
-LANZHOU HAND PULL NOODLES [
-	 Chinese. Da best noods. 🟢Good
-]
-PANDA WOK [
-	 Chinese. 🟢Good. Fried rice. Szechuan pork
-]
-PHO HIEP HOA [
-	 Good value. The satay one v spicy. 🟢Good
-]
-SABABA [
-	 🔴Bad. Israeli place. Good flavor. Tiny portions. Overpriced.
-]
-SHOPAN NOODLE HOUSE [
-	 Chinese. Spicy pork, Pallavi prefers, but Alex prefers hand pull guys a little more, but the spicy pork is greasy and good. 🟢Good
-]
-UMI JAPANESE [
-	 🔴Bad
-]
-WEST AFRICAN PLACE [
-	 African. Good quality food but we hated it. 🔴Bad
+Turkish Pasta (Deconstructed Manti) [
+	Notes [
+		• Seasoned ground beef over pasta with garlic yogurt and spiced butter sauce.
+		• **Prep:** 15 min
+		• **Cook:** 30 min
+		• **Total:** 45 min
+		• **Servings:** 4
+		• Sub ground turkey for beef.
+		• No pepper paste? Use 1 tbsp tomato paste in butter sauce instead.
+		• For traditional flavor, add 1 tsp cumin with the beef seasonings.
+		• Use 1 garlic clove for lighter flavor.
+		• Use high-protein pasta to reduce carbs.
+	]
+	Ingredients [
+		Pasta & Beef [
+			• 8 oz short pasta (shells, elbows, bow ties)
+			• 1 lb lean ground beef
+			• 2 medium yellow onions, diced
+			• 1 tbsp tomato paste
+			• 2 tbsp onion powder
+			• 2 tsp sweet paprika
+			• Salt and pepper to taste
+		]
+		Butter Sauce [
+			• ¼ cup unsalted butter
+			• 2 tbsp olive oil
+			• 1 tbsp mild pepper paste
+			• 1 tbsp sweet paprika
+			• 1 tsp dried mint
+			• 1 tsp chili flakes
+		]
+		Yogurt Sauce [
+			• 1 cup Greek yogurt
+			• 2–3 garlic cloves, minced
+			• Salt and pepper to taste
+			• 2–3 tbsp water (to thin)
+		]
+		Garnish [
+			• ¼ cup parsley, minced
+			• ½ cup cherry tomatoes, diced
+		]
+	]
+	Instructions [
+		1. **Cook pasta** per package directions. Drain and set aside.
+		2. **Brown beef** in a large skillet over medium heat, 2–3 min. No oil needed.
+		3. **Season beef** — add onions, tomato paste, paprika, onion powder, salt, and pepper. Cook until onions are translucent, ~3 min. Remove from heat.
+		4. **Butter sauce** — melt butter over low heat. Add olive oil, pepper paste, mint, paprika, and chili flakes. Stir 1 min. Set aside.
+		5. **Yogurt sauce** — combine yogurt, garlic, salt, pepper, and water. Mix well.
+		6. **Assemble** — plate pasta, spoon yogurt sauce over top, add beef, drizzle butter sauce, garnish with parsley and tomatoes.
+	]
 ]
