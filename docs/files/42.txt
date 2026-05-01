@@ -1,1082 +1,395 @@
+==== keyboard shortcuts ====
+For use with jav custom keyboard layout
+
+[
+  { "key": "shift+alt+f18", "command": "workbench.action.openGlobalKeybindingsFile" },
+  { "key": "f23 p","command": "editor.action.insertSnippet", "args":  { "name": "Surround with brackets" }, "when": "editorHasSelection && editorTextFocus" },
+  { "key": "f23 p","command": "editor.action.insertSnippet", "args":  { "name": "Insert bracket region" }, "when": "editorTextFocus && !editorHasSelection" },
+  { "key": "f23 l","command": "editor.action.insertSnippet", "args":  { "name": "list" }, "when": "editorTextFocus" },
+  { "key": "f23 c", "command": "jav.toggle", "when": "editorTextFocus"},
+  { "key": "f23 q", "command": "workbench.action.quickTextSearch", "when": "editorTextFocus"},
+  { "key": "f23 '", "command": "JavEditorHelper.editDialog", "when": "editorTextFocus && !editorHasSelection" },
+  { "key": "f23 v", "command": "clipboard-manager.editor.pickAndPaste", "when": "editorTextFocus" },
+  { "key": "f9", "command": "javSwap.swap", "when": "editorTextFocus" },
+  { "key": "f23 j", "command": "workbench.action.openSettingsJson" },
+  { "key": "f23 r", "command": "workbench.files.action.showActiveFileInExplorer", "when": "editorTextFocus" },
+  { "key": "f23 f22", "command": "fuzzySearch.fastQuickFuzzy", "when": "editorTextFocus" },
+  { "key": "f21", "command": "editor.action.deleteLines", "when": "editorTextFocus" },
+  { "key": "f23 e", "command": "scroll-position.center", "when": "editorTextFocus" },
+  { "key": "shift+alt+f17","command": "workbench.action.openGlobalKeybindings" },
+  { "key": "f23 f23", "command": "workbench.action.showCommands" },
+
+  { "key": "f2", "command": "quickFind.find", "when": "editorTextFocus" },
+  { "key": "f22 f22","command": "toggleSettingsGroup.pickGroup" },
+  { "key": "f22 ,", "command": "editor.action.insertSnippet", "args":   { "name": "clause and quote" }, "when": "editorTextFocus && !editorHasSelection" },
+  { "key": "f22 .","command": "editor.action.insertSnippet", "args":  { "name": "period and quote" }, "when": "editorTextFocus && !editorHasSelection" },
+  { "key": "f22 e","command": "cursorMove", "args":   { "to":"viewPortCenter", "by": "wrappedLine", "value": 1 }, "when": "editorTextFocus && !inSearchEditor" },
+  { "key": "f22 u", "command": "autoscroll.toggle", "when": "editorTextFocus"},
+  { "key": "f23 d", "command": "editor.action.revealDefinition", "when": "editorTextFocus" },
+  { "key": "f15", "command": "jav.format", "when": "editorTextFocus && editorLangId == 'jav'"},
+  { "key": "f15", "command": "editor.action.formatSelection", "when": "editorTextFocus && editorLangId != 'jav'"},
+  { "key": "f22 j", "command": "workbench.action.openSettings" },
+
+  { "key": "ctrl+c", "command": "clipboard-manager.editor.copyToHistory", "when": "editorFocus" },
+  { "key": "ctrl+shift+down","command": "editor.action.moveLinesDownAction", "when": "editorTextFocus && !editorReadonly" },
+  { "key": "ctrl+shift+up","command": "editor.action.moveLinesUpAction", "when": "editorTextFocus && !editorReadonly" },
+  { "key": "ctrl+shift+alt+l","command": "editor.action.openLink" },
+  { "key": "ctrl+alt+k","command": "editor.action.revealDefinition", "when": "editorHasDefinitionProvider && editorTextFocus" },
+  { "key": "ctrl+m", "command": "editor.action.toggleWordWrap" },
+  { "key": "ctrl+n", "command": "explorer.newFile", "when": "explorerViewletFocus" },
+  { "key": "ctrl+shift+n","command": "explorer.newFolder", "when": "filesExplorerFocus" },
+  { "key": "ctrl+u", "command": "insert-unicode.insertText", "when": "textInputFocus" },
+  { "key": "ctrl+alt+g", "command": "javProjectGlossary.glossarySearch" },
+  { "key": "ctrl+shift+alt+d","command": "javProjectGlossary.openDashboard" },
+  { "key": "ctrl+shift+pagedown", "command": "scrollLeft" },
+  { "key": "ctrl+shift+pageup","command": "scrollRight" },
+  { "key": "ctrl+r","command": "search.action.refreshSearchResults", "when": "searchViewletVisible && searchViewletFocus" },
+  { "key": "ctrl+4","command": "workbench.action.focusFourthEditorGroup" },
+  { "key": "ctrl+alt+r", "command": "workbench.action.openRecent" },
+  { "key": "ctrl+shift+alt+j","command": "workbench.action.openSettings2" },
+  { "key": "ctrl+alt+q", "command": "workbench.action.quickTextSearch", "when": "editorTextFocus" },
+  { "key": "ctrl+up","command": "workbench.files.action.collapseExplorerFolders", "when": "filesExplorerFocus" },
+  { "key": "shift+alt+f16","command": "workbench.files.action.compareWithSaved" },
+  { "key": "ctrl+alt+y","command": "-chatEditor.action.acceptAllEdits", "when": "chatEdits.hasEditorModifications && editorFocus && !chatEdits.isRequestInProgress || chatEdits.hasEditorModifications && notebookEditorFocused && !chatEdits.isRequestInProgress" },
+  { "key": "ctrl+shift+c","command": "-clipboard-manager.editor.copyToHistory", "when": "textInputFocus && !editorReadonly" },
+  { "key": "ctrl+shift+v","command": "-clipboard-manager.editor.pickAndPaste", "when": "textInputFocus && !editorReadonly" },
+  { "key": "ctrl+shift+alt+left","command": "-cursorColumnSelectLeft", "when": "textInputFocus" },
+  { "key": "ctrl+shift+alt+right","command": "-cursorColumnSelectRight", "when": "textInputFocus" },
+  { "key": "ctrl+u","command": "-cursorUndo", "when": "textInputFocus" },
+  { "key": "ctrl+shift+k","command": "-editor.action.deleteLines", "when": "textInputFocus && !editorReadonly" },
+  { "key": "ctrl+shift+\\","command": "-editor.action.jumpToBracket", "when": "editorTextFocus" },
+  { "key": "ctrl+e", "command": "-editor.action.toggleScreenReaderAccessibilityMode", "when": "accessibilityHelpIsShown" },
+  { "key": "ctrl+k ctrl+7","command": "-editor.foldLevel7", "when": "editorTextFocus && foldingEnabled" },
+  { "key": "ctrl+shift+down","command": "-extension.halfDown", "when": "editorFocus" },
+  { "key": "ctrl+shift+up","command": "-extension.halfUp", "when": "editorFocus" },
+  { "key": "ctrl+shift+alt+s","command": "-extension.swapSelection", "when": "editorTextFocus" },
+  { "key": "ctrl+m","command": "-extension.toggleCase", "when": "editorHasSelection" },
+  { "key": "ctrl+shift+f ctrl+shift+l","command": "-fuzzySearch.activeTextEditor", "when": "editorTextFocus" },
+  { "key": "ctrl+shift+g","command": "-fuzzySearch.fastQuickFuzzy" },
+  { "key": "ctrl+shift+f ctrl+shift+q","command": "-fuzzySearch.quickTextSearch" },
+  { "key": "ctrl+shift+f","command": "-fuzzySearch.togglePanel" },
+  { "key": "ctrl+alt+c","command": "-glassit.decrease" },
+  { "key": "ctrl+alt+z","command": "-glassit.increase" },
+  { "key": "ctrl+shift+o","command": "-go-to-folder.openFolder", "when": "editorTextFocus || !inputFocus" },
+  { "key": "ctrl+shift+h","command": "-hslAdjust.run", "when": "editorHasSelection && editorTextFocus" },
+  { "key": "ctrl+i","command": "-inlineChat.start", "when": "editorFocus && inlineChatHasEditsAgent && inlineChatPossible && !editorReadonly && !editorSimpleInput || editorFocus && inlineChatHasProvider && inlineChatPossible && !editorReadonly && !editorSimpleInput" },
+  { "key": "ctrl+i","command": "-inlineChat.startWithCurrentLine", "when": "inlineChatHasProvider && inlineChatShowingHint && !editorReadonly && !inlineChatVisible" },
+  { "key": "ctrl+i","command": "-inlineChat2.close", "when": "inlineChatHasEditsAgent && inlineChatVisible && !chatEdits.isRequestInProgress && chatEdits.requestCount == '0' || inlineChatHasEditsAgent && inlineChatVisible && !chatEdits.hasEditorModifications && !chatEdits.isRequestInProgress && chatEdits.requestCount == '0'" },
+  { "key": "ctrl+i","command": "-inlineChat2.reveal", "when": "inlineChatHasEditsAgent && !chatEdits.isGlobalEditingSession && chatEdits.requestCount >= 1" },
+  { "key": "ctrl+f","command": "-keybindings.editor.searchKeybindings", "when": "inKeybindings" },
+  { "key": "ctrl+shift+v","command": "-markdown.showPreview", "when": "!notebookEditorFocused && editorLangId == 'markdown'" },
+  { "key": "ctrl+q","command": "-navigateEditHistory.moveCursorToPreviousEdit" },
+  { "key": "ctrl+d","command": "-notebook.addFindMatchToSelection", "when": "config.notebook.multiCursor.enabled && notebookCellEditorFocused && activeEditor == 'workbench.editor.notebook'" },
+  { "key": "ctrl+k m","command": "-notebook.cell.changeLanguage", "when": "notebookCellEditable && notebookEditable && notebookEditorFocused" },
+  { "key": "ctrl+k i","command": "-notebook.cell.chat.start", "when": "config.notebook.experimental.cellChat && notebookChatAgentRegistered && notebookEditable && notebookEditorFocused && !inputFocus || config.notebook.experimental.generate && notebookChatAgentRegistered && notebookEditable && notebookEditorFocused && !inputFocus" },
+  { "key": "ctrl+k ctrl+c","command": "-notebook.cell.collapseCellInput", "when": "notebookCellListFocused && !inputFocus && !notebookCellInputIsCollapsed" },
+  { "key": "ctrl+k t","command": "-notebook.cell.collapseCellOutput", "when": "notebookCellHasOutputs && notebookCellListFocused && !inputFocus && !notebookCellOutputIsCollapsed" },
+  { "key": "ctrl+k ctrl+c","command": "-notebook.cell.expandCellInput", "when": "notebookCellInputIsCollapsed && notebookCellListFocused" },
+  { "key": "ctrl+k t","command": "-notebook.cell.expandCellOutput", "when": "notebookCellListFocused && notebookCellOutputIsCollapsed" },
+  { "key": "ctrl+k ctrl+shift+\\","command": "-notebook.cell.split", "when": "editorTextFocus && notebookCellEditable && notebookEditable && notebookEditorFocused" },
+  { "key": "ctrl+k y","command": "-notebook.cell.toggleOutputScrolling", "when": "notebookCellHasOutputs && notebookCellListFocused && !inputFocus" },
+  { "key": "ctrl+shift+a","command": "-notification.acceptPrimaryAction", "when": "notificationFocus || notificationToastsVisible" },
+  { "key": "ctrl+shift+b","command": "-quickFind.jumpToBookmark", "when": "editorTextFocus" },
+  { "key": "ctrl+y","command": "-redo" },
+  { "key": "ctrl+i","command": "-search.action.searchWithAI", "when": "hasAIResultProviderKey && searchViewletFocus" },
+  { "key": "ctrl+shift+e","command": "-selectionExpander.expand", "when": "editorTextFocus" },
+  { "key": "ctrl+f","command": "-settings.action.search", "when": "inSettingsEditor" },
+  { "key": "ctrl+i","command": "-settings.action.toggleAiSearch", "when": "inSettingsEditor" },
+  { "key": "ctrl+shift+u","command": "-toggle-case.toggleCase", "when": "editorTextFocus && !editorReadonly" },
+  { "key": "ctrl+k f2","command": "-togglePeekWidgetFocus", "when": "inReferenceSearchEditor || referenceSearchVisible" },
+  { "key": "ctrl+alt+win+n","command": "-welcome.showNewFileEntries" },
+  { "key": "ctrl+f9","command": "-workbench.action.chat.nextFileTree", "when": "chatIsEnabled && inChat" },
+  { "key": "ctrl+alt+i","command": "-workbench.action.chat.open", "when": "!chatSetupDisabled && !chatSetupHidden" },
+  { "key": "ctrl+shift+i","command": "-workbench.action.chat.openAgent", "when": "config.chat.agent.enabled && !chatSetupDisabled && !chatSetupHidden" },
+  { "key": "ctrl+shift+f9","command": "-workbench.action.chat.previousFileTree", "when": "chatIsEnabled && inChat" },
+  { "key": "ctrl+i","command": "-workbench.action.chat.startVoiceChat", "when": "chatIsEnabled && hasSpeechProvider && inChatInput && !chatSessionRequestInProgress && !editorFocus && !notebookEditorFocused && !scopedVoiceChatGettingReady && !speechToTextInProgress || chatIsEnabled && hasSpeechProvider && inlineChatFocused && !chatSessionRequestInProgress && !editorFocus && !notebookEditorFocused && !scopedVoiceChatGettingReady && !speechToTextInProgress" },
+  { "key": "ctrl+i","command": "-workbench.action.chat.stopListeningAndSubmit", "when": "inChatInput && voiceChatInProgress && scopedVoiceChatInProgress == 'editor' || inChatInput && voiceChatInProgress && scopedVoiceChatInProgress == 'inline' || inChatInput && voiceChatInProgress && scopedVoiceChatInProgress == 'quick' || inChatInput && voiceChatInProgress && scopedVoiceChatInProgress == 'view' || inlineChatFocused && voiceChatInProgress && scopedVoiceChatInProgress == 'editor' || inlineChatFocused && voiceChatInProgress && scopedVoiceChatInProgress == 'inline' || inlineChatFocused && voiceChatInProgress && scopedVoiceChatInProgress == 'quick' || inlineChatFocused && voiceChatInProgress && scopedVoiceChatInProgress == 'view'" },
+  { "key": "ctrl+shift+w","command": "-workbench.action.closeWindow" },
+  { "key": "ctrl+k o","command": "-workbench.action.copyEditorToNewWindow", "when": "activeEditor" },
+  { "key": "ctrl+alt+v","command": "-workbench.action.editorDictation.start", "when": "hasSpeechProvider && !editorReadonly && !speechToTextInProgress" },
+  { "key": "ctrl+shift+s", "command": "-workbench.action.files.saveAs" },
+  { "key": "ctrl+4","command": "-workbench.action.focusFourthEditorGroup" },
+  { "key": "ctrl+k ctrl+shift+\\", "command": "-workbench.action.joinEditorInGroup", "when": "sideBySideEditorActive" },
+  { "key": "ctrl+k ctrl+pagedown", "command": "-workbench.action.nextEditorInGroup" },
+  { "key": "ctrl+r","command": "-workbench.action.openRecent" },
+  { "key": "ctrl+shift+u","command": "-workbench.action.output.toggleOutput", "when": "workbench.panel.output.active" },
+  { "key": "ctrl+k ctrl+pageup", "command": "-workbench.action.previousEditorInGroup" },
+  { "key": "ctrl+shift+alt+l","command": "-workbench.action.quickchat.toggle", "when": "chatIsEnabled" },
+  { "key": "ctrl+e", "command": "-workbench.action.quickOpenNavigateNextInFilePicker", "when": "inFilesPicker && inQuickOpen" },
+  { "key": "ctrl+k ctrl+p", "command": "-workbench.action.showAllEditors" },
+  { "key": "ctrl+k ctrl+shift+\\", "command": "-workbench.action.splitEditorInGroup", "when": "activeEditorCanSplitInGroup" },
+  { "key": "ctrl+k ctrl+\\","command": "-workbench.action.splitEditorUp" },
+  { "key": "ctrl+shift+b","command": "-workbench.action.tasks.build", "when": "taskCommandsRegistered" },
+  { "key": "ctrl+i","command": "-workbench.action.terminal.chat.start", "when": "chatIsEnabled && terminalChatAgentRegistered && terminalFocusInAny && terminalHasBeenCreated || chatIsEnabled && terminalChatAgentRegistered && terminalFocusInAny && terminalProcessSupported" },
+  { "key": "ctrl+shift+alt+`","command": "-workbench.action.terminal.newInNewWindow", "when": "terminalHasBeenCreated || terminalProcessSupported" },
+  { "key": "ctrl+shift+c","command": "-workbench.action.terminal.openNativeConsole", "when": "!terminalFocus" },
+  { "key": "ctrl+alt+g","command": "-workbench.action.terminal.sendSequence", "when": "terminalFocus" },
+  { "key": "ctrl+shift+i","command": "-workbench.action.toggleDevTools", "when": "isDevelopment" },
+  { "key": "ctrl+j","command": "-workbench.action.togglePanel" },
+  { "key": "ctrl+k z","command": "-workbench.action.toggleZenMode", "when": "!isAuxiliaryWindowFocusedContext" },
+  { "key": "ctrl+numpad0","command": "-workbench.action.zoomReset" },
+  { "key": "ctrl+shift+m","command": "-workbench.actions.view.problems", "when": "workbench.panel.markers.view.active" },
+  { "key": "ctrl+shift+y","command": "-workbench.debug.action.toggleRepl", "when": "workbench.panel.repl.view.active" },
+  { "key": "ctrl+k c","command": "-workbench.files.action.compareWithClipboard" },
+  { "key": "ctrl+k d","command": "-workbench.files.action.compareWithSaved" },
+  { "key": "ctrl+alt+i", "command": "-workbench.panel.chat", "when": "workbench.panel.chat.view.copilot.active" },
+  { "key": "ctrl+shift+d","command": "-workbench.view.debug", "when": "viewContainer.workbench.view.debug.enabled" },
+  { "key": "ctrl+shift+q","command": "-workbench.view.extension.plain-sidebar-container", "when": "viewContainer.workbench.view.extension.plain-sidebar-container.enabled" },
+  { "key": "ctrl+shift+p","command": "-workbench.action.quickOpenNavigatePreviousInFilePicker", "when": "inFilesPicker && inQuickOpen" },
+  { "key": "ctrl+shift+left", "command": "-JavNav.clauseSelectLeft", "when": "JavNav.clauseMode && editorTextFocus" },
+  { "key": "ctrl+shift+s", "command": "-workbench.action.files.saveLocalFile", "when": "remoteFileDialogVisible" },
+  { "key": "ctrl+k ctrl+r","command": "-workbench.action.keybindingsReference" },
+  { "key": "ctrl+numpad_add","command": "-workbench.action.zoomIn" },
+  { "key": "ctrl+numpad_subtract","command": "-workbench.action.zoomOut" },
+  { "key": "ctrl+shift+c", "command": "-workbench.action.terminal.copySelection", "when": "terminalTextSelectedInFocused || terminalFocus && terminalHasBeenCreated && terminalTextSelected || terminalFocus && terminalProcessSupported && terminalTextSelected || terminalFocus && terminalTextSelected && terminalTextSelectedInFocused || terminalHasBeenCreated && terminalTextSelected && terminalTextSelectedInFocused || terminalProcessSupported && terminalTextSelected && terminalTextSelectedInFocused" },
+  { "key": "ctrl+shift+w", "command": "workbench.action.closeWindow" },
+  { "key": "ctrl+alt+l", "command": "-scroll-position.bottom", "when": "editorTextFocus" },
+  { "key": "ctrl+l","command": "-scroll-position.center", "when": "editorTextFocus" },
+  { "key": "ctrl+shift+l","command": "-scroll-position.top", "when": "editorTextFocus" },
+  { "key": "ctrl+'","command": "editor.action.insertSnippet", "args":   { "name": "Surround with quotes" }, "when": "editorTextFocus && editorHasSelection" },
+  { "key": "f23 s","command": "editor.action.insertSnippet", "args":  { "name": "quote clause" }, "when": "!editorHasSelection" },
+  { "key": "ctrl+.","command": "editor.action.insertSnippet", "args":   { "name": "insert ellipse" }, "when": "" },
+  { "key": "ctrl+enter", "command": "type", "args":   { "text": "\n" }, "when": "editorTextFocus && !inSearchEditor" },
+  { "key": "ctrl+p", "command": "editor.action.dirtydiff.next" },
+  { "key": "ctrl+alt+m","command": "workbench.action.moveEditorToNewWindow" },
+  { "key": "ctrl+alt+n","command": "workbench.action.copyEditorToNewWindow" },
+  { "key": "ctrl+alt+f16","command": "workbench.action.compareEditor.nextChange", "when": "textCompareEditorVisible" },
+  { "key": "ctrl+alt+numpad_divide","command": "editor.action.blockComment", "when": "editorTextFocus && !editorReadonly" },
+  { "key": "ctrl+numpad_divide","command": "editor.action.commentLine", "when": "editorTextFocus && !editorReadonly" },
+  { "key": "ctrl+/","command": "-editor.action.commentLine", "when": "editorTextFocus && !editorReadonly" },
+  { "key": "ctrl+k ctrl+shift+l", "command": "-editor.toggleFoldRecursively", "when": "editorTextFocus && foldingEnabled" },
+  { "key": "ctrl+alt+h","command": "JavNav.cycleHighlightMode" },
+  { "key": "ctrl+shift+o","command": "outline.toggleVisibility" },
+  { "key": "ctrl+right","command": "cursorWordEndRight", "when": "textInputFocus && !accessibilityModeEnabled && !quickOutlineNav.active" },
+  { "key": "ctrl+right","command": "-cursorWordEndRight", "when": "textInputFocus && !accessibilityModeEnabled" },
+  { "key": "ctrl+left","command": "cursorWordLeft", "when": "textInputFocus && !accessibilityModeEnabled" },
+  { "key": "ctrl+left","command": "-cursorWordLeft", "when": "textInputFocus && !accessibilityModeEnabled" },
+  { "key": "ctrl+k ctrl+l", "command": "-editor.toggleFold", "when": "editorTextFocus && foldingEnabled" },
+  { "key": "ctrl+alt+,","command": "JavNav.toggleMode" },
+  { "key": "ctrl+shift+t", "command": "-workbench.action.reopenClosedEditor" },
+  { "key": "ctrl+k ctrl+-", "command": "-editor.foldAllExcept", "when": "editorTextFocus && foldingEnabled" },
+  { "key": "ctrl+shift+alt+f17", "command": "workbench.action.toggleMaximizeEditorGroup", "when": "editorPartMaximizedEditorGroup || editorPartMultipleEditorGroups" },
+  { "key": "ctrl+k ctrl+m","command": "-workbench.action.toggleMaximizeEditorGroup", "when": "editorPartMaximizedEditorGroup || editorPartMultipleEditorGroups" },
+  { "key": "ctrl+alt+win+right", "command": "cursorRedo" },
+  { "key": "ctrl+alt+win+left","command": "cursorUndo" },
+  { "key": "ctrl+k ctrl+s","command": "-workbench.action.openGlobalKeybindings" },
+  { "key": "ctrl+shift+b","command": "workbench.action.toggleStatusbarVisibility" },
+  { "key": "ctrl+alt+e", "command": "workbench.view.explorer", "when": "viewContainer.workbench.view.explorer.enabled" },
+  { "key": "ctrl+shift+e","command": "-workbench.view.explorer", "when": "viewContainer.workbench.view.explorer.enabled" },
+  { "key": "ctrl+t", "command": "-workbench.action.showAllSymbols" },
+  { "key": "ctrl+down", "command": "editor.action.insertLineAfter", "when": "editorTextFocus && !editorReadonly" },
+  { "key": "ctrl+up", "command": "editor.action.insertLineBefore", "when": "editorTextFocus && !editorReadonly" },
+  { "key": "ctrl+f", "command": "-javProjectGlossary.focusDashboardSearch", "when": "activeWebviewPanelId == 'javFilesDashboard'" },
+  { "key": "ctrl+k ctrl+]", "command": "-editor.unfoldRecursively", "when": "editorTextFocus && foldingEnabled" },
+  { "key": "ctrl+t", "command": "workbench.action.gotoSymbol", "when": "!accessibilityHelpIsShown && !accessibleViewIsShown" },
+  { "key": "ctrl+shift+o", "command": "-workbench.action.gotoSymbol", "when": "!accessibilityHelpIsShown && !accessibleViewIsShown" },
+  { "key": "ctrl+alt+u", "command": "autoscroll.toggle" },
+  { "key": "ctrl+alt+win+u", "command": "autoscroll.toggleFocus" },
+  { "key": "ctrl+r", "command": "editor.action.startFindReplaceAction", "when": "editorFocus || editorIsOpen" },
+  { "key": "ctrl+h", "command": "-editor.action.startFindReplaceAction", "when": "editorFocus || editorIsOpen" },
+  { "key": "ctrl+alt+backspace", "command": "undo" },
+  { "key": "ctrl+alt+backspace", "command": "-editor.action.removeBrackets", "when": "editorTextFocus" },
+  { "key": "ctrl+shift+right", "command": "-JavNav.clauseSelectRight", "when": "JavNav.clauseMode && editorTextFocus" },
+  { "key": "ctrl+alt+win+down", "command": "editor.action.smartSelect.shrink" },
+  { "key": "ctrl+alt+j", "command": "javodoro.timerView.focus" },
+  { "key": "ctrl+m", "command": "-editor.action.toggleTabFocusMode" },
+  { "key": "ctrl+alt+win+end", "command": "workbench.action.zoomIn" },
+  { "key": "ctrl+shift+=", "command": "-workbench.action.zoomIn" },
+  { "key": "ctrl+alt+win+home", "command": "workbench.action.zoomOut" },
+  { "key": "ctrl+shift+-", "command": "-workbench.action.zoomOut" },
+  { "key": "ctrl+alt+win+j", "command": "workbench.action.zoomReset" },
+  { "key": "ctrl+f4", "command": "JavEditorHelper.removeSurround", "when": "editorTextFocus" },
+  { "key": "ctrl+d", "command": "editor.action.addSelectionToNextFindMatch", "when": "editorFocus" },
+  { "key": "ctrl+d", "command": "-editor.action.addSelectionToNextFindMatch", "when": "editorFocus" },
+  { "key": "ctrl+alt+d", "command": "editor.action.selectHighlights", "when": "editorFocus" },
+  { "key": "ctrl+shift+l", "command": "-editor.action.selectHighlights", "when": "editorFocus" },
+  { "key": "ctrl+alt+win+up", "command": "editor.action.insertCursorAbove", "when": "editorTextFocus" },
+  { "key": "ctrl+alt+up", "command": "-editor.action.insertCursorAbove", "when": "editorTextFocus" },
+  { "key": "ctrl+alt+win+down", "command": "editor.action.insertCursorBelow", "when": "editorTextFocus" },
+  { "key": "ctrl+alt+down", "command": "-editor.action.insertCursorBelow", "when": "editorTextFocus" },
+  { "key": "ctrl+alt+down", "command": "cursorDown", "when": "textInputFocus" },
+  { "key": "ctrl+alt+up", "command": "cursorUp", "when": "textInputFocus" },
+  { "key": "ctrl+left", "command": "-JavNav.clauseLeft", "when": "JavNav.clauseMode && editorTextFocus" },
+  { "key": "ctrl+right", "command": "-JavNav.clauseRight", "when": "JavNav.clauseMode && editorTextFocus" },
+  { "key": "ctrl+alt+v", "command": "workbench.action.focusNextGroup", "when": "terminalFocus" },
+  { "key": "ctrl+escape", "command": "-claude-vscode.focus", "when": "editorTextFocus && !config.claudeCode.useTerminal" },
+  { "key": "ctrl+alt+v", "command": "terminal.focus", "when": "editorTextFocus" },
+  { "key": "ctrl+alt+t", "command": "workbench.action.togglePanel" },
+  { "key": "ctrl+shift+alt+b", "command": "quickFind.jumpToBookmark" },
+  { "key": "ctrl+,", "command": "-workbench.action.openSettings" },
+
+  { "key": "f1", "command": "diffEditor.switchSide", "when": "inDiffEditor && !diffEditorInlineMode" },
+  { "key": "f10", "command": "editor.action.jumpToBracket", "when": "editorTextFocus" },
+  { "key": "ctrl+alt+f13","command": "editor.action.marker.next", "when": "editorTextFocus" },
+
+  { "key": "alt+pagedown","command": "editorScroll", "args":  { "to": "left", "by": "column", "value": 15 }, "when": "textInputFocus" },
+  { "key": "alt+pageup","command": "editorScroll", "args":  { "to": "right", "by": "column", "value": 15 }, "when": "textInputFocus" },
+  { "key": "pagedown","command": "editorScroll", "args": {"value":5, "by": "wrappedLine", "to": "down"}, "when": "textInputFocus" },
+  { "key": "pageup","command": "editorScroll", "args":  { "value":5, "by": "wrappedLine", "to": "up"}, "when": "textInputFocus" },
+  { "key": "shift+pagedown","command": "editorScroll", "args": {"value": 15, "by": "wrappedLine", "to": "down"}, "when": "textInputFocus" },
+  { "key": "shift+pageup","command": "editorScroll", "args": {"value": 15, "by": "wrappedLine", "to": "up"}, "when": "textInputFocus" },
+
+  { "key": "ctrl+alt+l","command": "extension.splitIntoWord", "when": "editorHasSelection" },
+
+  { "key": "alt+up", "command": "JavEditorHelper.joinLineAbove", "when": "editorTextFocus" },
+  { "key": "f12","command": "JavEditorHelper.toggleCase", "when": "editorTextFocus" },
+  { "key": "shift+down", "command": "JavNav.downSelect", "when": "JavNav.clauseMode && editorTextFocus" },
+  { "key": "shift+up", "command": "JavNav.upSelect", "when": "JavNav.clauseMode && editorTextFocus" },
+  { "key": "f2", "command": "keybindings.editor.searchKeybindings", "when": "keybindingFocus" },
+  { "key": "end", "command": "quickFind.goBottom", "when": "quickFind.isActive" },
+  { "key": "home","command": "quickFind.goTop", "when": "quickFind.isActive" },
+  { "key": "escape","command": "quickFind.hide", "when": "quickFind.isActive" },
+  { "key": "left","command": "quickFind.hideAndLeft", "when": "quickFind.isActive" },
+  { "key": "right","command": "quickFind.hideAndRight", "when": "quickFind.isActive" },
+  { "key": "f3", "command": "quickFind.toggleVisibleLinesOnly", "when": "quickFind.isActive" },
+  { "key": "shift+alt+enter", "command": "redo" },
+  { "key": "backspace","command": "search.action.remove", "when": "fileMatchOrMatchFocus && searchViewletVisible" },
+  { "key": "f2","command": "settings.action.search", "when": "inSettingsEditor" },
+  { "key": "alt+i", "command": "toggle.diff.renderSideBySide", "when": "textCompareEditorActive" },
+  { "key": "f1", "command": "workbench.action.focusOtherSideEditor", "when": "!activeEditorCanSplitInGroup && !inDiffEditor" },
+  { "key": "f3", "command": "workbench.action.toggleSplitEditorInGroup", "when": "!quickFind.isActive && editorTextFocus" },
+  { "key": "shift+alt+r", "command": "workbench.files.action.showActiveFileInExplorer" },
+  { "key": "alt+q", "command": "-change-case.changeCase" },
+  { "key": "f7","command": "-chatEditor.action.showAccessibleDiffView", "when": "chatEdits.hasEditorModifications && editorFocus && !chatEdits.isRequestInProgress" },
+  { "key": "shift+alt+f7","command": "-chatEditor.action.toggleDiff", "when": "chatEdits.hasEditorModifications && editorFocus" },
+  { "key": "shift+backspace","command": "-deleteLeft", "when": "textInputFocus" },
+  { "key": "f7","command": "-editor.action.accessibleDiffViewer.next", "when": "isInDiffEditor" },
+  { "key": "shift+f7","command": "-editor.action.accessibleDiffViewer.prev", "when": "isInDiffEditor" },
+  { "key": "alt+f3","command": "-editor.action.dirtydiff.next", "when": "editorTextFocus && !textCompareEditorActive" },
+  { "key": "end","command": "-editor.action.goToBottomHover", "when": "editorHoverFocused" },
+  { "key": "alt+f8","command": "-editor.action.marker.next", "when": "editorFocus" },
+  { "key": "f8","command": "-editor.action.marker.nextInFiles", "when": "editorFocus" },
+  { "key": "shift+alt+f8","command": "-editor.action.marker.prev", "when": "editorFocus" },
+  { "key": "shift+f8","command": "-editor.action.marker.prevInFiles", "when": "editorFocus" },
+  { "key": "alt+down","command": "-editor.action.moveLinesDownAction", "when": "editorTextFocus && !editorReadonly" },
+  { "key": "alt+up","command": "-editor.action.moveLinesUpAction", "when": "editorTextFocus && !editorReadonly" },
+  { "key": "alt+f9","command": "-editor.action.nextCommentThreadAction" },
+  { "key": "alt+f12","command": "-editor.action.peekDefinition", "when": "editorHasDefinitionProvider && editorTextFocus && !inReferenceSearchEditor && !isInEmbeddedEditor" },
+  { "key": "shift+alt+f9","command": "-editor.action.previousCommentThreadAction" },
+  { "key": "shift+f3","command": "-editor.action.previousMatchFindAction", "when": "editorFocus" },
+  { "key": "f12","command": "-editor.action.revealDefinition", "when": "editorHasDefinitionProvider && editorTextFocus" },
+  { "key": "shift+alt+right","command": "-editor.action.smartSelect.expand", "when": "editorTextFocus" },
+  { "key": "shift+alt+left","command": "-editor.action.smartSelect.shrink", "when": "editorTextFocus" },
+  { "key": "alt+z","command": "-editor.action.toggleWordWrap" },
+  { "key": "f7","command": "-editor.action.wordHighlight.next", "when": "editorTextFocus && hasWordHighlights" },
+  { "key": "shift+f7","command": "-editor.action.wordHighlight.prev", "when": "editorTextFocus && hasWordHighlights" },
+  { "key": "f9","command": "-editor.debug.action.toggleBreakpoint", "when": "debuggersAvailable && disassemblyViewFocus || debuggersAvailable && editorTextFocus" },
+  { "key": "shift+f9","command": "-editor.debug.action.toggleInlineBreakpoint", "when": "editorTextFocus" },
+  { "key": "f7","command": "-inlineChat.moveToNextHunk", "when": "inlineChatHasProvider && inlineChatVisible" },
+  { "key": "shift+f7","command": "-inlineChat.moveToPreviousHunk", "when": "inlineChatHasProvider && inlineChatVisible" },
+  { "key": "shift+down", "command": "-JavNav.downSelect", "when": "JavNav.clauseMode && editorTextFocus && !suggestWidgetVisible" },
+  { "key": "left","command": "-JavNav.left", "when": "JavNav.clauseMode && editorTextFocus" },
+  { "key": "right","command": "-JavNav.right", "when": "JavNav.clauseMode && editorTextFocus" },
+  { "key": "shift+left","command": "-JavNav.sentenceSelectLeft", "when": "JavNav.clauseMode && editorTextFocus" },
+  { "key": "shift+right","command": "-JavNav.sentenceSelectRight", "when": "JavNav.clauseMode && editorTextFocus" },
+  { "key": "alt+m","command": "-JavNav.toggleMode", "when": "editorTextFocus" },
+  { "key": "shift+up", "command": "-JavNav.upSelect", "when": "JavNav.clauseMode && editorTextFocus && !suggestWidgetVisible" },
+  { "key": "alt+delete","command": "-notebook.cell.clearOutputs", "when": "notebookCellEditable && notebookCellHasOutputs && notebookEditable && notebookEditorFocused && !inputFocus" },
+  { "key": "alt+f3","command": "-notebook.diff.action.next", "when": "activeEditor == 'workbench.editor.notebookTextDiffEditor'" },
+  { "key": "right","command": "-notebook.unfold", "when": "notebookEditorFocused && !inputFocus && activeEditor == 'workbench.editor.notebook'" },
+  { "key": "escape", "command": "-quickFind.hide", "when": "editorTextFocus && quickFind.isActive" },
+  { "key": "left","command": "-quickFind.hideAndLeft", "when": "editorTextFocus && quickFind.isActive" },
+  { "key": "right","command": "-quickFind.hideAndRight", "when": "editorTextFocus && quickFind.isActive" },
+  { "key": "alt+t","command": "-quickFind.toggleVisibleLinesOnly", "when": "editorTextFocus && quickFind.isActive" },
+  { "key": "alt+w","command": "-quickFind.toggleWholeWord", "when": "editorTextFocus && quickFind.isActive" },
+  { "key": "shift+alt+r","command": "-revealFileInOS", "when": "!editorFocus" },
+  { "key": "shift+f9","command": "-settings.action.showContextMenu", "when": "inSettingsEditor" },
+  { "key": "alt+f8","command": "-testing.goToNextMessage", "when": "editorFocus && testing.isPeekVisible" },
+  { "key": "shift+alt+f8","command": "-testing.goToPreviousMessage", "when": "editorFocus && testing.isPeekVisible" },
+  { "key": "alt+backspace","command": "-workbench.action.chat.cancel" },
+  { "key": "alt+f4","command": "-workbench.action.closeWindow" },
+  { "key": "f6","command": "-workbench.action.debug.pause", "when": "debugState == 'running'" },
+  { "key": "escape escape","command": "-workbench.action.exitZenMode", "when": "inZenMode" },
+  { "key": "f6","command": "-workbench.action.focusNextPart" },
+  { "key": "shift+f6","command": "-workbench.action.focusPreviousPart" },
+  { "key": "alt+left","command": "-workbench.action.navigateBack", "when": "canNavigateBack" },
+  { "key": "alt+right","command": "-workbench.action.navigateForward", "when": "canNavigateForward" },
+  { "key": "f11","command": "-workbench.action.toggleFullScreen", "when": "!isIOS" },
+  { "key": "shift+end","command": "cursorWordRightSelect", "when": "textInputFocus && !accessibilityModeEnabled" },
+  { "key": "shift+home","command": "cursorWordLeftSelect", "when": "textInputFocus && !accessibilityModeEnabled" },
+  { "key": "f2","command": "-debug.renameWatchExpression", "when": "watchExpressionsFocused" },
+  { "key": "f2","command": "-debug.setVariable", "when": "variablesFocused" },
+  { "key": "f2","command": "-remote.tunnel.label", "when": "tunnelViewFocus && tunnelType == 'Forwarded' && tunnelViewMultiSelection == 'undefined'" },
+  { "key": "f2","command": "-workbench.action.chat.renameSession", "when": "focusedView == 'workbench.view.chat.sessions.local'" },
+  { "key": "shift+alt+right","command": "cursorRightSelect", "when": "textInputFocus" },
+  { "key": "shift+alt+left","command": "cursorLeftSelect", "when": "textInputFocus" },
+  { "key": "up", "command": "cursorLeft", "when": "editorHasSelection && !suggestWidgetVisible" },
+  { "key": "down","command": "cursorRight", "when": "editorHasSelection && !suggestWidgetVisible" },
+  { "key": "home","command": "cursorWordLeft", "when": "textInputFocus && !inQuickInput && editorLangId == 'jav' " },
+  { "key": "end","command": "cursorWordRight", "when": "textInputFocus && !inQuickInput && editorLangId == 'jav'" },
+  { "key": "shift+home","command": "cursorWordStartLeftSelect", "when": "textInputFocus && !inQuickInput && editorLangId == 'jav' " },
+  { "key": "shift+end", "command": "cursorWordEndRightSelect", "when": "textInputFocus && !inQuickInput && editorLangId == 'jav'" },
+  { "key": "home","command": "cursorWordPartLeft", "when": "textInputFocus && !inQuickInput && editorLangId != 'jav' " },
+  { "key": "end","command": "cursorWordPartRight", "when": "textInputFocus && !inQuickInput && editorLangId != 'jav'" },
+  { "key": "shift+home","command": "cursorWordPartLeftSelect", "when": "textInputFocus && !inQuickInput && editorLangId != 'jav' " },
+  { "key": "shift+end","command": "cursorWordPartRightSelect", "when": "textInputFocus && !inQuickInput && editorLangId != 'jav'" },
+  { "key": "shift+f4", "command": "JavEditorHelper.selectSurround", "when": "editorTextFocus" },
+  { "key": "shift+alt+f1", "command": "-editor.action.toggleScreenReaderAccessibilityMode" },
+
+
+
+  { "key": "f23 s","command": "editor.action.insertSnippet", "args":  { "name": "possessive" }, "when": "!editorHasSelection" },
+  { "key": "alt+n", "command": "editor.action.insertSnippet", "args":   { "name": "note" } },
+  { "key": "alt+m", "command": "editor.action.insertSnippet", "args":   { "name": "placeholder" } },
+
+  { "key": "alt+'","command": "editor.action.insertSnippet", "args":  { "name": "quote sentence" }, "when": "!editorHasSelection" },
+  { "key": "ctrl+-","command": "editor.action.insertSnippet", "args":   { "name": "insert emdash" }, "when": "" },
+  { "key": ".","command": "editor.action.insertSnippet", "args":  { "name": "insert period" }, "when": "editorLangId == 'jav'" },
+  { "key": ",","command": "editor.action.insertSnippet", "args":  { "name": "insert comma" }, "when": "editorLangId == 'jav'" },
+
+  { "key": "enter","command": "search.action.focusSearchList", "when": "searchViewletVisible && searchViewletFocus && hasSearchResult && !matchFocus" },
+  { "key": "enter", "command": "editor.action.revealDefinition", "when": "inSearchEditor" },
+  { "key": "enter", "command": "editor.action.revealDefinition", "when": "editorTextFocus && inSearchEditor" },
+  { "key": "f8", "command": "javWordHelper.findSynonyms", "when": "editorTextFocus" },
+  { "key": "f7", "command": "javWordHelper.soundalikes", "when": "editorTextFocus" },
+  { "key": "f20", "command": "javProjectGlossary.addToDictionary", "when": "editorTextFocus" },
+  { "key": "f13", "command": "JavEditorHelper.textCleanup", "when": "editorLangId == 'markdown' || editorTextFocus && !hasSnippetCompletions && !inQuickInput && !inSnippetMode && editorLangId == 'jav'" },
+  { "key": "alt+f5", "command": "-workbench.action.editor.nextChange", "when": "editorTextFocus && !textCompareEditorActive && quickDiffDecorationCount != '0'" },
+  { "key": "alt+f5","command": "-workbench.action.compareEditor.nextChange", "when": "textCompareEditorVisible" },
+  { "key": "shift+alt+a","command": "-editor.action.blockComment", "when": "editorTextFocus && !editorReadonly" },
+  { "key": "down","command": "quickFind.next", "when": "quickFind.isActive" },
+  { "key": "down","command": "-quickFind.next", "when": "editorTextFocus && quickFind.isActive" },
+  { "key": "up","command": "quickFind.prev", "when": "quickFind.isActive" },
+  { "key": "up","command": "-quickFind.prev", "when": "editorTextFocus && quickFind.isActive" },
+  { "key": "shift+f14", "command": "editor.action.smartSelect.expand", "when": "editorTextFocus" },
+  { "key": "shift+alt+f22","command": "editor.action.selectToBracket" },
+  { "key": "f1", "command": "workbench.action.toggleSplitEditorInGroup", "when": "activeEditorCanSplitInGroup", },
+
+  { "key": "down","command": "search.action.focusNextSearchResult", "when": "inSearchEditor" },
+  { "key": "f4","command": "-search.action.focusNextSearchResult", "when": "hasSearchResult || inSearchEditor" },
+  { "key": "up","command": "search.action.focusPreviousSearchResult", "when": "inSearchEditor" },
+  { "key": "shift+f4","command": "-search.action.focusPreviousSearchResult", "when": "hasSearchResult || inSearchEditor" },
+  { "key": "alt+t", "command": "-quickFind.toggleVisibleLinesOnly", "when": "quickFind.isActive" },
+  { "key": "f1", "command": "quickFind.toggleMatchCase", "when": "quickFind.isActive" },
+  { "key": "alt+c", "command": "-quickFind.toggleMatchCase", "when": "quickFind.isActive" },
+  { "key": "f2", "command": "quickFind.toggleWholeWord", "when": "quickFind.isActive" },
+  { "key": "alt+w", "command": "-quickFind.toggleWholeWord", "when": "quickFind.isActive" },
+  { "key": "f18", "command": "editor.action.clipboardCutAction" },
+  { "key": "f11", "command": "clipboard-manager.editor.copyToHistory", "when": "editorFocus" },
+  { "key": "f19", "command": "editor.action.clipboardPasteAction" },
+  { "key": "alt+e", "command": "toggleSearchEditorRegex", "when": "inSearchEditor && searchInputBoxFocus" },
+  { "key": "alt+r", "command": "-toggleSearchEditorRegex", "when": "inSearchEditor && searchInputBoxFocus" },
+  { "key": "f2", "command": "javProjectGlossary.focusDashboardSearch", "when": "activeWebviewPanelId == 'javFilesDashboard'" },
+  { "key": "alt+down", "command": "JavEditorHelper.joinLineBelow", "when": "editorTextFocus" },
+  { "key": "shift+right", "command": "JavNav.clauseSelectRight", "when": "JavNav.clauseMode && editorTextFocus" },
+  { "key": "shift+left", "command": "JavNav.clauseSelectLeft", "when": "JavNav.clauseMode && editorTextFocus" },
+  { "key": "f14", "command": "JavEditorHelper.smartSelect", "when": "editorTextFocus" },
+  { "key": "f24", "command": "-magicKey.insert" },
+  { "key": "f10", "command": "cancelSelection", "when": "editorHasSelection && textInputFocus" },
+  { "key": "f6", "command": "engineernick.multi-cursor-tools.expand_to_next_occurrence" },
+  { "key": "left", "command": "JavNav.clauseLeft", "when": "JavNav.clauseMode && editorTextFocus" },
+  { "key": "right", "command": "JavNav.clauseRight", "when": "JavNav.clauseMode && editorTextFocus" },
+  { "key": "alt+t", "command": "workbench.action.showAllEditorsByMostRecentlyUsed" },
+  { "key": "alt+left", "command": "cursorLeft", "when": "textInputFocus" },
+  { "key": "alt+right", "command": "cursorRight", "when": "textInputFocus" },
+  { "key": "alt+delete", "command": "JavEditorHelper.smartDelete", "when": "editorTextFocus" },
+  { "key": "ctrl+alt+c", "command": "workbench.action.toggleCenteredLayout" },
+  { "key": "alt+d", "command": "editor.action.addSelectionToPreviousFindMatch", "when": "editorTextFocus" },
+  { "key": "ctrl+alt+f17", "command": "workbench.action.compareEditor.previousChange", "when": "textCompareEditorVisible" },
+  { "key": "shift+alt+f5", "command": "-workbench.action.compareEditor.previousChange", "when": "textCompareEditorVisible" },
+  { "key": "ctrl+alt+f14", "command": "editor.action.marker.prev", "when": "editorTextFocus" },
+  { "key": "ctrl+alt+s", "command": "outlinePeek.view.focus" },
+  { "key": "shift+f8", "command": "editor.toggleFold" },
+  { "key": "shift+f7", "command": "editor.toggleFoldRecursively" }
+]
 
-
-VS code/codium, Jav writing suite, extension
-
-==== extension.js ====
-
-const vscode = require('vscode');
-const fs = require('fs');
-const path = require('path');
-const prediction = require('./prediction');
-
-// --- built-in sample dictionary (~200 common words) ---
-const DICTIONARY_BUILTIN = [
-  'a','an','the','i','me','my','we','us','our','you','your','he','him','his',
-  'she','her','it','its','they','them','their','this','that','these','those',
-  'in','on','at','to','for','of','with','from','by','as','is','was','are',
-  'were','be','been','being','have','has','had','do','does','did','will',
-  'would','shall','should','can','could','may','might','must','not','no',
-  'and','or','but','if','then','else','when','where','what','which','who',
-  'how','all','each','every','both','few','more','most','other','some','any',
-  'such','only','own','same','than','too','very','just','about','above',
-  'after','again','also','always','am','an','another','because','before',
-  'below','between','come','came','day','even','first','get','got','go',
-  'went','gone','give','gave','given','good','great','here','there','into',
-  'know','knew','known','last','let','like','long','look','make','made',
-  'man','many','much','new','now','old','one','two','three','four','five',
-  'over','part','people','place','point','right','say','said','see','saw',
-  'still','take','took','tell','told','thing','think','thought','time',
-  'under','up','down','use','used','want','way','well','work','world',
-  'year','back','call','called','change','end','find','found','hand','help',
-  'high','home','house','keep','kept','kind','large','left','life','line',
-  'little','live','long','look','move','name','need','next','number','off',
-  'open','order','own','play','put','read','run','set','show','small',
-  'start','state','still','story','study','turn','through','try','while',
-  'without','word','write','wrote','written','young',
-  'function','return','value','string','array','object','class','method',
-  'variable','parameter','argument','boolean','number','null','undefined',
-  'error','file','data','list','index','loop','import','export','module',
-  'package','public','private','static','void','interface','implement',
-  'abstract','final','const','todo','fixme','hack','note','bug','test',
-  'check','update','delete','create','remove','add','init','config',
-  'default','true','false','type','code','comment','debug','print','log',
-  'input','output','result','response','request','server','client','api',
-  'database','table','query','field','record','key','map','filter','sort',
-  'parse','format','convert','validate','handle','process','send','receive'
-];
-
-// --- correction presets ---
-const PRESETS = {
-  strict: {
-    costTransposition: 0.3,
-    costInsertDelete: 1.2,
-    costSubstitutionMax: 1.5,
-    costLengthPenalty: 0.8,
-    lengthFilterMax: 2,
-    thresholdBase: 1.5,
-    thresholdScale: 0.4,
-    lengthWordMin: 2,
-  },
-  balanced: {
-    costTransposition: 0.5,
-    costInsertDelete: 1.0,
-    costSubstitutionMax: 2.0,
-    costLengthPenalty: 0.5,
-    lengthFilterMax: 3,
-    thresholdBase: 2.0,
-    thresholdScale: 0.6,
-    lengthWordMin: 1,
-  },
-  aggressive: {
-    costTransposition: 0.8,
-    costInsertDelete: 0.8,
-    costSubstitutionMax: 2.5,
-    costLengthPenalty: 0.3,
-    lengthFilterMax: 4,
-    thresholdBase: 2.5,
-    thresholdScale: 0.8,
-    lengthWordMin: 1,
-  },
-};
-
-/** @type {Map<string, {x: number, y: number}>} */
-let keyCoordMap = new Map();
-
-/** @type {Set<string>} */
-let dictionary = new Set();
-
-/** @type {string[]} */
-let dictionaryArray = [];
-
-/** @type {Map<string, string>} lowercase → original casing from dictionary files */
-let dictionaryCasing = new Map();
-
-/** @type {boolean} */
-let correcting = false;
-
-/**
- * Resolve active tuning parameters from preset or custom config.
- * @returns {object}
- */
-function tuningResolve() {
-  const cfg = vscode.workspace.getConfiguration('autocorrect');
-  const preset = cfg.get('correctionPreset', 'balanced');
-
-  if (preset !== 'custom' && PRESETS[preset]) {
-    return { ...PRESETS[preset] };
-  }
-
-  return {
-    costTransposition: cfg.get('costTransposition', PRESETS.balanced.costTransposition),
-    costInsertDelete: cfg.get('costInsertDelete', PRESETS.balanced.costInsertDelete),
-    costSubstitutionMax: cfg.get('costSubstitutionMax', PRESETS.balanced.costSubstitutionMax),
-    costLengthPenalty: cfg.get('costLengthPenalty', PRESETS.balanced.costLengthPenalty),
-    lengthFilterMax: cfg.get('lengthFilterMax', PRESETS.balanced.lengthFilterMax),
-    thresholdBase: cfg.get('thresholdBase', PRESETS.balanced.thresholdBase),
-    thresholdScale: cfg.get('thresholdScale', PRESETS.balanced.thresholdScale),
-    lengthWordMin: cfg.get('lengthWordMin', PRESETS.balanced.lengthWordMin),
-  };
-}
-
-/**
- * Build (x,y) coordinate map from keyboard layout string.
- * @param {string} layout
- */
-function keyCoordMapBuild(layout) {
-  keyCoordMap.clear();
-  const rows = layout.split('\n').map(l => l.replace(/\r$/, ''));
-  for (let y = 0; y < rows.length; y++) {
-    for (let x = 0; x < rows[y].length; x++) {
-      const ch = rows[y][x].toLowerCase();
-      if (!keyCoordMap.has(ch)) {
-        keyCoordMap.set(ch, { x, y });
-      }
-    }
-  }
-}
-
-/**
- * Euclidean distance between two keys.
- * @param {string} a
- * @param {string} b
- * @returns {number}
- */
-function keyDistance(a, b) {
-  const ca = keyCoordMap.get(a.toLowerCase());
-  const cb = keyCoordMap.get(b.toLowerCase());
-  if (!ca || !cb) return 2;
-  const dx = ca.x - cb.x;
-  const dy = ca.y - cb.y;
-  return Math.sqrt(dx * dx + dy * dy);
-}
-
-/**
- * Weighted Damerau-Levenshtein distance.
- * @param {string} src
- * @param {string} tgt
- * @param {object} tuning
- * @returns {number}
- */
-function levenshteinWeighted(src, tgt, tuning) {
-  const m = src.length;
-  const n = tgt.length;
-  if (m === 0) return n * tuning.costInsertDelete;
-  if (n === 0) return m * tuning.costInsertDelete;
-
-  if (Math.abs(m - n) > tuning.lengthFilterMax) return Infinity;
-
-  const dp = Array.from({ length: m + 1 }, () => new Float64Array(n + 1));
-
-  for (let i = 0; i <= m; i++) dp[i][0] = i * tuning.costInsertDelete;
-  for (let j = 0; j <= n; j++) dp[0][j] = j * tuning.costInsertDelete;
-
-  for (let i = 1; i <= m; i++) {
-    for (let j = 1; j <= n; j++) {
-      const substCost = src[i - 1] === tgt[j - 1]
-        ? 0
-        : Math.min(keyDistance(src[i - 1], tgt[j - 1]), tuning.costSubstitutionMax);
-      dp[i][j] = Math.min(
-        dp[i - 1][j] + tuning.costInsertDelete,
-        dp[i][j - 1] + tuning.costInsertDelete,
-        dp[i - 1][j - 1] + substCost
-      );
-      if (i > 1 && j > 1 &&
-          src[i - 1] === tgt[j - 2] &&
-          src[i - 2] === tgt[j - 1]) {
-        dp[i][j] = Math.min(dp[i][j], dp[i - 2][j - 2] + tuning.costTransposition);
-      }
-    }
-  }
-  return dp[m][n];
-}
-
-/**
- * Find best dictionary match for a word.
- * @param {string} word
- * @returns {string | null}
- */
-function correctionFind(word) {
-  const lower = word.toLowerCase();
-  if (dictionary.has(lower)) {
-    const dictCasing = dictionaryCasing.get(lower);
-    if (dictCasing && dictCasing !== word) return dictCasing;
-    return null;
-  }
-
-  // check if word is a known stem + allowed suffix
-  const cfg = vscode.workspace.getConfiguration('autocorrect');
-  const suffixes = cfg.get('suffixesAllow', ['s','es','ed','d','er','est','ing','ly','ment','ness','tion','sion','able','ible','ful','less','ous','ive','al','ial']);
-  for (const suffix of suffixes) {
-    if (lower.length > suffix.length && lower.endsWith(suffix)) {
-      const stem = lower.slice(0, -suffix.length);
-      if (stem.length > 1 && dictionary.has(stem)) return null;
-      // handle doubling: "stopped" → stem "stopp" → check "stop"
-      if (stem.length > 2 && stem[stem.length - 1] === stem[stem.length - 2] && dictionary.has(stem.slice(0, -1))) return null;
-      // handle e-drop: "making" (suffix "ing") → stem "mak" → check "make"
-      if (stem.length > 1 && dictionary.has(stem + 'e')) return null;
-    }
-  }
-
-  const tuning = tuningResolve();
-
-  if (lower.length <= tuning.lengthWordMin) return null;
-
-  let bestWord = null;
-  let bestDist = Infinity;
-  const maxDist = Math.max(tuning.thresholdBase, lower.length * tuning.thresholdScale);
-
-  for (const candidate of dictionaryArray) {
-    if (Math.abs(candidate.length - lower.length) > tuning.lengthFilterMax) continue;
-    const d = levenshteinWeighted(lower, candidate, tuning);
-    const lengthPenalty = Math.abs(candidate.length - lower.length) * tuning.costLengthPenalty;
-    const score = d + lengthPenalty;
-    if (score < bestDist) {
-      bestDist = score;
-      bestWord = candidate;
-    }
-  }
-
-  if (bestDist > maxDist) return null;
-  if (bestWord === lower) return null;
-
-  return bestWord;
-}
-
-/**
- * Apply casing: dictionary casing first, then infer from typed word.
- * @param {string} original
- * @param {string} replacement
- * @returns {string}
- */
-function casingMatch(original, replacement) {
-  const dictCasing = dictionaryCasing.get(replacement.toLowerCase());
-  if (dictCasing) return dictCasing;
-
-  if (original === original.toUpperCase() && original.length > 1) {
-    return replacement.toUpperCase();
-  }
-  if (original[0] === original[0].toUpperCase()) {
-    return replacement[0].toUpperCase() + replacement.slice(1);
-  }
-  return replacement;
-}
-
-/**
- * Resolve VS Code-style variables in a path string.
- * @param {string} p
- * @returns {string}
- */
-function pathResolveVariables(p) {
-  const os = require('os');
-  const vars = {
-    'execDir': path.resolve(vscode.env.appRoot, '..', '..'),
-    'userHome': os.homedir(),
-  };
-
-  const folders = vscode.workspace.workspaceFolders;
-  if (folders && folders.length > 0) {
-    vars['workspaceFolder'] = folders[0].uri.fsPath;
-    vars['workspaceFolderBasename'] = path.basename(folders[0].uri.fsPath);
-  }
-
-  let resolved = p;
-  for (const [key, val] of Object.entries(vars)) {
-    resolved = resolved.split('${' + key + '}').join(val);
-  }
-
-  if (resolved.startsWith('~')) {
-    resolved = path.join(os.homedir(), resolved.slice(1));
-  }
-
-  return resolved;
-}
-
-/**
- * Load dictionary from built-in list + any configured file paths.
- */
-function dictionaryLoad() {
-  dictionary.clear();
-  dictionaryCasing.clear();
-  for (const w of DICTIONARY_BUILTIN) {
-    dictionary.add(w.toLowerCase());
-  }
-
-  const config = vscode.workspace.getConfiguration('autocorrect');
-  const paths = config.get('dictionaryPaths', []);
-
-  for (const p of paths) {
-    try {
-      let resolved = pathResolveVariables(p);
-
-      if (!path.isAbsolute(resolved)) {
-        const folders = vscode.workspace.workspaceFolders;
-        if (folders && folders.length > 0) {
-          resolved = path.join(folders[0].uri.fsPath, resolved);
-        }
-      }
-
-      const filePaths = [];
-      if (fs.existsSync(resolved) && fs.statSync(resolved).isDirectory()) {
-        const entries = fs.readdirSync(resolved);
-        for (const entry of entries) {
-          const full = path.join(resolved, entry);
-          if (fs.statSync(full).isFile()) filePaths.push(full);
-        }
-      } else {
-        filePaths.push(resolved);
-      }
-
-      for (const fp of filePaths) {
-        const text = fs.readFileSync(fp, 'utf8');
-        const lines = text.split('\n').map(l => {
-          let w = l.replace(/\r$/, '').trim();
-          const sep = w.indexOf('::');
-          if (sep !== -1) w = w.substring(0, sep).trim();
-          return w;
-        });
-        for (const w of lines) {
-          if (w.length === 0 || w.includes(' ')) continue;
-          const lower = w.toLowerCase();
-          dictionary.add(lower);
-          if (w !== lower) dictionaryCasing.set(lower, w);
-        }
-      }
-    } catch (e) {
-      vscode.window.showWarningMessage(`Autocorrect: failed to load dictionary "${p}": ${e.message}`);
-    }
-  }
-
-  dictionaryArray = Array.from(dictionary);
-}
-
-/** @type {vscode.FileSystemWatcher[]} */
-let dictionaryWatchers = [];
-
-function dictionaryPathsResolve() {
-  const config = vscode.workspace.getConfiguration('autocorrect');
-  const paths = config.get('dictionaryPaths', []);
-  const resolved = [];
-  for (const p of paths) {
-    let r = pathResolveVariables(p);
-    if (!path.isAbsolute(r)) {
-      const folders = vscode.workspace.workspaceFolders;
-      if (folders && folders.length > 0) {
-        r = path.join(folders[0].uri.fsPath, r);
-      }
-    }
-    resolved.push(r);
-  }
-  return resolved;
-}
-
-function dictionaryWatchersCreate(context) {
-  for (const w of dictionaryWatchers) w.dispose();
-  dictionaryWatchers = [];
-
-  const paths = dictionaryPathsResolve();
-  for (const p of paths) {
-    let pattern;
-    try {
-      if (fs.existsSync(p) && fs.statSync(p).isDirectory()) {
-        pattern = new vscode.RelativePattern(vscode.Uri.file(p), '*');
-      } else {
-        pattern = new vscode.RelativePattern(
-          vscode.Uri.file(path.dirname(p)),
-          path.basename(p)
-        );
-      }
-    } catch {
-      continue;
-    }
-
-    const watcher = vscode.workspace.createFileSystemWatcher(pattern);
-    watcher.onDidChange(() => dictionaryLoad());
-    watcher.onDidCreate(() => dictionaryLoad());
-    watcher.onDidDelete(() => dictionaryLoad());
-    dictionaryWatchers.push(watcher);
-    context.subscriptions.push(watcher);
-  }
-}
-
-/**
- * Determine if the next character should be auto-capitalized.
- * Quotes (" ') are treated as transparent when checking context.
- * @param {string} textBefore - text on the line before the inserted character
- * @returns {boolean}
- */
-function shouldCapitalize(textBefore) {
-  // strip transparent quotes from the end to see through them
-  const stripped = textBefore.replace(/["']+$/, '');
-
-  // rule 1: start of line / document (empty or whitespace only)
-  if (/^\s*$/.test(textBefore)) return true;
-
-  // rule 2: opening quote(s) at line start with optional whitespace
-  if (/^\s*["']+\s*$/.test(textBefore)) return true;
-
-  // rule 3: sentence-end punctuation + space(s), looking through quotes
-  // e.g. "word. " or "word. "" or "word." "
-  if (/[.!?:]\s+$/.test(stripped)) return true;
-
-  // rule 4: sentence-end punctuation + space + opening quote(s) + optional space
-  // e.g. 'done. "' — stripped already removed the quote, check if stripped ends with punct+space
-  if (/[.!?:]\s*$/.test(stripped) && stripped !== textBefore) return true;
-
-  return false;
-}
-
-function activate(context) {
-  const config = vscode.workspace.getConfiguration('autocorrect');
-
-  keyCoordMapBuild(config.get('keyboardLayout', ''));
-  dictionaryLoad();
-  dictionaryWatchersCreate(context);
-  prediction.corpusLoad();
-  prediction.corpusWatchersCreate(context);
-  prediction.predictionProviderRegister(context);
-
-  context.subscriptions.push(
-    vscode.workspace.onDidChangeConfiguration(e => {
-      if (e.affectsConfiguration('autocorrect')) {
-        const cfg = vscode.workspace.getConfiguration('autocorrect');
-        keyCoordMapBuild(cfg.get('keyboardLayout', ''));
-        dictionaryLoad();
-        dictionaryWatchersCreate(context);
-        prediction.corpusLoad();
-        prediction.corpusWatchersCreate(context);
-      }
-    })
-  );
-
-  context.subscriptions.push(
-    vscode.commands.registerCommand('autocorrect.toggle', () => {
-      const cfg = vscode.workspace.getConfiguration('autocorrect');
-      const current = cfg.get('enabled', true);
-      cfg.update('enabled', !current, vscode.ConfigurationTarget.Global);
-      vscode.window.showInformationMessage(`Autocorrect ${!current ? 'enabled' : 'disabled'}`);
-    })
-  );
-
-  context.subscriptions.push(
-    vscode.workspace.onDidChangeTextDocument(event => {
-      if (correcting) return;
-
-      const cfg = vscode.workspace.getConfiguration('autocorrect');
-      if (!cfg.get('enabled', true)) return;
-
-      const doc = event.document;
-      const languageIds = cfg.get('languageIds', ['jav', 'markdown', 'plaintext']);
-      if (!languageIds.includes(doc.languageId)) return;
-
-      for (const change of event.contentChanges) {
-        const inserted = change.text;
-        const pos = change.range.start;
-        const line = doc.lineAt(pos.line).text;
-        const textBefore = line.substring(0, pos.character);
-
-        // triple-space → ", " (undoes double-space period, replaces with comma)
-        if (cfg.get('triplespaceComma', true) && inserted === ' ' && textBefore.endsWith('. ')) {
-          // check that the period was likely from double-space (letter before ". ")
-          const beforePeriod = textBefore.slice(0, -2);
-          if (beforePeriod.length > 0 && /[a-zA-Z0-9]$/.test(beforePeriod)) {
-            const replaceStart = pos.character - 2; // the ". "
-            const replaceEnd = pos.character + 1;   // after the third space just inserted
-            const range = new vscode.Range(
-              new vscode.Position(pos.line, replaceStart),
-              new vscode.Position(pos.line, replaceEnd)
-            );
-            const editor = vscode.window.activeTextEditor;
-            if (editor && editor.document.uri.toString() === doc.uri.toString()) {
-              correcting = true;
-              editor.edit(eb => {
-                eb.replace(range, ', ');
-              }, { undoStopBefore: true, undoStopAfter: true }).then(() => {
-                correcting = false;
-              }, () => {
-                correcting = false;
-              });
-            }
-            continue;
-          }
-        }
-
-        // double-space → ". "
-        if (cfg.get('doublespacePeriod', true) && inserted === ' ' && textBefore.endsWith(' ')) {
-          // don't convert if already after punctuation or at line start
-          const beforeSpace = textBefore.slice(0, -1);
-          if (beforeSpace.length > 0 && /[a-zA-Z0-9]$/.test(beforeSpace)) {
-            const replaceStart = pos.character - 1; // the first space
-            const replaceEnd = pos.character + 1;   // after the second space just inserted
-            const range = new vscode.Range(
-              new vscode.Position(pos.line, replaceStart),
-              new vscode.Position(pos.line, replaceEnd)
-            );
-            const editor = vscode.window.activeTextEditor;
-            if (editor && editor.document.uri.toString() === doc.uri.toString()) {
-              correcting = true;
-              editor.edit(eb => {
-                eb.replace(range, '. ');
-              }, { undoStopBefore: true, undoStopAfter: true }).then(() => {
-                correcting = false;
-              }, () => {
-                correcting = false;
-              });
-            }
-            continue;
-          }
-        }
-
-        // auto-capitalize: first letter of a new sentence
-        if (cfg.get('capitalizeSentence', true) && /^[a-z]$/.test(inserted)) {
-          if (shouldCapitalize(textBefore)) {
-            const charRange = new vscode.Range(
-              new vscode.Position(pos.line, pos.character),
-              new vscode.Position(pos.line, pos.character + 1)
-            );
-            const editor = vscode.window.activeTextEditor;
-            if (editor && editor.document.uri.toString() === doc.uri.toString()) {
-              correcting = true;
-              editor.edit(eb => {
-                eb.replace(charRange, inserted.toUpperCase());
-              }, { undoStopBefore: true, undoStopAfter: true }).then(() => {
-                correcting = false;
-              }, () => {
-                correcting = false;
-              });
-            }
-            continue;
-          }
-        }
-
-        if (!/^[\s.,;:!?()\[\]{}"'\n\r]$/.test(inserted)) continue;
-
-        const wordMatch = textBefore.match(/([a-zA-Z]+)$/);
-        if (!wordMatch) continue;
-
-        const typedWord = wordMatch[1];
-        const wordStart = pos.character - typedWord.length;
-
-        const correction = correctionFind(typedWord);
-        if (!correction) continue;
-
-        const cased = casingMatch(typedWord, correction);
-
-        const range = new vscode.Range(
-          new vscode.Position(pos.line, wordStart),
-          new vscode.Position(pos.line, pos.character)
-        );
-
-        const editor = vscode.window.activeTextEditor;
-        if (!editor || editor.document.uri.toString() !== doc.uri.toString()) continue;
-
-        correcting = true;
-        editor.edit(editBuilder => {
-          editBuilder.replace(range, cased);
-        }, { undoStopBefore: true, undoStopAfter: true }).then(() => {
-          correcting = false;
-        }, () => {
-          correcting = false;
-        });
-      }
-    })
-  );
-}
-
-function deactivate() {}
-
-module.exports = { activate, deactivate };
-
-==== package.json ====
-
-{
-	"name": "keyboard-autocorrect",
-	"displayName": "Keyboard Autocorrect",
-	"description": "iOS-style autocorrect using keyboard-distance-weighted edit distance",
-	"version": "0.1.0",
-	"engines": {
-		"vscode": "^1.75.0"
-	},
-	"categories": [
-		"Other"
-	],
-	"activationEvents": [
-		"onStartupFinished"
-	],
-	"main": "./extension.js",
-	"contributes": {
-		"configuration": {
-			"title": "Keyboard Autocorrect",
-			"properties": {
-				"autocorrect.enabled": {
-					"type": "boolean",
-					"default": true,
-					"description": "Enable or disable autocorrect"
-				},
-				"autocorrect.dictionaryPaths": {
-					"type": "array",
-					"items": {
-						"type": "string"
-					},
-					"default": [],
-					"description": "File paths to newline-delimited word lists (merged with built-in dictionary)"
-				},
-				"autocorrect.keyboardLayout": {
-					"type": "string",
-					"default": "qwlypjfou-\ncrstgmneia\nzxvdbkh,.?",
-					"description": "Keyboard layout: one row per line, characters in physical order"
-				},
-				"autocorrect.languageIds": {
-					"type": "array",
-					"items": {
-						"type": "string"
-					},
-					"default": [
-						"jav",
-						"markdown",
-						"plaintext"
-					],
-					"description": "Language IDs to activate autocorrect on"
-				},
-				"autocorrect.doublespacePeriod": {
-					"type": "boolean",
-					"default": true,
-					"description": "Double-space inserts a period and space (like iOS)"
-				},
-				"autocorrect.triplespaceComma": {
-					"type": "boolean",
-					"default": true,
-					"description": "Triple-space converts the period from double-space into a comma"
-				},
-				"autocorrect.capitalizeSentence": {
-					"type": "boolean",
-					"default": true,
-					"description": "Auto-capitalize first letter of sentences (after . ! ? : and at line start)"
-				},
-				"autocorrect.predictionEnabled": {
-					"type": "boolean",
-					"default": true,
-					"description": "Enable n-gram next-word prediction from corpus files"
-				},
-				"autocorrect.predictionCorpusPaths": {
-					"type": "array",
-					"items": {
-						"type": "string"
-					},
-					"default": [],
-					"description": "File or folder paths to text corpus for building n-gram predictions (supports ${execDir}, ${workspaceFolder}, ~)"
-				},
-				"autocorrect.predictionMaxSuggestions": {
-					"type": "integer",
-					"default": 5,
-					"minimum": 1,
-					"maximum": 20,
-					"description": "Maximum number of word predictions to show"
-				},
-				"autocorrect.correctionPreset": {
-					"type": "string",
-					"enum": [
-						"strict",
-						"balanced",
-						"aggressive",
-						"custom"
-					],
-					"default": "balanced",
-					"enumDescriptions": [
-						"Low threshold, high costs. Only corrects obvious typos.",
-						"Default tuning. Good for general writing.",
-						"High threshold, low costs. Catches more, risks more false positives.",
-						"Unlock individual cost/threshold settings below."
-					],
-					"description": "Correction aggressiveness preset"
-				},
-				"autocorrect.suffixesAllow": {
-					"type": "array",
-					"items": {
-						"type": "string"
-					},
-					"default": [
-						"s",
-						"es",
-						"ed",
-						"d",
-						"er",
-						"est",
-						"ing",
-						"ly",
-						"ment",
-						"ness",
-						"tion",
-						"sion",
-						"able",
-						"ible",
-						"ful",
-						"less",
-						"ous",
-						"ive",
-						"al",
-						"ial"
-					],
-					"description": "Suffixes that pass through uncorrected when the stem is in the dictionary (e.g. 'starts' = 'start' + 's')"
-				},
-				"autocorrect.costTransposition": {
-					"type": "number",
-					"default": 0.5,
-					"description": "(custom only) Cost for adjacent character swaps (e.g. hte→the)"
-				},
-				"autocorrect.costInsertDelete": {
-					"type": "number",
-					"default": 1,
-					"description": "(custom only) Cost for inserted or deleted characters"
-				},
-				"autocorrect.costSubstitutionMax": {
-					"type": "number",
-					"default": 2,
-					"description": "(custom only) Max cost for a single key substitution"
-				},
-				"autocorrect.costLengthPenalty": {
-					"type": "number",
-					"default": 0.5,
-					"description": "(custom only) Penalty multiplier per character of length difference"
-				},
-				"autocorrect.lengthFilterMax": {
-					"type": "integer",
-					"default": 3,
-					"description": "(custom only) Max character count difference to consider a candidate"
-				},
-				"autocorrect.thresholdBase": {
-					"type": "number",
-					"default": 2,
-					"description": "(custom only) Minimum distance threshold to accept a correction"
-				},
-				"autocorrect.thresholdScale": {
-					"type": "number",
-					"default": 0.6,
-					"description": "(custom only) Threshold scales with word length: max(thresholdBase, length * thresholdScale)"
-				},
-				"autocorrect.lengthWordMin": {
-					"type": "integer",
-					"default": 1,
-					"description": "(custom only) Minimum word length to attempt correction"
-				}
-			}
-		},
-		"commands": [
-			{
-				"command": "autocorrect.toggle",
-				"title": "Autocorrect: Toggle On/Off"
-			}
-		]
-	},
-	"__metadata": {
-		"installedTimestamp": 1773318597881,
-		"targetPlatform": "undefined",
-		"size": 37300
-	}
-}
-
-==== prediction.js ====
-
-const vscode = require('vscode');
-const fs = require('fs');
-const path = require('path');
-
-// --- n-gram tables ---
-// bigram: "word1" → Map<"word2", count>
-// trigram: "word1 word2" → Map<"word3", count>
-
-/** @type {Map<string, Map<string, number>>} */
-let bigrams = new Map();
-
-/** @type {Map<string, Map<string, number>>} */
-let trigrams = new Map();
-
-/** @type {vscode.FileSystemWatcher[]} */
-let corpusWatchers = [];
-
-/**
- * Tokenize text into lowercase words array.
- * @param {string} text
- * @returns {string[]}
- */
-function tokenize(text) {
-  return text
-    .toLowerCase()
-    .replace(/[^a-z'\-\s]/g, ' ')
-    .split(/\s+/)
-    .filter(w => w.length > 0);
-}
-
-/**
- * Add a count to an n-gram table.
- * @param {Map<string, Map<string, number>>} table
- * @param {string} key
- * @param {string} next
- */
-function ngramAdd(table, key, next) {
-  let followers = table.get(key);
-  if (!followers) {
-    followers = new Map();
-    table.set(key, followers);
-  }
-  followers.set(next, (followers.get(next) || 0) + 1);
-}
-
-/**
- * Resolve a path using VS Code variables and workspace-relative logic.
- * Imported from main extension logic pattern.
- * @param {string} p
- * @returns {string}
- */
-function pathResolve(p) {
-  const os = require('os');
-  const vars = {
-    'execDir': path.resolve(vscode.env.appRoot, '..', '..'),
-    'userHome': os.homedir(),
-  };
-
-  const folders = vscode.workspace.workspaceFolders;
-  if (folders && folders.length > 0) {
-    vars['workspaceFolder'] = folders[0].uri.fsPath;
-    vars['workspaceFolderBasename'] = path.basename(folders[0].uri.fsPath);
-  }
-
-  let resolved = p;
-  for (const [key, val] of Object.entries(vars)) {
-    resolved = resolved.split('${' + key + '}').join(val);
-  }
-
-  if (resolved.startsWith('~')) {
-    resolved = path.join(os.homedir(), resolved.slice(1));
-  }
-
-  if (!path.isAbsolute(resolved)) {
-    if (folders && folders.length > 0) {
-      resolved = path.join(folders[0].uri.fsPath, resolved);
-    }
-  }
-
-  return resolved;
-}
-
-/**
- * Collect all file paths from a resolved path (file or directory).
- * @param {string} resolved
- * @returns {string[]}
- */
-function filePathsCollect(resolved) {
-  const results = [];
-  try {
-    if (fs.existsSync(resolved) && fs.statSync(resolved).isDirectory()) {
-      const entries = fs.readdirSync(resolved);
-      for (const entry of entries) {
-        const full = path.join(resolved, entry);
-        if (fs.statSync(full).isFile()) results.push(full);
-      }
-    } else {
-      results.push(resolved);
-    }
-  } catch { /* skip */ }
-  return results;
-}
-
-/**
- * Load corpus files and build bigram/trigram tables.
- */
-function corpusLoad() {
-  bigrams.clear();
-  trigrams.clear();
-
-  const cfg = vscode.workspace.getConfiguration('autocorrect');
-  const paths = cfg.get('predictionCorpusPaths', []);
-
-  for (const p of paths) {
-    try {
-      const resolved = pathResolve(p);
-      const filePaths = filePathsCollect(resolved);
-
-      for (const fp of filePaths) {
-        const text = fs.readFileSync(fp, 'utf8');
-        const words = tokenize(text);
-
-        for (let i = 0; i < words.length - 1; i++) {
-          ngramAdd(bigrams, words[i], words[i + 1]);
-
-          if (i < words.length - 2) {
-            const triKey = words[i] + ' ' + words[i + 1];
-            ngramAdd(trigrams, triKey, words[i + 2]);
-          }
-        }
-      }
-    } catch (e) {
-      vscode.window.showWarningMessage(`Autocorrect prediction: failed to load corpus "${p}": ${e.message}`);
-    }
-  }
-}
-
-/**
- * Get top N predictions given previous word(s).
- * Trigram priority, bigram fallback.
- * @param {string} prev1 - word at position -2 (or empty)
- * @param {string} prev2 - word at position -1 (most recent)
- * @param {string} prefix - partial current word being typed (can be empty)
- * @param {number} max
- * @returns {{word: string, score: number}[]}
- */
-function predictionsGet(prev1, prev2, prefix, max) {
-  const results = new Map(); // word → score
-
-  // trigram lookup
-  if (prev1 && prev2) {
-    const triKey = prev1.toLowerCase() + ' ' + prev2.toLowerCase();
-    const triFollowers = trigrams.get(triKey);
-    if (triFollowers) {
-      for (const [word, count] of triFollowers) {
-        if (prefix && !word.startsWith(prefix.toLowerCase())) continue;
-        results.set(word, (results.get(word) || 0) + count * 3); // weight trigrams higher
-      }
-    }
-  }
-
-  // bigram lookup
-  if (prev2) {
-    const biFollowers = bigrams.get(prev2.toLowerCase());
-    if (biFollowers) {
-      for (const [word, count] of biFollowers) {
-        if (prefix && !word.startsWith(prefix.toLowerCase())) continue;
-        results.set(word, (results.get(word) || 0) + count);
-      }
-    }
-  }
-
-  return Array.from(results.entries())
-    .map(([word, score]) => ({ word, score }))
-    .sort((a, b) => b.score - a.score)
-    .slice(0, max);
-}
-
-/**
- * Extract previous words from line text before cursor.
- * @param {string} textBefore - text on the line before cursor
- * @returns {{prev1: string, prev2: string, prefix: string}}
- */
-function contextExtract(textBefore) {
-  // split into tokens; last token might be a partial word (prefix)
-  const tokens = textBefore.split(/\s+/).filter(t => t.length > 0);
-
-  // if line ends with space, no partial prefix — predict full next word
-  const endsWithSpace = /\s$/.test(textBefore);
-
-  if (endsWithSpace) {
-    const prev2 = tokens.length >= 1 ? tokens[tokens.length - 1] : '';
-    const prev1 = tokens.length >= 2 ? tokens[tokens.length - 2] : '';
-    return { prev1, prev2, prefix: '' };
-  } else {
-    // last token is partial prefix being typed
-    const prefix = tokens.length >= 1 ? tokens[tokens.length - 1] : '';
-    const prev2 = tokens.length >= 2 ? tokens[tokens.length - 2] : '';
-    const prev1 = tokens.length >= 3 ? tokens[tokens.length - 3] : '';
-    return { prev1, prev2, prefix };
-  }
-}
-
-/**
- * Create and register the CompletionItemProvider.
- * @param {vscode.ExtensionContext} context
- */
-function predictionProviderRegister(context) {
-  const provider = vscode.languages.registerCompletionItemProvider(
-    { scheme: 'file' },
-    {
-      provideCompletionItems(document, position) {
-        const cfg = vscode.workspace.getConfiguration('autocorrect');
-        if (!cfg.get('predictionEnabled', true)) return [];
-
-        const languageIds = cfg.get('languageIds', ['jav', 'markdown', 'plaintext']);
-        if (!languageIds.includes(document.languageId)) return [];
-
-        if (bigrams.size === 0) return [];
-
-        const lineText = document.lineAt(position.line).text;
-        const textBefore = lineText.substring(0, position.character);
-
-        const { prev1, prev2, prefix } = contextExtract(textBefore);
-        if (!prev2 && !prefix) return [];
-
-        const maxSuggestions = cfg.get('predictionMaxSuggestions', 5);
-        const predictions = predictionsGet(prev1, prev2, prefix, maxSuggestions);
-        if (predictions.length === 0) return [];
-
-        return predictions.map((pred, i) => {
-          const item = new vscode.CompletionItem(
-            pred.word,
-            vscode.CompletionItemKind.Text
-          );
-          item.detail = `prediction (score: ${pred.score})`;
-          item.insertText = pred.word + ' ';
-          item.sortText = String(i).padStart(4, '0'); // preserve rank order
-          // if there's a prefix, replace it; otherwise insert whole word
-          if (prefix) {
-            const startCol = position.character - prefix.length;
-            item.range = new vscode.Range(
-              new vscode.Position(position.line, startCol),
-              position
-            );
-          }
-          return item;
-        });
-      }
-    },
-    ' ', '.', ',', '!', '?', ';', ':' // trigger characters
-  );
-
-  context.subscriptions.push(provider);
-}
-
-/**
- * Resolve corpus paths for watching.
- * @returns {string[]}
- */
-function corpusPathsResolve() {
-  const cfg = vscode.workspace.getConfiguration('autocorrect');
-  const paths = cfg.get('predictionCorpusPaths', []);
-  return paths.map(p => pathResolve(p));
-}
-
-/**
- * Create file watchers for corpus files.
- * @param {vscode.ExtensionContext} context
- */
-function corpusWatchersCreate(context) {
-  for (const w of corpusWatchers) w.dispose();
-  corpusWatchers = [];
-
-  const paths = corpusPathsResolve();
-  for (const p of paths) {
-    let pattern;
-    try {
-      if (fs.existsSync(p) && fs.statSync(p).isDirectory()) {
-        pattern = new vscode.RelativePattern(vscode.Uri.file(p), '*');
-      } else {
-        pattern = new vscode.RelativePattern(
-          vscode.Uri.file(path.dirname(p)),
-          path.basename(p)
-        );
-      }
-    } catch {
-      continue;
-    }
-
-    const watcher = vscode.workspace.createFileSystemWatcher(pattern);
-    watcher.onDidChange(() => corpusLoad());
-    watcher.onDidCreate(() => corpusLoad());
-    watcher.onDidDelete(() => corpusLoad());
-    corpusWatchers.push(watcher);
-    context.subscriptions.push(watcher);
-  }
-}
-
-module.exports = {
-  corpusLoad,
-  corpusWatchersCreate,
-  predictionProviderRegister,
-};

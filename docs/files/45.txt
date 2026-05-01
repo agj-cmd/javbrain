@@ -1,1346 +1,1718 @@
+
 VS code/codium, Jav writing suite, extension
-
-
 ==== package.json ====
 
 {
-	"name": "Jav-themes",
-	"displayName": "Jav Themes",
-	"description": "Jav themes",
-	"version": "1.0.0",
+	"name": "JavEditorHelper",
 	"publisher": "Jav",
-	"license": "MIT",
+	"displayName": "Jav Editor Helper",
+	"description": "Combined dialog editing, curly/straight quotes conversion, text cleanup, smart delete, smart select, and auto-capitalization.",
+	"version": "1.0.0",
 	"engines": {
-		"vscode": "^1.65.0"
+		"vscode": "^1.85.0"
 	},
+	"activationEvents": [
+		"onStartupFinished"
+	],
+	"main": "./src/extension.js",
 	"contributes": {
-		"themes": [
+		"commands": [
 			{
-				"id": "javDark",
-				"label": "jav ⚫ Dark",
-				"uiTheme": "vs-dark",
-				"path": "./themes/JavThemeDark.json"
+				"command": "JavEditorHelper.toggleCase",
+				"title": "Jav: Toggle Case"
 			},
 			{
-				"id": "javLight",
-				"label": "jav ⚪ Light",
-				"uiTheme": "vs",
-				"path": "./themes/JavThemeLight.json"
+				"command": "JavEditorHelper.editDialog",
+				"title": "Jav: Edit Dialog Quotes"
 			},
 			{
-				"id": "JavNeutral",
-				"label": "jav 🩶 Neutral",
-				"uiTheme": "hc-light",
-				"path": "./themes/JavNeutral.json"
+				"command": "JavEditorHelper.convertToCurlyQuotation",
+				"title": "Jav: Curly Quotation"
 			},
 			{
-				"id": "JavNeutralDark",
-				"label": "jav 🩶 NeutralDark",
-				"uiTheme": "hc-black",
-				"path": "./themes/JavNeutralDark.json"
+				"command": "JavEditorHelper.convertToStraightQuotation",
+				"title": "Jav: Straight Quotation"
 			},
 			{
-				"id": "JavNeutralLightHighContrast",
-				"label": "jav 🩶 NeutralLightHighContrast",
-				"uiTheme": "hc-light",
-				"path": "./themes/JavNeutralLightHighContrast.json"
+				"command": "JavEditorHelper.textCleanup",
+				"title": "Jav: Text Cleanup"
+			},
+			{
+				"command": "JavEditorHelper.insertSpace",
+				"title": "Jav: Insert Space"
+			},
+			{
+				"command": "JavEditorHelper.joinLineAbove",
+				"title": "Jav: Join Line Above"
+			},
+			{
+				"command": "JavEditorHelper.joinLineBelow",
+				"title": "Jav: Join Line Below"
+			},
+			{
+				"command": "JavEditorHelper.smartDelete",
+				"title": "Jav: Smart Delete",
+				"category": "Edit"
+			},
+			{
+				"command": "JavEditorHelper.smartSelect",
+				"title": "Jav: Smart Select Expand"
+			},
+			{
+				"command": "JavEditorHelper.selectSurround",
+				"title": "Jav: Select Inside Surrounding Pairs"
+			},
+			{
+				"command": "JavEditorHelper.removeSurround",
+				"title": "Jav: Remove Surrounding Pairs"
 			}
-		]
-	},
-	"scripts": {
-		"package": "echo. > LICENSE && vsce package --no-git-tag-version --allow-missing-repository && del LICENSE"
+		],
+		"configuration": {
+			"title": "JavEditorHelper",
+			"properties": {
+				"JavEditorHelper.capitalizationFilePaths": {
+					"type": "array",
+					"items": {
+						"type": "string"
+					},
+					"default": [],
+					"description": "Array of absolute paths to .txt files containing words/phrases to force-capitalize, one per line."
+				},
+				"smartDelete.suffixes": {
+					"type": "array",
+					"items": {
+						"type": "string"
+					},
+					"default": [
+						"s",
+						"es",
+						"ed",
+						"ing",
+						"er",
+						"est",
+						"ly",
+						"ion",
+						"tion",
+						"ation",
+						"ment",
+						"ness",
+						"ity",
+						"al",
+						"able",
+						"ible",
+						"ship",
+						"ous",
+						"ful",
+						"less",
+						"ish",
+						"ive",
+						"ize",
+						"ise",
+						"ance",
+						"ence",
+						"y"
+					],
+					"description": "Word suffixes stripped one at a time when cursor is at end-of-word. Longest match wins."
+				},
+				"JavEditorHelper.surroundingPairs": {
+					"type": "array",
+					"default": [
+						[
+							"[",
+							"]"
+						],
+						[
+							"{",
+							"}"
+						],
+						[
+							"(",
+							")"
+						],
+						[
+							"'",
+							"'"
+						],
+						[
+							"\"",
+							"\""
+						],
+						[
+							"*",
+							"*"
+						],
+						[
+							"<",
+							">"
+						]
+					],
+					"description": "Character pairs to recognize as surrounding delimiters."
+				}
+			}
+		}
 	},
 	"__metadata": {
-		"installedTimestamp": 1773248364288,
+		"installedTimestamp": 1773255429007,
 		"targetPlatform": "undefined",
-		"size": 116731
+		"size": 54891
 	}
 }
 
-==== themes\JavNeutral.json ====
+==== src\commands\convertQuotes.js ====
 
-{
-  "name": "JavNeutral",
-  "type": "hc-light",
-  "colors": {
-    "editorGroup.border": "#aaa",
-    "panelTitle.inactiveForeground": "#aaa",
-    "panelTitle.border": "#aaa",
-    "panel.border": "#aaa",
-    "panelSection.border": "#aaa",
-    "panelTitle.activeBorder": "#aaa",
-    "menu.background": "#aaa",
-    "list.hoverBackground": "#555",
-    "list.hoverForeground": "#aaa",
-    "scrollbar.shadow": "#aaa",
-    "tab.activeForeground": "#111",
-    "tab.activeBorder": "#aaa",
-    "tab.border": "#aaa",
-    "tab.activeBackground": "#aaa",
-    "tab.hoverBorder": "#111",
-    "tab.inactiveForeground": "#111",
-    "tab.unfocusedInactiveForeground": "#111",
-    "tab.unfocusedActiveForeground": "#111",
-    "tab.unfocusedActiveBorder": "#aaa",
-    "tab.activeModifiedBorder": "#111",
-    "tab.inactiveModifiedBorder": "#111",
-    "tab.unfocusedActiveModifiedBorder": "#111",
-    "dropdown.background": "#aaa",
-    "settings.dropdownBackground": "#aaa",
-    "dropdown.listBackground": "#aaa",
-    "settings.focusedRowBackground": "#888",
-    "settings.rowHoverBackground": "#888",
-    "statusBar.border": "#555",
-    "textLink.foreground": "#111",
-    "dropdown.foreground": "#111",
-    "editorSuggestWidget.focusHighlightForeground": "#eee",
-    "editorSuggestWidget.selectedForeground": "#aaa",
-    "notifications.foreground": "#111",
-    "panelTitle.activeForeground": "#111",
-    "panelSectionHeader.foreground": "#111",
-    "list.activeSelectionBackground": "#888",
-    "list.focusBackground": "#888",
-    "quickInputList.focusBackground": "#888",
-    "list.inactiveSelectionBackground": "#888",
-    "activityBar.activeBorder": "#555",
-    "activityBar.background": "#aaa",
-    "editor.selectionForeground": "#aaa",
-    "activityBar.border": "#aaa",
-    "activityBar.foreground": "#111",
-    "activityBarBadge.background": "#555",
-    "badge.background": "#555",
-    "button.background": "#555",
-    "button.border": "#555",
-    "button.hoverBackground": "#555",
-    "checkbox.border": "#555",
-    "contrastBorder": "#555",
-    "diffEditor.border": "#555",
-    "diffEditor.insertedLineBackground": "#0000",
-    "diffEditor.insertedTextBackground": "#85c75e26",
-    "diffEditor.removedTextBackground": "#e6292926",
-    "dropdown.border": "#555",
-    "editor.background": "#aaa",
-    "editor.findMatchBackground": "#ff0",
-    "editor.findMatchBorder": "#111",
-    "editor.findMatchForeground": "#aaa",
-    "editor.findMatchHighlightForeground": "#ff0e",
-    "editor.findMatchHighlightBackground": "#555e",
-    "editor.foreground": "#111",
-    "editor.hoverHighlightBackground": "#555e",
-    "editor.lineHighlightBackground": "#111",
-    "editor.lineHighlightBorder": "#111",
-    "editor.selectionBackground": "#555",
-    "editor.selectionHighlightBackground": "#0fb7fa3a",
-    "editor.wordHighlightBackground": "#555e",
-    "editor.wordHighlightBorder": "#555",
-    "editor.wordHighlightStrongBackground": "#555e",
-    "editor.wordHighlightStrongBorder": "#555",
-    "editorBracketHighlight.foreground1": "#1a432d",
-    "editorBracketHighlight.foreground2": "#6f4d10",
-    "editorBracketHighlight.foreground3": "#801c15",
-    "editorBracketHighlight.foreground4": "#731a49",
-    "editorBracketHighlight.foreground5": "#5a2a76",
-    "editorBracketHighlight.foreground6": "#123e70",
-    "editorCursor.foreground": "#111",
-    "editorGroupHeader.border": "#111",
-    "editorGroupHeader.tabsBackground": "#aaa",
-    "editorGroupHeader.tabsBorder": "#aaa",
-    "editorHint.border": "#555",
-    "editorHoverWidget.background": "#999",
-    "editorHoverWidget.border": "#555",
-    "editorHoverWidget.foreground": "#111",
-    "editorHoverWidget.highlightForeground": "#555",
-    "editorHoverWidget.statusBarBackground": "#555",
-    "editorIndentGuide.activeBackground1": "#5d5d5d",
-    "editorIndentGuide.background1": "#555",
-    "editorLineNumber.activeForeground": "#111",
-    "editorLineNumber.foreground": "#111",
-    "editorPane.background": "#aaa",
-    "editorRuler.foreground": "#111",
-    "editorSuggestWidget.background": "#aaa",
-    "editorSuggestWidget.border": "#111",
-    "editorSuggestWidget.foreground": "#111",
-    "editorSuggestWidget.highlightForeground": "#eee",
-    "editorSuggestWidget.selectedBackground": "#555",
-    "editorSuggestWidget.selectedIconForeground": "#111",
-    "editorWhitespace.foreground": "#111",
-    "editorWidget.background": "#aaa",
-    "editorWidget.border": "#555",
-    "errorForeground": "#111",
-    "focusBorder": "#111",
-    "foreground": "#111",
-    "gauge.border": "#555",
-    "gitDecoration.conflictingResourceForeground": "#F2994A",
-    "gitDecoration.deletedResourceForeground": "#111",
-    "gitDecoration.ignoredResourceForeground": "#5d5d5d",
-    "gitDecoration.modifiedResourceForeground": "#111",
-    "gitDecoration.untrackedResourceForeground": "#4CB782",
-    "icon.foreground": "#111",
-    "input.background": "#aaa",
-    "input.border": "#111",
-    "input.foreground": "#111",
-    "inputOption.activeBackground": "#555",
-    "inputValidation.errorBorder": "#111",
-    "list.activeSelectionForeground": "#111",
-    "list.focusForeground": "#555",
-    "list.focusOutline": "#aaa",
-    "list.inactiveSelectionForeground": "#111",
-    "menu.border": "#555",
-    "menu.foreground": "#111",
-    "menu.selectionBackground": "#555",
-    "menu.selectionBorder": "#555",
-    "menubar.selectionBackground": "#555",
-    "merge.border": "#555",
-    "minimap.findMatchHighlight": "#aaae",
-    "notifications.background": "#aaa",
-    "panel.background": "#aaa",
-    "panel.dropBorder": "#555",
-    "panelInput.border": "#555",
-    "panelSectionHeader.background": "#aaa",
-    "panelSectionHeader.border": "#555",
-    "peekView.border": "#555",
-    "peekViewEditor.background": "#aaa",
-    "pickerGroup.border": "#555",
-    "progressBar.background": "#555",
-    "quickInput.background": "#999",
-    "quickInput.foreground": "#111",
-    "quickInputList.focusForeground": "#111",
-    "list.highlightForeground": "#ccc",
-    "list.focusHighlightForeground": "#eee",
-    "list.deemphasizedForeground": "#444",
-    "list.dropBackground": "#555",
-    "quickInputTitle.background": "#aaa",
-    "radio.activeBorder": "#555",
-    "sash.hoverBorder": "#555",
-    "selection.background": "#555",
-    "settings.headerBorder": "#555",
-    "settings.headerForeground": "#111",
-    "settings.sashBorder": "#555",
-    "sideBar.background": "#aaa",
-    "sideBar.border": "#aaa",
-    "sideBar.foreground": "#111",
-    "sideBarSectionHeader.background": "#555",
-    "sideBarTitle.border": "#555",
-    "statusBar.background": "#aaa",
-    "statusBar.foreground": "#111",
-    "tab.activeBorderTop": "#555",
-    "tab.inactiveBackground": "#aaa",
-    "terminal.ansiBrightGreen": "#111",
-    "terminal.ansiCyan": "#111",
-    "terminal.ansiGreen": "#4CB782",
-    "terminal.ansiMagenta": "#cba0ff",
-    "terminal.ansiRed": "#111",
-    "terminal.ansiYellow": "#ffcc6d",
-    "terminal.border": "#555",
-    "terminalCursor.foreground": "#99ffff",
-    "titleBar.activeBackground": "#aaa",
-    "titleBar.border": "#555",
-    "titleBar.inactiveBackground": "#aaa",
-    "tree.indentGuidesStroke": "#111",
-    "tree.tableColumnsBorder": "#111",
-    "widget.border": "#555",
-    "widget.shadow": "#aaa",
-    "window.activeBorder": "#aaa",
-    "window.inactiveBorder": "#aaa"
-  },
-  "tokenColors": [
-    { "scope": [ "comment", "comment.block", "comment.line", "punctuation.definition.comment" ],"settings": { "fontStyle": "italic", "foreground": "#111" } },
-    { "scope": [ "variable", "variable.other", "variable.parameter", "entity.name.variable", "string constant.other.placeholder", "source.vue meta.object.member.ts meta.object.member.ts" ],"settings": { "foreground": "#111" } },
-    { "scope": [ "variable.parameter" ],"settings": { "foreground": "#111" } },
-    { "scope": [ "constant.other.class", "variable.other.property", "variable.other.object.property" ],"settings": { "foreground": "#111" } },
-    { "scope": [ "invalid", "invalid.illegal" ],"settings": { "foreground": "#111" } },
-    { "scope": [ "keyword", "storage.type", "storage.modifier", "meta storage.type" ],"settings": { "fontStyle": "italic", "foreground": "#111" } },
-    { "scope": [ "keyword.definition" ],"settings": { "foreground": "#111" } },
-    { "scope": [ "keyword.operator.comparison", "keyword.operator.logical" ],"settings": { "foreground": "#111" } },
-    { "scope": [ "keyword.operator.logical.soil" ],"settings": { "foreground": "#111" } },
-    { "scope": [ "constant.other.color", "punctuation", "keyword.other.template", "keyword.other.substitution", "meta.brace", "punctuation.support.type.property-name", "expression.embbeded punctuation.definition.tag.begin.html", "expression.embbeded punctuation.definition.tag.end.html" ],"settings": { "fontStyle": "", "foreground": "#111" } },
-    { "scope": [ "keyword.operator" ],"settings": { "fontStyle": "", "foreground": "#111" } },
-    { "scope": [ "punctuation.definition.binding-pattern.object.js" ],"settings": { "foreground": "#111" } },
-    { "scope": [ "punctuation.definition.tag.html", "punctuation.definition.tag.begin.html", "punctuation.definition.tag.end.html" ],"settings": { "foreground": "#111" } },
-    { "scope": [ "text.html", "meta.jsx.children.js" ],"settings": { "foreground": "#111" } },
-    { "scope": [ "keyword.control", "entity.name.type.namespace", "keyword.other", "meta.directive support.function" ],"settings": { "fontStyle": "italic", "foreground": "#111" } },
-    { "scope": [ "keyword.control.flow", "keyword.control.export", "keyword.control.return", "meta.function.closure", "keyword.control.import", "keyword.control.from", "keyword.control.as", "keyword.other.namespace" ],"settings": { "fontStyle": "italic" } },
-    { "scope": [ "entity.name.tag", "meta.tag.sgml", "markup.deleted.git_gutter" ],"settings": { "foreground": "#111" } },
-    { "scope": [ "meta.method.declaration meta.function-call entity.name.function", "meta.method-call entity.name.function", "meta.function-call entity.name.function", "variable.function", "support.function", "entity.name.function", "keyword.other.special-method" ],"settings": { "foreground": "#111" } },
-    { "scope": [ "meta.function entity.name.function", "meta.method entity.name.method", "meta.method.declaration entity.name.function", "meta.definition.method entity.name.function" ],"settings": { "foreground": "#111" } },
-    { "scope": [ "support.other.variable", "string.other.link" ],"settings": { "foreground": "#111" } },
-    { "scope": [ "constant.numeric", "constant.language", "support.constant", "constant.character", "constant.escape", "support.constant.property-value" ],"settings": { "foreground": "#111" } },
-    { "scope": [  "string.quoted.double.json", "meta.structure.dictionary.value.json", "meta.structure.dictionary.json", "source.json", "string.quoted.double.json.comments", "string", "constant.other.symbol", "constant.other.key", "markup.inserted.git_gutter", "meta.group.braces.curly constant.other.object.key.js string.unquoted.label.js" ],"settings": { "foreground": "#111" } },
-    { "scope": [ "string punctuation.definition.string" ],"settings": { "foreground": "#111" } },
-    { "scope": [ "entity.name.type.class", "support.type", "support.class", "new.expr meta.function-call entity.name.function", "markup.changed.git_gutter", "support.type.sys-types", "support.constant", "entity.name.type.namespace", "meta.tag.custom entity.name.tag.html", "source.vue invalid.illegal.unrecognized-tag.html" ],"settings": { "fontStyle": "", "foreground": "#111" } },
-    { "scope": [ "support.type", "meta.return.type", "entity.name.type", "meta.use.php" ],"settings": { "fontStyle": "italic", "foreground": "#111" } },
-    { "scope": [ "meta.type.tuple meta.brace" ],"settings": { "fontStyle": "italic" } },
-    { "scope": [ "entity.other.inherited-class", "support.orther.namespace.use", "support.other.namespace" ],"settings": { "fontStyle": "", "foreground": "#111" } },
-    { "scope": [ "variable.language", "variable.language.this", "meta variable.language.this" ],"settings": { "fontStyle": "", "foreground": "#111" } },
-    { "scope": [ "entity.other.attribute-name", "meta entity.other.attribute-name", "text.html.basic entity.other.attribute-name.html", "text.html.basic entity.other.attribute-name", "meta.directive.vue keyword.control", "meta.directive entity.name.type" ],"settings": { "fontStyle": "italic", "foreground": "#111" } },
-    { "scope": [ "entity.other.attribute-name.class", "entity.other.attribute-name.id", "entity.name.tag.css" ],"settings": { "fontStyle": "", "foreground": "#111" } },
-    { "scope": [ "markup.inserted" ],"settings": { "foreground": "#111" } },
-    { "scope": [ "markup.deleted" ],"settings": { "foreground": "#111" } },
-    { "scope": [ "markup.changed" ],"settings": { "foreground": "#111" } },
-    { "scope": [ "*url*", "*link*", "*uri*" ],"settings": { "fontStyle": "underline" } },
-    { "scope": [ "keyword.control.at-rule" ],"settings": { "fontStyle": "italic", "foreground": "#111" } },
-    { "scope": [ "entity.name.tag.reference" ],"settings": { "foreground": "#111" } },
-    { "scope": [ "support.type.property-name.json", "meta.objectliteral", "source.vue meta.object.member.ts meta.object.member.ts meta.object.member.ts", "source.css support.type.property-name", "source.sass support.type.property-name", "source.scss support.type.property-name", "source.less support.type.property-name", "source.stylus support.type.property-name", "source.postcss support.type.property-name", "entity.name.tag.yaml" ],"settings": { "fontStyle": "", "foreground": "#111" } },
-    { "scope": [ "keyword.other.unit" ],"settings": { "foreground": "#111" } },
-    { "scope": [ "source.env" ],"settings": { "foreground": "#111" } },
-    { "scope": [ "text.html.markdown", "string.other.link.title.markdown" ],"settings": { "foreground": "#111" } },
-    { "scope": [ "markup.underline.link.markdown" ],"settings": { "foreground": "#111" } },
-    { "scope": [ "markup.fenced_code.block.markdown" ],"settings": { "foreground": "#111" } },
-    { "scope": "header1", "settings": { "foreground": "#1a432d", "fontStyle": "" } },
-		{ "scope": "header2", "settings": { "foreground": "#6f4d10", "fontStyle": "" } },
-		{ "scope": "header3", "settings": { "foreground": "#801c15", "fontStyle": "" } },
-		{ "scope": "header4", "settings": { "foreground": "#731a49", "fontStyle": "" } },
-		{ "scope": "header5", "settings": { "foreground": "#5a2a76", "fontStyle": "" } },
-		{ "scope": "header6", "settings": { "foreground": "#123e70", "fontStyle": "" } },
-    { "scope": [ "dialog"],"settings": { "foreground": "#393939" } },
-    { "scope": [ "listItem"],"settings": {} },
-    { "scope": [ "notes"],"settings": {"fontStyle": "italic", "foreground": "#222" } },
-    { "scope": [ "altNotes"],"settings": {"fontStyle": "italic", "foreground": "#731a49" } },
-    { "scope": [ "italics"],"settings": { "fontStyle": "italic", "foreground": "#393939" } },
-    { "scope": [ "bold"],"settings": { "fontStyle": "bold", "foreground": "#111" } },
-    { "scope": [ "comment.line.double-slash.js"],"settings": { "foreground": "#800" } },
-		{ "scope": ["cut"], "settings": { "foreground": "#800", "fontStyle": "strikethrough" }}
- ]
+const vscode = require('vscode');
+
+// Convert straight quotes to curly quotes
+function smartCurly(text) {
+    // normalize so re-curly always applies
+    text = text.replace(/[\u201C\u201D]/g, '"').replace(/[\u2018\u2019]/g, "'");
+
+    // Find distance to nearest whitespace in a direction
+    function distanceToWhitespace(str, pos, direction) {
+        let distance = 0;
+        let i = pos + direction;
+
+        while (i >= 0 && i < str.length && !/\s/.test(str[i])) {
+            distance++;
+            i += direction;
+        }
+
+        // If we hit string boundary, treat as whitespace at distance+1
+        if (i < 0 || i >= str.length) distance++;
+
+        return distance;
+    }
+
+    // double quotes - point away from nearest whitespace
+    text = text.replace(/"/g, (m, i, s) => {
+        const leftDistance = distanceToWhitespace(s, i, -1);
+        const rightDistance = distanceToWhitespace(s, i, 1);
+
+        if (leftDistance < rightDistance) return '\u201C'; // " opening (points away from left)
+        if (rightDistance < leftDistance) return '\u201D'; // " closing (points away from right)
+
+        // Equal distance - default to opening
+        return '\u201C'; // "
+    });
+
+    // single quotes - handle contractions first, then point away from nearest whitespace
+    text = text.replace(/'/g, (m, i, s) => {
+        const leftChar = i > 0 ? s[i - 1] : ' ';
+        const rightChar = i < s.length - 1 ? s[i + 1] : ' ';
+
+        // Special case: contractions (letter-apostrophe-letter)
+        if (/[a-zA-Z]/.test(leftChar) && /[a-zA-Z]/.test(rightChar)) {
+            return '\u2019'; // ' always apostrophe for contractions like i'd, don't
+        }
+
+        const leftDistance = distanceToWhitespace(s, i, -1);
+        const rightDistance = distanceToWhitespace(s, i, 1);
+
+        if (leftDistance < rightDistance) return '\u2018'; // ' opening (points away from left)
+        if (rightDistance < leftDistance) return '\u2019'; // ' closing (points away from right)
+
+        // Equal distance - default to opening
+        return '\u2018'; // '
+    });
+
+
+    return text;
 }
 
-==== themes\JavNeutralDark.json ====
-
-{
-  "name": "JavNeutralDark",
-  "type": "dark",
-  "colors": {
-			"editorGroup.border": "#111",
-			"panelTitle.inactiveForeground": "#111",
-			"panelTitle.border": "#111",
-			"panel.border": "#111",
-			"panelSection.border": "#111",
-			"panelTitle.activeBorder": "#111",
-			"list.inactiveSelectionBackground": "#111",
-			"list.inactiveSelectionForeground": "#aaa",
-			"menu.background": "#111",
-			"list.hoverBackground": "#aaa",
-			"list.hoverForeground": "#111",
-			"scrollbar.shadow": "#111",
-    "tab.activeForeground": "#111",
-    "tab.activeBorder": "#aaa",
-    "tab.border": "#aaa",
-    "tab.activeBackground": "#aaa",
-    "tab.hoverBorder": "#111",
-    "tab.inactiveForeground": "#111",
-    "tab.unfocusedInactiveForeground": "#111",
-    "tab.unfocusedActiveForeground": "#111",
-    "tab.unfocusedActiveBorder": "#aaa",
-    "tab.activeModifiedBorder": "#111",
-    "tab.inactiveModifiedBorder": "#111",
-    "tab.unfocusedActiveModifiedBorder": "#111",
-    "activityBar.activeBorder": "#888",
-    "activityBar.background": "#111",
-    "activityBar.border": "#111",
-    "activityBar.foreground": "#aaa",
-    "activityBarBadge.background": "#888",
-    "badge.background": "#888",
-    "button.background": "#888",
-    "button.border": "#888",
-    "button.hoverBackground": "#888",
-    "checkbox.border": "#888",
-    "contrastBorder": "#888",
-    "diffEditor.border": "#888",
-    "diffEditor.insertedLineBackground": "#0000",
-    "diffEditor.insertedTextBackground": "#85c75e26",
-    "diffEditor.removedTextBackground": "#e6292926",
-    "dropdown.background": "#111",
-    "dropdown.border": "#888",
-    "editor.background": "#111",
-    "editor.findMatchBackground": "#00fe",
-    "editor.findMatchBorder ": "#aaa",
-    "editor.findMatchForeground": "#111",
-    "editor.findMatchHighlightForeground": "#00fe",
-    "editor.findMatchHighlightBackground": "#222e",
-    "editor.foreground": "#aaa",
-    "editor.hoverHighlightBackground": "#888e",
-    "editor.lineHighlightBackground": "#aaa",
-    "editor.lineHighlightBorder": "#aaa",
-    "editor.selectionBackground": "#888",
-    "editor.selectionHighlightBackground": "#0fb7fa3a",
-    "editor.wordHighlightBackground": "#888e",
-    "editor.wordHighlightBorder": "#888",
-    "editor.wordHighlightStrongBackground": "#888e",
-    "editor.wordHighlightStrongBorder": "#888",
-    "editorCursor.foreground": "#aaa",
-    "editorGroupHeader.border": "#aaa",
-    "editorGroupHeader.tabsBackground": "#111",
-    "editorGroupHeader.tabsBorder": "#111",
-    "editorHint.border": "#888",
-    "editorHoverWidget.background": "#222",
-    "editorHoverWidget.border": "#888",
-    "editorHoverWidget.foreground": "#aaa",
-    "editorHoverWidget.highlightForeground": "#888",
-    "editorHoverWidget.statusBarBackground": "#888",
-    "editorIndentGuide.activeBackground1": "#5d5d5d",
-    "editorIndentGuide.background1": "#888",
-    "editorLineNumber.activeForeground": "#aaa",
-    "editorLineNumber.foreground": "#aaa",
-    "editorPane.background": "#111",
-    "editorRuler.foreground": "#aaa",
-    "editorSuggestWidget.background": "#111",
-    "editorSuggestWidget.border": "#aaa",
-    "editorSuggestWidget.focusHighlightForeground": "#eee",
-    "editorSuggestWidget.foreground": "#aaa",
-    "editorSuggestWidget.highlightForeground": "#eee",
-    "editorSuggestWidget.selectedBackground": "#888",
-    "editorSuggestWidget.selectedForeground": "#111",
-    "editorSuggestWidget.selectedIconForeground": "#aaa",
-    "editorWhitespace.foreground": "#aaa",
-    "editorWidget.background": "#111",
-    "editorWidget.border": "#888",
-    "errorForeground": "#aaa",
-    "focusBorder": "#aaa",
-    "foreground": "#aaa",
-    "gauge.border": "#888",
-    "gitDecoration.conflictingResourceForeground": "#F2994A",
-    "gitDecoration.deletedResourceForeground": "#aaa",
-    "gitDecoration.ignoredResourceForeground": "#5d5d5d",
-    "gitDecoration.modifiedResourceForeground": "#aaa",
-    "gitDecoration.untrackedResourceForeground": "#4CB782",
-    "icon.foreground": "#aaa",
-    "input.background": "#111",
-    "input.border": "#aaa",
-    "input.foreground": "#aaa",
-    "inputOption.activeBackground": "#888",
-    "inputValidation.errorBorder": "#aaa",
-    "list.activeSelectionBackground": "#888",
-    "list.activeSelectionForeground": "#111",
-    "list.focusBackground": "#888",
-    "list.focusForeground": "#111",
-    "list.focusOutline": "#111",
-    "menu.border": "#888",
-    "menu.foreground": "#aaa",
-    "menu.selectionBackground": "#888",
-    "menu.selectionBorder": "#888",
-    "menubar.selectionBackground": "#888",
-    "merge.border": "#888",
-    "minimap.findMatchHighlight": "#111e",
-    "notifications.background": "#111",
-    "notifications.foreground": "#fff",
-    "panel.background": "#111",
-    "panel.dropBorder": "#888",
-    "panelInput.border": "#888",
-    "panelSectionHeader.background": "#111",
-    "panelSectionHeader.border": "#888",
-    "peekView.border": "#888",
-    "peekViewEditor.background": "#111",
-    "pickerGroup.border": "#888",
-    "progressBar.background": "#888",
-    "quickInput.background": "#222",
-    "quickInput.foreground": "#aaa",
-    "quickInputList.focusForeground": "#111",
-    "quickInputList.focusBackground": "#888",
-    "list.highlightForeground": "#ccc",
-    "list.focusHighlightForeground": "#eee",
-    "list.deemphasizedForeground": "#444",
-    "list.dropBackground": "#888",
-    "quickInputTitle.background": "#111",
-    "radio.activeBorder": "#888",
-    "sash.hoverBorder": "#888",
-    "selection.background": "#888",
-    "editor.selectionForeground": "#111",
-    "menu.selectionForeground": "#111",
-    "settings.focusedRowBackground": "#444",
-    "settings.dropdownBackground": "#111",
-    "settings.dropdownForeground": "#aaa",
-    "settings.headerBorder": "#888",
-    "settings.headerForeground": "#aaa",
-    "settings.settingsHeaderHoverForeground": "#aaa",
-    "settings.sashBorder": "#888",
-    "sideBar.background": "#111",
-    "sideBar.border": "#111",
-    "sideBar.foreground": "#aaa",
-    "sideBarSectionHeader.background": "#888",
-    "sideBarTitle.border": "#888",
-    "statusBar.background": "#111",
-    "statusBar.border": "#444",
-    "statusBar.foreground": "#aaa",
-    "tab.activeBorderTop": "#888",
-    "tab.inactiveBackground": "#111",
-    "terminal.ansiBrightGreen": "#aaa",
-    "terminal.ansiCyan": "#aaa",
-    "terminal.ansiGreen": "#4CB782",
-    "terminal.ansiMagenta": "#cba0ff",
-    "terminal.ansiRed": "#aaa",
-    "terminal.ansiYellow": "#ffcc6d",
-    "terminal.border": "#888",
-    "terminalCursor.foreground": "#99ffff",
-    "titleBar.activeBackground": "#111",
-    "titleBar.border": "#888",
-    "titleBar.inactiveBackground": "#111",
-    "tree.indentGuidesStroke": "#aaa",
-    "tree.tableColumnsBorder": "#aaa",
-    "widget.border": "#888",
-    "widget.shadow": "#444",
-    "editorStickyScroll.shadow": "#444",
-    "window.activeBorder": "#111",
-    "window.inactiveBorder": "#111",
-    "editorBracketHighlight.foreground1": "#4E8F6B",
-    "editorBracketHighlight.foreground2": "#CB9434",
-    "editorBracketHighlight.foreground3": "#CD5048",
-    "editorBracketHighlight.foreground4": "#C04C89",
-    "editorBracketHighlight.foreground5": "#9A6BB4",
-    "editorBracketHighlight.foreground6": "#387DC9"
-  },
-  "tokenColors": [
-    { "scope": [ "comment", "comment.block", "comment.line", "punctuation.definition.comment" ],"settings": { "fontStyle": "italic", "foreground": "#aaa" } },
-    { "scope": [ "variable", "variable.other", "variable.parameter", "entity.name.variable", "string constant.other.placeholder", "source.vue meta.object.member.ts meta.object.member.ts" ],"settings": { "foreground": "#aaa" } },
-    { "scope": [ "variable.parameter" ],"settings": { "foreground": "#aaa" } },
-    { "scope": [ "constant.other.class", "variable.other.property", "variable.other.object.property" ],"settings": { "foreground": "#aaa" } },
-    { "scope": [ "invalid", "invalid.illegal" ],"settings": { "foreground": "#aaa" } },
-    { "scope": [ "keyword", "storage.type", "storage.modifier", "meta storage.type" ],"settings": { "fontStyle": "italic", "foreground": "#aaa" } },
-    { "scope": [ "keyword.definition" ],"settings": { "foreground": "#aaa" } },
-    { "scope": [ "keyword.operator.comparison", "keyword.operator.logical" ],"settings": { "foreground": "#aaa" } },
-    { "scope": [ "keyword.operator.logical.soil" ],"settings": { "foreground": "#aaa" } },
-    { "scope": [ "constant.other.color", "punctuation", "keyword.other.template", "keyword.other.substitution", "meta.brace", "punctuation.support.type.property-name", "expression.embbeded punctuation.definition.tag.begin.html", "expression.embbeded punctuation.definition.tag.end.html" ],"settings": { "fontStyle": "", "foreground": "#aaa" } },
-    { "scope": [ "keyword.operator" ],"settings": { "fontStyle": "", "foreground": "#aaa" } },
-    { "scope": [ "punctuation.definition.binding-pattern.object.js" ],"settings": { "foreground": "#aaa" } },
-    { "scope": [ "punctuation.definition.tag.html", "punctuation.definition.tag.begin.html", "punctuation.definition.tag.end.html" ],"settings": { "foreground": "#aaa" } },
-    { "scope": [ "text.html", "meta.jsx.children.js" ],"settings": { "foreground": "#aaa" } },
-    { "scope": [ "keyword.control", "entity.name.type.namespace", "keyword.other", "meta.directive support.function" ],"settings": { "fontStyle": "italic", "foreground": "#aaa" } },
-    { "scope": [ "keyword.control.flow", "keyword.control.export", "keyword.control.return", "meta.function.closure", "keyword.control.import", "keyword.control.from", "keyword.control.as", "keyword.other.namespace" ],"settings": { "fontStyle": "italic" } },
-    { "scope": [ "entity.name.tag", "meta.tag.sgml", "markup.deleted.git_gutter" ],"settings": { "foreground": "#aaa" } },
-    { "scope": [ "meta.method.declaration meta.function-call entity.name.function", "meta.method-call entity.name.function", "meta.function-call entity.name.function", "variable.function", "support.function", "entity.name.function", "keyword.other.special-method" ],"settings": { "foreground": "#aaa" } },
-    { "scope": [ "meta.function entity.name.function", "meta.method entity.name.method", "meta.method.declaration entity.name.function", "meta.definition.method entity.name.function" ],"settings": { "foreground": "#aaa" } },
-    { "scope": [ "support.other.variable", "string.other.link" ],"settings": { "foreground": "#aaa" } },
-    { "scope": [ "constant.numeric", "constant.language", "support.constant", "constant.character", "constant.escape", "support.constant.property-value" ],"settings": { "foreground": "#aaa" } },
-    { "scope": [  "string.quoted.double.json", "meta.structure.dictionary.value.json", "meta.structure.dictionary.json", "source.json", "string.quoted.double.json.comments", "string", "constant.other.symbol", "constant.other.key", "markup.inserted.git_gutter", "meta.group.braces.curly constant.other.object.key.js string.unquoted.label.js" ],"settings": { "foreground": "#aaa" } },
-    { "scope": [ "string punctuation.definition.string" ],"settings": { "foreground": "#aaa" } },
-    { "scope": [ "entity.name.type.class", "support.type", "support.class", "new.expr meta.function-call entity.name.function", "markup.changed.git_gutter", "support.type.sys-types", "support.constant", "entity.name.type.namespace", "meta.tag.custom entity.name.tag.html", "source.vue invalid.illegal.unrecognized-tag.html" ],"settings": { "fontStyle": "", "foreground": "#aaa" } },
-    { "scope": [ "support.type", "meta.return.type", "entity.name.type", "meta.use.php" ],"settings": { "fontStyle": "italic", "foreground": "#aaa" } },
-    { "scope": [ "meta.type.tuple meta.brace" ],"settings": { "fontStyle": "italic" } },
-    { "scope": [ "entity.other.inherited-class", "support.orther.namespace.use", "support.other.namespace" ],"settings": { "fontStyle": "", "foreground": "#aaa" } },
-    { "scope": [ "variable.language", "variable.language.this", "meta variable.language.this" ],"settings": { "fontStyle": "", "foreground": "#aaa" } },
-    { "scope": [ "entity.other.attribute-name", "meta entity.other.attribute-name", "text.html.basic entity.other.attribute-name.html", "text.html.basic entity.other.attribute-name", "meta.directive.vue keyword.control", "meta.directive entity.name.type" ],"settings": { "fontStyle": "italic", "foreground": "#aaa" } },
-    { "scope": [ "entity.other.attribute-name.class", "entity.other.attribute-name.id", "entity.name.tag.css" ],"settings": { "fontStyle": "", "foreground": "#aaa" } },
-    { "scope": [ "markup.inserted" ],"settings": { "foreground": "#aaa" } },
-    { "scope": [ "markup.deleted" ],"settings": { "foreground": "#aaa" } },
-    { "scope": [ "markup.changed" ],"settings": { "foreground": "#aaa" } },
-    { "scope": [ "*url*", "*link*", "*uri*" ],"settings": { "fontStyle": "underline" } },
-    { "scope": [ "keyword.control.at-rule" ],"settings": { "fontStyle": "italic", "foreground": "#aaa" } },
-    { "scope": [ "entity.name.tag.reference" ],"settings": { "foreground": "#aaa" } },
-    { "scope": [ "support.type.property-name.json", "meta.objectliteral", "source.vue meta.object.member.ts meta.object.member.ts meta.object.member.ts", "source.css support.type.property-name", "source.sass support.type.property-name", "source.scss support.type.property-name", "source.less support.type.property-name", "source.stylus support.type.property-name", "source.postcss support.type.property-name", "entity.name.tag.yaml" ],"settings": { "fontStyle": "", "foreground": "#aaa" } },
-    { "scope": [ "keyword.other.unit" ],"settings": { "foreground": "#aaa" } },
-    { "scope": [ "source.env" ],"settings": { "foreground": "#aaa" } },
-    { "scope": [ "text.html.markdown", "string.other.link.title.markdown" ],"settings": { "foreground": "#aaa" } },
-    { "scope": [ "markup.underline.link.markdown" ],"settings": { "foreground": "#aaa" } },
-    { "scope": [ "markup.fenced_code.block.markdown" ],"settings": { "foreground": "#aaa" } },
-    { "scope": [ "header1","markup.heading1"],"settings": { "foreground": "#4E8F6B", "fontStyle": "" } },
-    { "scope": [ "header2","markup.heading2"],"settings": { "foreground": "#CB9434", "fontStyle": "" } },
-    { "scope": [ "header3","markup.heading3"],"settings": { "foreground": "#CD5048", "fontStyle": "" } },
-    { "scope": [ "header4","markup.heading4"],"settings": { "foreground": "#C04C89", "fontStyle": "" } },
-    { "scope": [ "header5","markup.heading5"],"settings": { "foreground": "#9A6BB4", "fontStyle": "" } },
-    { "scope": [ "header6","markup.heading6"],"settings": { "foreground": "#387DC9", "fontStyle": "" } },
-    { "scope": [ "dialog"],"settings": { "foreground": "#c0c0c0" } },
-    { "scope": [ "listItem"],"settings": {} },
-    { "scope": [ "notes"],"settings": {"fontStyle": "italic", "foreground": "#999" } },
-    { "scope": [ "altNotes"],"settings": {"fontStyle": "italic", "foreground": "#C04C89" } },
-    { "scope": [ "italics"],"settings": { "fontStyle": "italic", "foreground": "#c0c0c0" } },
-    { "scope": [ "bold"],"settings": { "fontStyle": "bold", "foreground": "#aaa" } },
-    { "scope": [ "comment.line.double-slash.js"],"settings": { "foreground": "#800" } },
-		{ "scope": ["cut"], "settings": { "foreground": "#800", "fontStyle": "strikethrough" }}
- ]
+// Convert curly quotes to straight quotes
+function toStraight(text) {
+    return text
+        .replace(/[\u201C\u201D]/g, '"')  // " and " to "
+        .replace(/[\u2018\u2019]/g, "'")  // ' and ' to '
 }
 
-==== themes\JavNeutralLightHighContrast.json ====
+// VS Code integration function
+async function run(conversionFunction) {
+    const editor = vscode.window.activeTextEditor;
+    if (!editor) {
+        vscode.window.showErrorMessage('No active text editor found');
+        return;
+    }
 
-{
-  "name": "JavNeutral",
-  "type": "hc-light",
-  "colors": {
-    "editorCursor.background"	: "#aaa",
-    "editorCursor.foreground"	: "#555",
-    "notifications.background":"#ff0",
-    "diffEditor.insertedLineBackground": "#0f01",
-    "diffEditor.removedLineBackground": "#f001",
-    "diffEditor.diagonalFill":"#ccc",
-    "diffEditor.removedTextBorder": "#f00",
-    "diffEditor.insertedTextBorder": "#090",
-    "diffEditor.insertedTextBackground": "#0904",
-    "editorGroup.border": "#eee",
-    "panelTitle.inactiveForeground": "#eee",
-    "panelTitle.border": "#eee",
-    "panel.border": "#eee",
-    "panelSection.border": "#eee",
-    "panelTitle.activeBorder": "#eee",
-    "menu.background": "#eee",
-    "list.hoverBackground": "#555",
-    "list.hoverForeground": "#eee",
-    "scrollbar.shadow": "#eee",
-    "tab.activeForeground": "#111",
-    "tab.activeBorder": "#eee",
-    "tab.border": "#eee",
-    "tab.activeBackground": "#eee",
-    "tab.hoverBorder": "#111",
-    "tab.inactiveForeground": "#111",
-    "tab.unfocusedInactiveForeground": "#111",
-    "tab.unfocusedActiveForeground": "#111",
-    "tab.unfocusedActiveBorder": "#eee",
-    "tab.activeModifiedBorder": "#111",
-    "tab.inactiveModifiedBorder": "#111",
-    "tab.unfocusedActiveModifiedBorder": "#111",
-    "dropdown.background": "#eee",
-    "settings.dropdownBackground": "#eee",
-    "dropdown.listBackground": "#eee",
-    "settings.focusedRowBackground": "#888",
-    "settings.rowHoverBackground": "#888",
-    "statusBar.border": "#555",
-    "textLink.foreground": "#111",
-    "dropdown.foreground": "#111",
-    "editorSuggestWidget.focusHighlightForeground": "#eee",
-    "editorSuggestWidget.selectedForeground": "#eee",
-    "notifications.foreground": "#111",
-    "panelTitle.activeForeground": "#111",
-    "panelSectionHeader.foreground": "#111",
-    "list.activeSelectionBackground": "#888",
-    "list.focusBackground": "#888",
-    "quickInputList.focusBackground": "#888",
-    "list.inactiveSelectionBackground": "#888",
-    "activityBar.activeBorder": "#555",
-    "activityBar.background": "#eee",
-    "editor.selectionForeground": "#eee",
-    "activityBar.border": "#eee",
-    "activityBar.foreground": "#111",
-    "activityBarBadge.background": "#555",
-    "badge.background": "#555",
-    "button.background": "#555",
-    "button.border": "#555",
-    "button.hoverBackground": "#555",
-    "checkbox.border": "#555",
-    "contrastBorder": "#555",
-    "diffEditor.border": "#555",
-    "diffEditor.removedTextBackground": "#e6292926",
-    "dropdown.border": "#555",
-    "editor.background": "#eee",
-    "editor.findMatchBackground": "#ff0",
-    "editor.findMatchBorder": "#111",
-    "editor.findMatchForeground": "#eee",
-    "editor.findMatchHighlightForeground": "#ff0e",
-    "editor.findMatchHighlightBackground": "#555e",
-    "editor.foreground": "#111",
-    "editor.hoverHighlightBackground": "#555e",
-    "editor.lineHighlightBackground": "#111",
-    "editor.lineHighlightBorder": "#111",
-    "editor.selectionBackground": "#555",
-    "editor.selectionHighlightBackground": "#0fb7fa3a",
-    "editor.wordHighlightBackground": "#555e",
-    "editor.wordHighlightBorder": "#555",
-    "editor.wordHighlightStrongBackground": "#555e",
-    "editor.wordHighlightStrongBorder": "#555",
-    "editorBracketHighlight.foreground1": "#1a432d",
-    "editorBracketHighlight.foreground2": "#6f4d10",
-    "editorBracketHighlight.foreground3": "#801c15",
-    "editorBracketHighlight.foreground4": "#731a49",
-    "editorBracketHighlight.foreground5": "#5a2a76",
-    "editorBracketHighlight.foreground6": "#123e70",
-    "editorGroupHeader.border": "#111",
-    "editorGroupHeader.tabsBackground": "#eee",
-    "editorGroupHeader.tabsBorder": "#eee",
-    "editorHint.border": "#555",
-    "editorHoverWidget.background": "#999",
-    "editorHoverWidget.border": "#555",
-    "editorHoverWidget.foreground": "#111",
-    "editorHoverWidget.highlightForeground": "#555",
-    "editorHoverWidget.statusBarBackground": "#555",
-    "editorIndentGuide.activeBackground1": "#5d5d5d",
-    "editorIndentGuide.background1": "#555",
-    "editorLineNumber.activeForeground": "#111",
-    "editorLineNumber.foreground": "#111",
-    "editorPane.background": "#eee",
-    "editorRuler.foreground": "#111",
-    "editorSuggestWidget.background": "#eee",
-    "editorSuggestWidget.border": "#111",
-    "editorSuggestWidget.foreground": "#111",
-    "editorSuggestWidget.highlightForeground": "#00f",
-    "editorSuggestWidget.selectedBackground": "#555",
-    "editorSuggestWidget.selectedIconForeground": "#111",
-    "editorWhitespace.foreground": "#111",
-    "editorWidget.background": "#eee",
-    "editorWidget.border": "#555",
-    "errorForeground": "#111",
-    "focusBorder": "#111",
-    "foreground": "#111",
-    "gauge.border": "#555",
-    "gitDecoration.conflictingResourceForeground": "#F2994A",
-    "gitDecoration.deletedResourceForeground": "#111",
-    "gitDecoration.ignoredResourceForeground": "#5d5d5d",
-    "gitDecoration.modifiedResourceForeground": "#111",
-    "gitDecoration.untrackedResourceForeground": "#4CB782",
-    "icon.foreground": "#111",
-    "input.background": "#eee",
-    "input.border": "#111",
-    "input.foreground": "#111",
-    "inputOption.activeBackground": "#555",
-    "inputValidation.errorBorder": "#111",
-    "list.activeSelectionForeground": "#111",
-    "list.focusForeground": "#555",
-    "list.focusOutline": "#eee",
-    "list.inactiveSelectionForeground": "#111",
-    "menu.border": "#555",
-    "menu.foreground": "#111",
-    "menu.selectionBackground": "#555",
-    "menu.selectionBorder": "#555",
-    "menubar.selectionBackground": "#555",
-    "merge.border": "#555",
-    "minimap.findMatchHighlight": "#eeee",
-    "panel.background": "#eee",
-    "panel.dropBorder": "#555",
-    "panelInput.border": "#555",
-    "panelSectionHeader.background": "#eee",
-    "panelSectionHeader.border": "#555",
-    "peekView.border": "#555",
-    "peekViewEditor.background": "#eee",
-    "pickerGroup.border": "#555",
-    "progressBar.background": "#555",
-    "quickInput.background": "#999",
-    "quickInput.foreground": "#111",
-    "quickInputList.focusForeground": "#111",
-    "list.highlightForeground": "#ccc",
-    "list.focusHighlightForeground": "#eee",
-    "list.deemphasizedForeground": "#444",
-    "list.dropBackground": "#555",
-    "quickInputTitle.background": "#eee",
-    "radio.activeBorder": "#555",
-    "sash.hoverBorder": "#555",
-    "selection.background": "#555",
-    "settings.headerBorder": "#555",
-    "settings.headerForeground": "#111",
-    "settings.sashBorder": "#555",
-    "sideBar.background": "#eee",
-    "sideBar.border": "#eee",
-    "sideBar.foreground": "#111",
-    "sideBarSectionHeader.background": "#555",
-    "sideBarTitle.border": "#555",
-    "statusBar.background": "#eee",
-    "statusBar.foreground": "#111",
-    "tab.activeBorderTop": "#555",
-    "tab.inactiveBackground": "#eee",
-    "terminal.ansiBrightGreen": "#111",
-    "terminal.ansiCyan": "#111",
-    "terminal.ansiGreen": "#4CB782",
-    "terminal.ansiMagenta": "#cba0ff",
-    "terminal.ansiRed": "#111",
-    "terminal.ansiYellow": "#ffcc6d",
-    "terminal.border": "#555",
-    "terminalCursor.foreground": "#99ffff",
-    "titleBar.activeBackground": "#eee",
-    "titleBar.border": "#555",
-    "titleBar.inactiveBackground": "#eee",
-    "tree.indentGuidesStroke": "#111",
-    "tree.tableColumnsBorder": "#111",
-    "widget.border": "#555",
-    "widget.shadow": "#eee",
-    "window.activeBorder": "#eee",
-    "window.inactiveBorder": "#eee"
-  },
-  "tokenColors": [
-    { "scope": [ "comment", "comment.block", "comment.line", "punctuation.definition.comment" ],"settings": { "fontStyle": "italic", "foreground": "#111" } },
-    { "scope": [ "variable", "variable.other", "variable.parameter", "entity.name.variable", "string constant.other.placeholder", "source.vue meta.object.member.ts meta.object.member.ts" ],"settings": { "foreground": "#111" } },
-    { "scope": [ "variable.parameter" ],"settings": { "foreground": "#111" } },
-    { "scope": [ "constant.other.class", "variable.other.property", "variable.other.object.property" ],"settings": { "foreground": "#111" } },
-    { "scope": [ "invalid", "invalid.illegal" ],"settings": { "foreground": "#111" } },
-    { "scope": [ "keyword", "storage.type", "storage.modifier", "meta storage.type" ],"settings": { "fontStyle": "italic", "foreground": "#111" } },
-    { "scope": [ "keyword.definition" ],"settings": { "foreground": "#111" } },
-    { "scope": [ "keyword.operator.comparison", "keyword.operator.logical" ],"settings": { "foreground": "#111" } },
-    { "scope": [ "keyword.operator.logical.soil" ],"settings": { "foreground": "#111" } },
-    { "scope": [ "constant.other.color", "punctuation", "keyword.other.template", "keyword.other.substitution", "meta.brace", "punctuation.support.type.property-name", "expression.embbeded punctuation.definition.tag.begin.html", "expression.embbeded punctuation.definition.tag.end.html" ],"settings": { "fontStyle": "", "foreground": "#111" } },
-    { "scope": [ "keyword.operator" ],"settings": { "fontStyle": "", "foreground": "#111" } },
-    { "scope": [ "punctuation.definition.binding-pattern.object.js" ],"settings": { "foreground": "#111" } },
-    { "scope": [ "punctuation.definition.tag.html", "punctuation.definition.tag.begin.html", "punctuation.definition.tag.end.html" ],"settings": { "foreground": "#111" } },
-    { "scope": [ "text.html", "meta.jsx.children.js" ],"settings": { "foreground": "#111" } },
-    { "scope": [ "keyword.control", "entity.name.type.namespace", "keyword.other", "meta.directive support.function" ],"settings": { "fontStyle": "italic", "foreground": "#111" } },
-    { "scope": [ "keyword.control.flow", "keyword.control.export", "keyword.control.return", "meta.function.closure", "keyword.control.import", "keyword.control.from", "keyword.control.as", "keyword.other.namespace" ],"settings": { "fontStyle": "italic" } },
-    { "scope": [ "entity.name.tag", "meta.tag.sgml", "markup.deleted.git_gutter" ],"settings": { "foreground": "#111" } },
-    { "scope": [ "meta.method.declaration meta.function-call entity.name.function", "meta.method-call entity.name.function", "meta.function-call entity.name.function", "variable.function", "support.function", "entity.name.function", "keyword.other.special-method" ],"settings": { "foreground": "#111" } },
-    { "scope": [ "meta.function entity.name.function", "meta.method entity.name.method", "meta.method.declaration entity.name.function", "meta.definition.method entity.name.function" ],"settings": { "foreground": "#111" } },
-    { "scope": [ "support.other.variable", "string.other.link" ],"settings": { "foreground": "#111" } },
-    { "scope": [ "constant.numeric", "constant.language", "support.constant", "constant.character", "constant.escape", "support.constant.property-value" ],"settings": { "foreground": "#111" } },
-    { "scope": [  "string.quoted.double.json", "meta.structure.dictionary.value.json", "meta.structure.dictionary.json", "source.json", "string.quoted.double.json.comments", "string", "constant.other.symbol", "constant.other.key", "markup.inserted.git_gutter", "meta.group.braces.curly constant.other.object.key.js string.unquoted.label.js" ],"settings": { "foreground": "#111" } },
-    { "scope": [ "string punctuation.definition.string" ],"settings": { "foreground": "#111" } },
-    { "scope": [ "entity.name.type.class", "support.type", "support.class", "new.expr meta.function-call entity.name.function", "markup.changed.git_gutter", "support.type.sys-types", "support.constant", "entity.name.type.namespace", "meta.tag.custom entity.name.tag.html", "source.vue invalid.illegal.unrecognized-tag.html" ],"settings": { "fontStyle": "", "foreground": "#111" } },
-    { "scope": [ "support.type", "meta.return.type", "entity.name.type", "meta.use.php" ],"settings": { "fontStyle": "italic", "foreground": "#111" } },
-    { "scope": [ "meta.type.tuple meta.brace" ],"settings": { "fontStyle": "italic" } },
-    { "scope": [ "entity.other.inherited-class", "support.orther.namespace.use", "support.other.namespace" ],"settings": { "fontStyle": "", "foreground": "#111" } },
-    { "scope": [ "variable.language", "variable.language.this", "meta variable.language.this" ],"settings": { "fontStyle": "", "foreground": "#111" } },
-    { "scope": [ "entity.other.attribute-name", "meta entity.other.attribute-name", "text.html.basic entity.other.attribute-name.html", "text.html.basic entity.other.attribute-name", "meta.directive.vue keyword.control", "meta.directive entity.name.type" ],"settings": { "fontStyle": "italic", "foreground": "#111" } },
-    { "scope": [ "entity.other.attribute-name.class", "entity.other.attribute-name.id", "entity.name.tag.css" ],"settings": { "fontStyle": "", "foreground": "#111" } },
-    { "scope": [ "markup.inserted" ],"settings": { "foreground": "#111" } },
-    { "scope": [ "markup.deleted" ],"settings": { "foreground": "#111" } },
-    { "scope": [ "markup.changed" ],"settings": { "foreground": "#111" } },
-    { "scope": [ "*url*", "*link*", "*uri*" ],"settings": { "fontStyle": "underline" } },
-    { "scope": [ "keyword.control.at-rule" ],"settings": { "fontStyle": "italic", "foreground": "#111" } },
-    { "scope": [ "entity.name.tag.reference" ],"settings": { "foreground": "#111" } },
-    { "scope": [ "support.type.property-name.json", "meta.objectliteral", "source.vue meta.object.member.ts meta.object.member.ts meta.object.member.ts", "source.css support.type.property-name", "source.sass support.type.property-name", "source.scss support.type.property-name", "source.less support.type.property-name", "source.stylus support.type.property-name", "source.postcss support.type.property-name", "entity.name.tag.yaml" ],"settings": { "fontStyle": "", "foreground": "#111" } },
-    { "scope": [ "keyword.other.unit" ],"settings": { "foreground": "#111" } },
-    { "scope": [ "source.env" ],"settings": { "foreground": "#111" } },
-    { "scope": [ "text.html.markdown", "string.other.link.title.markdown" ],"settings": { "foreground": "#111" } },
-    { "scope": [ "markup.underline.link.markdown" ],"settings": { "foreground": "#111" } },
-    { "scope": [ "markup.fenced_code.block.markdown" ],"settings": { "foreground": "#111" } },
-    { "scope": "header1", "settings": { "foreground": "#1a432d", "fontStyle": "" } },
-		{ "scope": "header2", "settings": { "foreground": "#6f4d10", "fontStyle": "" } },
-		{ "scope": "header3", "settings": { "foreground": "#801c15", "fontStyle": "" } },
-		{ "scope": "header4", "settings": { "foreground": "#731a49", "fontStyle": "" } },
-		{ "scope": "header5", "settings": { "foreground": "#5a2a76", "fontStyle": "" } },
-		{ "scope": "header6", "settings": { "foreground": "#123e70", "fontStyle": "" } },
-    { "scope": [ "dialog"],"settings": { "foreground": "#123e70" } },
-    { "scope": [ "listItem"],"settings": {} },
-    { "scope": [ "notes"],"settings": {"fontStyle": "italic", "foreground": "#801c15" } },
-    { "scope": [ "altNotes"],"settings": {"fontStyle": "italic", "foreground": "#731a49" } },
-    { "scope": [ "italics"],"settings": { "fontStyle": "italic", "foreground": "#123e70" } },
-    { "scope": [ "bold"],"settings": { "fontStyle": "bold", "foreground": "#111" } },
-    { "scope": [ "comment.line.double-slash.js"],"settings": { "foreground": "#800" } },
-		{ "scope": ["cut"], "settings": { "foreground": "#800", "fontStyle": "strikethrough" }}
- ]
+    try {
+        await editor.edit(builder => {
+            for (const selection of editor.selections) {
+                const range = selection.isEmpty
+                    ? new vscode.Range(
+                        editor.document.positionAt(0),
+                        editor.document.positionAt(editor.document.getText().length)
+                    )
+                    : selection;
+
+                const originalText = editor.document.getText(range);
+                const convertedText = conversionFunction(originalText);
+
+                console.log('Original:', originalText.substring(0, 100));
+                console.log('Converted:', convertedText.substring(0, 100));
+
+                builder.replace(range, convertedText);
+            }
+        });
+    } catch (error) {
+        vscode.window.showErrorMessage(`Conversion failed: ${error.message}`);
+    }
 }
 
-==== themes\JavThemeDark.json ====
-
-{
-  "name": "notion-theme-dark",
-  "type": "dark",
-  "colors": {
-			"editor.findMatchBackground": "#ff0",
-			"editor.findMatchHighlightBackground": "#fff2",
-			"notifications.background": "#387DC9",
-			"editorGroup.border": "#f0f0f000",
-			"notifications.foreground": "#fff",
-			"activityBar.activeBorder": "#2eaadc",
-			"activityBar.background": "#202020",
-			"activityBar.border": "#2f2f2f",
-			"activityBar.foreground": "#c3c3c3",
-			"activityBarBadge.background": "#2eaadc",
-			"badge.background": "#2eaadc",
-			"button.background": "#2eaadc",
-			"button.hoverBackground": "#42bef0",
-			"contrastBorder": "#3f3f3f",
-			"diffEditor.insertedLineBackground": "#0000",
-			"diffEditor.insertedTextBackground": "#85c75e26",
-			"diffEditor.removedTextBackground": "#e6292926",
-			"dropdown.background": "#2a2a2a",
-			"dropdown.border": "#3f3f3f",
-			"editor.background": "#191919",
-			"editor.foreground": "#c3c3c3",
-			"editor.hoverHighlightBackground": "#494949",
-			"editor.lineHighlightBackground": "#2a2a2a",
-			"editor.lineHighlightBorder": "#2a2a2a",
-			"editor.selectionBackground": "#1cc4ff60",
-			"editor.selectionHighlightBackground": "#0fb7fa3a",
-			"editor.wordHighlightBackground": "#ffffff00",
-			"editor.wordHighlightBorder": "#1cc4ffff",
-			"editor.wordHighlightStrongBackground": "#ffffff00",
-			"editor.wordHighlightStrongBorder": "#1cc4ffff",
-			"editorCursor.foreground": "#fff",
-			"editorGroupHeader.border": "#2a2a2a",
-			"editorGroupHeader.tabsBackground": "#202020",
-			"editorGroupHeader.tabsBorder": "#2f2f2f",
-			"editorIndentGuide.activeBackground": "#5d5d5d",
-			"editorIndentGuide.background": "#3f3f3f",
-			"editorLineNumber.activeForeground": "#c3c3c3",
-			"editorLineNumber.foreground": "#535353",
-			"editorPane.background": "#191919",
-			"editorRuler.foreground": "#494949",
-			"editorSuggestWidget.highlightForeground": "#57d3ff",
-			"editorSuggestWidget.selectedBackground": "#343434",
-			"editorWhitespace.foreground": "#494949",
-			"editorWidget.background": "#2a2a2a",
-			"errorForeground": "#eb5757",
-			"focusBorder": "#383838",
-			"foreground": "#9B9B9B",
-			"gitDecoration.conflictingResourceForeground": "#F2994A",
-			"gitDecoration.deletedResourceForeground": "#eb5757",
-			"gitDecoration.ignoredResourceForeground": "#5d5d5d",
-			"gitDecoration.modifiedResourceForeground": "#26B5CE",
-			"gitDecoration.untrackedResourceForeground": "#4CB782",
-			"icon.foreground": "#c3c3c3",
-			"input.background": "#202020",
-			"input.border": "#494949",
-			"input.foreground": "#2A9FCB",
-			"inputOption.activeBackground": "#2eaadc",
-			"inputValidation.errorBorder": "#eb5757",
-			"list.activeSelectionBackground": "#343434",
-			"list.activeSelectionForeground": "#6be7ff",
-			"list.focusBackground": "#383838",
-			"list.hoverBackground": "#343434",
-			"list.inactiveSelectionBackground": "#2f2f2f",
-			"list.inactiveSelectionForeground": "#6be7ff",
-			"panel.background": "#202020",
-			"panel.border": "#2f2f2f",
-			"panelTitle.activeBorder": "#2eaadc",
-			"peekViewEditor.background": "#2a2a2a",
-			"progressBar.background": "#42bef0",
-			"quickInput.background": "#202020",
-			"quickInput.foreground": "#9b9b9b",
-			"quickInputList.focusBackground": "#383838",
-			"quickInputList.focusForeground": "#9B9B9B",
-			"selection.background": "#1C3651",
-			"sideBar.background": "#202020",
-			"sideBar.border": "#2f2f2f",
-			"sideBarSectionHeader.background": "#343434",
-			"statusBar.foreground": "#c3c3c3",
-			"statusBar.background": "#202020",
-			"tab.activeBackground": "#2f2f2f",
-			"tab.activeBorderTop": "#2eaadc",
-			"tab.border": "#2f2f2f",
-			"tab.inactiveBackground": "#202020",
-			"terminal.ansiBrightGreen": "#a2d484",
-			"terminal.ansiCyan": "#26B5CE",
-			"terminal.ansiGreen": "#4CB782",
-			"terminal.ansiMagenta": "#cba0ff",
-			"terminal.ansiRed": "#eb5757",
-			"terminal.ansiYellow": "#ffcc6d",
-			"terminalCursor.foreground": "#99ffff",
-			"titleBar.activeBackground": "#2a2a2a",
-			"titleBar.inactiveBackground": "#2a2a2a",
-			"tree.indentGuidesStroke": "#535353",
-			"tree.tableColumnsBorder": "#535353",
-			"window.activeBorder": "#191919",
-			"window.inactiveBorder": "#191919",
-			"editorBracketHighlight.foreground1": "#4E8F6B",
-			"editorBracketHighlight.foreground2": "#CB9434",
-			"editorBracketHighlight.foreground3": "#CD5048",
-			"editorBracketHighlight.foreground4": "#C04C89",
-			"editorBracketHighlight.foreground5": "#9A6BB4",
-			"editorBracketHighlight.foreground6": "#387DC9"
-		},
-  "tokenColors": [
-    { "scope": [ "comment", "comment.block", "comment.line", "punctuation.definition.comment" ],"settings": { "fontStyle": "italic", "foreground": "#8d847b" } },
-    { "scope": [ "variable", "variable.other", "variable.parameter", "entity.name.variable", "string constant.other.placeholder", "source.vue meta.object.member.ts meta.object.member.ts" ],"settings": { "foreground": "#ffffffde" } },
-    { "scope": [ "variable.parameter" ],"settings": { "foreground": "#ffffffde" } },
-    { "scope": [ "constant.other.class", "variable.other.property", "variable.other.object.property" ],"settings": { "foreground": "#dde8eb" } },
-    { "scope": [ "invalid", "invalid.illegal" ],"settings": { "foreground": "#eb5757" } },
-    { "scope": [ "keyword", "storage.type", "storage.modifier", "meta storage.type" ],"settings": { "fontStyle": "italic", "foreground": "#a38ec3" } },
-    { "scope": [ "keyword.definition" ],"settings": { "foreground": "#a38ec3" } },
-    { "scope": [ "keyword.operator.comparison", "keyword.operator.logical" ],"settings": { "foreground": "#a38ec3" } },
-    { "scope": [ "keyword.operator.logical.soil" ],"settings": { "foreground": "unset" } },
-    { "scope": [ "constant.other.color", "punctuation", "keyword.other.template", "keyword.other.substitution", "meta.brace", "punctuation.support.type.property-name", "expression.embbeded punctuation.definition.tag.begin.html", "expression.embbeded punctuation.definition.tag.end.html" ],"settings": { "fontStyle": "", "foreground": "#a8a8a8" } },
-    { "scope": [ "keyword.operator" ],"settings": { "fontStyle": "", "foreground": "#a38ec3" } },
-    { "scope": [ "punctuation.definition.binding-pattern.object.js" ],"settings": { "foreground": "#a8a8a8" } },
-    { "scope": [ "punctuation.definition.tag.html", "punctuation.definition.tag.begin.html", "punctuation.definition.tag.end.html" ],"settings": { "foreground": "#a8a8a8" } },
-    { "scope": [ "text.html", "meta.jsx.children.js" ],"settings": { "foreground": "#bdc4cc" } },
-    { "scope": [ "keyword.control", "entity.name.type.namespace", "keyword.other", "meta.directive support.function" ],"settings": { "fontStyle": "italic", "foreground": "#a38ec3" } },
-    { "scope": [ "keyword.control.flow", "keyword.control.export", "keyword.control.return", "meta.function.closure", "keyword.control.import", "keyword.control.from", "keyword.control.as", "keyword.other.namespace" ],"settings": { "fontStyle": "italic" } },
-    { "scope": [ "entity.name.tag", "meta.tag.sgml", "markup.deleted.git_gutter" ],"settings": { "foreground": "#e08594" } },
-    { "scope": [ "meta.method.declaration meta.function-call entity.name.function", "meta.method-call entity.name.function", "meta.function-call entity.name.function", "variable.function", "support.function", "entity.name.function", "keyword.other.special-method" ],"settings": { "foreground": "#49bde0" } },
-    { "scope": [ "meta.function entity.name.function", "meta.method entity.name.method", "meta.method.declaration entity.name.function", "meta.definition.method entity.name.function" ],"settings": { "foreground": "#49bde0" } },
-    { "scope": [ "support.other.variable", "string.other.link" ],"settings": { "foreground": "#ecbc55" } },
-    { "scope": [ "constant.numeric", "constant.language", "support.constant", "constant.character", "constant.escape", "support.constant.property-value" ],"settings": { "foreground": "#ec9459" } },
-    { "scope": [ "string", "constant.other.symbol", "constant.other.key", "markup.inserted.git_gutter", "meta.group.braces.curly constant.other.object.key.js string.unquoted.label.js" ],"settings": { "foreground": "#bde052" } },
-    { "scope": [ "string punctuation.definition.string" ],"settings": { "foreground": "#bde05280" } },
-    { "scope": [ "entity.name.type.class", "support.type", "support.class", "new.expr meta.function-call entity.name.function", "markup.changed.git_gutter", "support.type.sys-types", "support.constant", "entity.name.type.namespace", "meta.tag.custom entity.name.tag.html", "source.vue invalid.illegal.unrecognized-tag.html" ],"settings": { "fontStyle": "", "foreground": "#ecbc55" } },
-    { "scope": [ "support.type", "meta.return.type", "entity.name.type", "meta.use.php" ],"settings": { "fontStyle": "italic", "foreground": "#ecbc55" } },
-    { "scope": [ "meta.type.tuple meta.brace" ],"settings": { "fontStyle": "italic" } },
-    { "scope": [ "entity.other.inherited-class", "support.orther.namespace.use", "support.other.namespace" ],"settings": { "fontStyle": "", "foreground": "#9ebecc" } },
-    { "scope": [ "variable.language", "variable.language.this", "meta variable.language.this" ],"settings": { "fontStyle": "normal", "foreground": "#ffffffae" } },
-    { "scope": [ "entity.other.attribute-name", "meta entity.other.attribute-name", "text.html.basic entity.other.attribute-name.html", "text.html.basic entity.other.attribute-name", "meta.directive.vue keyword.control", "meta.directive entity.name.type" ],"settings": { "fontStyle": "italic", "foreground": "#a38ec3" } },
-    { "scope": [ "entity.other.attribute-name.class", "entity.other.attribute-name.id", "entity.name.tag.css" ],"settings": { "fontStyle": "", "foreground": "#a38ec3" } },
-    { "scope": [ "markup.inserted" ],"settings": { "foreground": "#a2d484" } },
-    { "scope": [ "markup.deleted" ],"settings": { "foreground": "#eb5757" } },
-    { "scope": [ "markup.changed" ],"settings": { "foreground": "#26B5CE" } },
-    { "scope": [ "*url*", "*link*", "*uri*" ],"settings": { "fontStyle": "underline" } },
-    { "scope": [ "keyword.control.at-rule" ],"settings": { "fontStyle": "italic", "foreground": "#49bde0" } },
-    { "scope": [ "entity.name.tag.reference" ],"settings": { "foreground": "#5fdfff" } },
-    { "scope": [ "support.type.property-name.json", "meta.objectliteral", "source.vue meta.object.member.ts meta.object.member.ts meta.object.member.ts", "source.css support.type.property-name", "source.sass support.type.property-name", "source.scss support.type.property-name", "source.less support.type.property-name", "source.stylus support.type.property-name", "source.postcss support.type.property-name", "entity.name.tag.yaml" ],"settings": { "fontStyle": "", "foreground": "#b9b9b9" } },
-    { "scope": [ "keyword.other.unit" ],"settings": { "foreground": "#d3782e" } },
-    { "scope": [ "source.env" ],"settings": { "foreground": "#bde052" } },
-    { "scope": [ "text.html.markdown", "string.other.link.title.markdown" ],"settings": { "foreground": "#ffffffde" } },
-    { "scope": [ "markup.underline.link.markdown" ],"settings": { "foreground": "#ecbc55" } },
-    { "scope": [ "markup.fenced_code.block.markdown" ],"settings": { "foreground": "#bde052" } },
-    { "scope": [ "header1","markup.heading1"],"settings": { "foreground": "#448361", "fontStyle": "" } },
-    { "scope": [ "header2","markup.heading2"],"settings": { "foreground": "#CB912F", "fontStyle": "" } },
-    { "scope": [ "header3","markup.heading3"],"settings": { "foreground": "#D44C47", "fontStyle": "" } },
-    { "scope": [ "header4","markup.heading4"],"settings": { "foreground": "#C14C8A", "fontStyle": "" } },
-    { "scope": [ "header5","markup.heading5"],"settings": { "foreground": "#9065B0", "fontStyle": "" } },
-    { "scope": [ "header6","markup.heading6"],"settings": { "foreground": "#337EA9", "fontStyle": "" } },
-    { "scope": [ "dialog"],"settings": { "foreground": "#42bef0" } },
-    { "scope": [ "listItem"],"settings": {} },
-    { "scope": [ "notes"],"settings": {"fontStyle": "italic", "foreground": "#9065B0" } },
-    { "scope": [ "altNotes"],"settings": {"fontStyle": "italic", "foreground": "#CB912F" } },
-    { "scope": [ "italics"],"settings": { "fontStyle": "italic", "foreground": "#42bef0" } },
-    { "scope": [ "bold"],"settings": { "fontStyle": "bold", "foreground": "#c3c3c3" } },
-    { "scope": [ "comment.line.double-slash.js"],"settings": { "foreground": "#CD5048" } },
-		{ "scope": ["cut"], "settings": { "foreground": "#F00", "fontStyle": "strikethrough" }}
-
-  ]
+// Exported functions for VS Code commands
+async function convertToCurlyQuotation() {
+    await run(smartCurly);
 }
 
-==== themes\JavThemeLight.json ====
-
-{
-  "name": "Night Owl Light",
-  "type": "light",
-  "semanticHighlighting": false,
-  "colors": {
-    "editorBracketHighlight.foreground1": "#1a432d",
-    "editorBracketHighlight.foreground2": "#6f4d10",
-    "editorBracketHighlight.foreground3": "#801c15",
-    "editorBracketHighlight.foreground4": "#731a49",
-    "editorBracketHighlight.foreground5": "#5a2a76",
-    "editorBracketHighlight.foreground6": "#123e70",
-    "editor.findMatchBackground":"#ff0",
-		"editor.findMatchHighlightBackground":"#fbfe",
-    "foreground": "#2C2C2B",
-    "focusBorder": "#F1F0EF",
-    "errorForeground": "#2C2C2B",
-    "selection.background": "#c2dcf7",
-    "descriptionForeground": "#2C2C2B",
-    "widget.shadow": "#d9d9d9",
-    "titleBar.activeBackground": "#F9F8F7",
-	  "notifications.background": "#ffffcc",
-    "notifications.foreground": "#2C2C2B",
-    "notificationLink.foreground": "#994cc3",
-    "notifications.border": "#CCCCCC",
-    "notificationCenter.border": "#CCCCCC",
-    "notificationToast.border": "#CCCCCC",
-    "notificationCenterHeader.foreground": "#2C2C2B",
-    "notificationCenterHeader.background": "#F9F8F7",
-    "button.background": "#E5F2FC",
-    "button.foreground": "#2C2C2B",
-    "dropdown.background": "#f9f8f7",
-    "dropdown.foreground": "#2C2C2B",
-    "dropdown.border": "#d9d9d9",
-    "input.background": "#F9F8F7",
-    "input.foreground": "#2C2C2B",
-    "input.border": "#2C2C2B",
-    "input.placeholderForeground": "#93A1A1",
-    "inputOption.activeBorder": "#2AA298",
-    "inputValidation.infoBorder": "#D0D0D0",
-    "inputValidation.infoBackground": "#F0F0F0",
-    "inputValidation.warningBackground": "#daaa01",
-    "inputValidation.warningBorder": "#E0AF02",
-    "inputValidation.errorBackground": "#f76e6e",
-    "inputValidation.errorBorder": "#de3d3b",
-    "badge.background": "#de3d3b",
-    "badge.foreground": "#FFFFFF",
-    "progressBar.background": "#2AA298",
-    "list.activeSelectionBackground": "#F1F0EF",
-    "list.activeSelectionForeground": "#2C2C2B",
-    "list.inactiveSelectionBackground": "#F1F0EF",
-    "list.inactiveSelectionForeground": "#2C2C2B",
-    "list.focusBackground": "#F1F0EF",
-    "list.hoverBackground": "#F1F0EF",
-    "list.focusForeground": "#2C2C2B",
-    "list.hoverForeground": "#2C2C2B",
-    "list.highlightForeground": "#2C2C2B",
-    "list.errorForeground": "#E64D49",
-    "list.warningForeground": "#daaa01",
-    "activityBar.background": "#F9F8F7",
-    "activityBar.foreground": "#2C2C2B",
-    "activityBar.dropBackground": "#D0D0D0",
-    "activityBarBadge.background": "#2C2C2B",
-    "activityBarBadge.foreground": "#F9F8F7",
-    "activityBar.border": "#F9F8F7",
-    "sideBar.background": "#F9F8F7",
-    "sideBar.foreground": "#2C2C2B",
-    "sideBarTitle.foreground": "#2C2C2B",
-    "sideBar.border": "#F9F8F7",
-    "scrollbar.shadow": "#CCCCCC",
-    "tab.border": "#F0F0F0",
-    "tab.activeBackground": "#F6F6F6",
-    "tab.activeForeground": "#2C2C2B",
-    "tab.inactiveForeground": "#2C2C2B",
-    "tab.inactiveBackground": "#F0F0F0",
-    "editorGroup.border": "#F0F0F0",
-    "editorGroup.background": "#F6F6F6",
-    "editorGroupHeader.tabsBackground": "#F0F0F0",
-    "editorGroupHeader.tabsBorder": "#F0F0F0",
-    "editorGroupHeader.noTabsBackground": "#F0F0F0",
-    "tab.activeModifiedBorder": "#2AA298",
-    "tab.inactiveModifiedBorder": "#93A1A1",
-    "tab.unfocusedActiveModifiedBorder": "#93A1A1",
-    "tab.unfocusedInactiveModifiedBorder": "#93A1A1",
-    "editor.background": "#FFF",
-    "editor.foreground": "#2C2C2B",
-    "editorCursor.foreground": "#000",
-    "editorLineNumber.foreground": "#90A7B2",
-    "editorLineNumber.activeForeground": "#2C2C2B",
-    "editor.selectionBackground": "#c2dcf7",
-    "editor.selectionHighlightBackground": "#C2DCF7fe",
-    "editor.wordHighlightBackground": "#339cec33",
-    "editor.wordHighlightStrongBackground": "#007dd659",
-    "editor.findRangeHighlightBackground": "#7497a633",
-    "editor.hoverHighlightBackground": "#339cec33",
-    "editor.lineHighlightBackground": "#F0F0F0",
-    "editor.rangeHighlightBackground": "#7497a633",
-    "editorWhitespace.foreground": "#d9d9d9",
-    "editorIndentGuide.background1": "#d9d9d9",
-    "editorCodeLens.foreground": "#2C2C2B",
-    "editorError.foreground": "#E64D49",
-    "editorError.border": "#FFF",
-    "editorWarning.foreground": "#daaa01",
-    "editorWarning.border": "#daaa01",
-    "editorGutter.addedBackground": "#49d0c5",
-    "editorGutter.modifiedBackground": "#6fbef6",
-    "editorGutter.deletedBackground": "#f76e6e",
-    "editorRuler.foreground": "#d9d9d9",
-    "editorOverviewRuler.errorForeground": "#E64D49",
-    "editorOverviewRuler.warningForeground": "#daaa01",
-    "editorInlayHint.background": "#F0F0F0",
-    "editorInlayHint.foreground": "#2C2C2B",
-    "editorWidget.background": "#F9F8F7",
-    "editorWidget.border": "#d9d9d9",
-    "editorSuggestWidget.background": "#F9F8F7",
-    "editorSuggestWidget.foreground": "#2C2C2B",
-    "editorSuggestWidget.highlightForeground": "#2C2C2B",
-    "editorSuggestWidget.selectedBackground": "#d3e8f8",
-    "editorSuggestWidget.border": "#d9d9d9",
-    "editorHoverWidget.background": "#Ffffcc",
-    "editorHoverWidget.border": "#d9d9d9",
-    "debugExceptionWidget.background": "#F0F0F0",
-    "debugExceptionWidget.border": "#d9d9d9",
-    "editorMarkerNavigation.background": "#D0D0D0",
-    "editorMarkerNavigationError.background": "#f76e6e",
-    "editorMarkerNavigationWarning.background": "#daaa01",
-    "debugToolBar.background": "#F0F0F0",
-    "pickerGroup.border": "#d9d9d9",
-    "pickerGroup.foreground": "#2C2C2B",
-    "extensionButton.prominentBackground": "#2AA298",
-    "extensionButton.prominentForeground": "#F0F0F0",
-    "statusBar.background": "#F0F0F0",
-    "statusBar.border": "#F0F0F0",
-    "statusBar.debuggingBackground": "#F0F0F0",
-    "statusBar.debuggingForeground": "#2C2C2B",
-    "statusBar.foreground": "#2C2C2B",
-    "statusBar.noFolderBackground": "#F0F0F0",
-    "statusBar.noFolderForeground": "#2C2C2B",
-    "panel.background": "#F9F8F7",
-    "panel.border": "#d9d9d9",
-    "peekView.border": "#d9d9d9",
-    "peekViewEditor.background": "#F6F6F6",
-    "peekViewEditorGutter.background": "#F6F6F6",
-    "peekViewEditor.matchHighlightBackground": "#49d0c5",
-    "peekViewResult.background": "#F0F0F0",
-    "peekViewResult.fileForeground": "#2C2C2B",
-    "peekViewResult.lineForeground": "#2C2C2B",
-    "peekViewResult.matchHighlightBackground": "#49d0c5",
-    "peekViewResult.selectionBackground": "#E0E7EA",
-    "peekViewResult.selectionForeground": "#2C2C2B",
-    "peekViewTitle.background": "#F0F0F0",
-    "peekViewTitleLabel.foreground": "#2C2C2B",
-    "peekViewTitleDescription.foreground": "#2C2C2B",
-    "terminal.ansiBrightBlack": "#2C2C2B",
-    "terminal.ansiBlack": "#2C2C2B",
-    "terminal.ansiBrightBlue": "#288ed7",
-    "terminal.ansiBlue": "#288ed7",
-    "terminal.ansiBrightCyan": "#2AA298",
-    "terminal.ansiCyan": "#2AA298",
-    "terminal.ansiBrightGreen": "#08916a",
-    "terminal.ansiGreen": "#08916a",
-    "terminal.ansiBrightMagenta": "#d6438a",
-    "terminal.ansiMagenta": "#d6438a",
-    "terminal.ansiBrightRed": "#de3d3b",
-    "terminal.ansiRed": "#de3d3b",
-    "terminal.ansiBrightWhite": "#93A1A1",
-    "terminal.ansiWhite": "#93A1A1",
-    "terminal.ansiBrightYellow": "#daaa01",
-    "terminal.ansiYellow": "#E0AF02",
-    "terminal.background": "#F6F6F6",
-    "terminal.foreground": "#2C2C2B"
-},
-  "tokenColors": [
-    { "name": "Changed", "scope": [ "markup.changed", "meta.diff.header.git", "meta.diff.header.from-file", "meta.diff.header.to-file" ], "settings": { "foreground": "#a2bffc", "fontStyle": "italic" } },
-    { "name": "Deleted", "scope": "markup.deleted.diff", "settings": { "foreground": "#EF535090", "fontStyle": "italic" } },
-    { "name": "Inserted", "scope": "markup.inserted.diff", "settings": { "foreground": "#4876d6ff", "fontStyle": "italic" } },
-    { "name": "Global settings", "settings": { "background": "#011627", "foreground": "#2C2C2B" } },
-    { "name": "Comment", "scope": ["comment", "punctuation.definition.comment"], "settings": { "foreground": "#989fb1", "fontStyle": "italic" } },
-    { "name": "String", "scope": "string", "settings": { "foreground": "#4876d6" } },
-    { "name": "String Quoted", "scope": ["string.quoted", "variable.other.readwrite.js"], "settings": { "foreground": "#c96765" } },
-    { "name": "Support Constant Math", "scope": "support.constant.math", "settings": { "foreground": "#4876d6" } },
-    { "name": "Number", "scope": ["constant.numeric", "constant.character.numeric"], "settings": { "foreground": "#aa0982", "fontStyle": "" } },
-    { "name": "Built-in constant", "scope": [ "constant.language", "punctuation.definition.constant", "variable.other.constant" ], "settings": { "foreground": "#4876d6" } },
-    { "name": "User-defined constant", "scope": ["constant.character", "constant.other"], "settings": { "foreground": "#4876d6" } },
-    { "name": "Constant Character Escape", "scope": "constant.character.escape", "settings": { "foreground": "#aa0982" } },
-    { "name": "RegExp String", "scope": ["string.regexp", "string.regexp keyword.other"], "settings": { "foreground": "#5ca7e4" } },
-    { "name": "Comma in functions", "scope": "meta.function punctuation.separator.comma", "settings": { "foreground": "#5f7e97" } },
-    { "name": "Variable", "scope": "variable", "settings": { "foreground": "#4876d6" } },
-    { "name": "Keyword", "scope": ["punctuation.accessor", "keyword"], "settings": { "foreground": "#994cc3", "fontStyle": "italic" } },
-    { "name": "Storage", "scope": [ "storage", "meta.var.expr", "meta.class meta.method.declaration meta.var.expr storage.type.js", "storage.type.property.js", "storage.type.property.ts", "storage.type.property.tsx" ], "settings": { "foreground": "#994cc3", "fontStyle": "italic" } },
-    { "name": "Storage type", "scope": "storage.type", "settings": { "foreground": "#994cc3" } },
-    { "name": "Storage type", "scope": "storage.type.function.arrow.js", "settings": { "fontStyle": "" } },
-    { "name": "Class name", "scope": ["entity.name.class", "meta.class entity.name.type.class"], "settings": { "foreground": "#111111" } },
-    { "name": "Inherited class", "scope": "entity.other.inherited-class", "settings": { "foreground": "#4876d6" } },
-    { "name": "Function name", "scope": "entity.name.function", "settings": { "foreground": "#994cc3", "fontStyle": "italic" } },
-    { "name": "Meta Tag", "scope": ["punctuation.definition.tag", "meta.tag"], "settings": { "foreground": "#994cc3" } },
-    { "name": "HTML Tag names", "scope": [ "entity.name.tag", "meta.tag.other.html", "meta.tag.other.js", "meta.tag.other.tsx", "entity.name.tag.tsx", "entity.name.tag.js", "entity.name.tag", "meta.tag.js", "meta.tag.tsx", "meta.tag.html" ], "settings": { "foreground": "#994cc3", "fontStyle": "" } },
-    { "name": "Tag attribute", "scope": "entity.other.attribute-name", "settings": { "fontStyle": "italic", "foreground": "#4876d6" } },
-    { "name": "Entity Name Tag Custom", "scope": "entity.name.tag.custom", "settings": { "foreground": "#4876d6" } },
-    { "name": "Library (function & constant)", "scope": ["support.function", "support.constant"], "settings": { "foreground": "#4876d6" } },
-    { "name": "Support Constant Property Value meta", "scope": "support.constant.meta.property-value", "settings": { "foreground": "#0c969b" } },
-    { "name": "Library class/type", "scope": ["support.type", "support.class"], "settings": { "foreground": "#4876d6" } },
-    { "name": "Support Variable DOM", "scope": "support.variable.dom", "settings": { "foreground": "#4876d6" } },
-    { "name": "Invalid", "scope": "invalid", "settings": { "foreground": "#ff2c83" } },
-    { "name": "Invalid deprecated", "scope": "invalid.deprecated", "settings": { "foreground": "#d3423e" } },
-    { "name": "Keyword Operator", "scope": "keyword.operator", "settings": { "foreground": "#0c969b", "fontStyle": "" } },
-    { "name": "Keyword Operator Relational", "scope": "keyword.operator.relational", "settings": { "foreground": "#994cc3", "fontStyle": "italic" } },
-    { "name": "Keyword Operator Assignment", "scope": "keyword.operator.assignment", "settings": { "foreground": "#994cc3" } },
-    { "name": "Keyword Operator Arithmetic", "scope": "keyword.operator.arithmetic", "settings": { "foreground": "#994cc3" } },
-    { "name": "Keyword Operator Bitwise", "scope": "keyword.operator.bitwise", "settings": { "foreground": "#994cc3" } },
-    { "name": "Keyword Operator Increment", "scope": "keyword.operator.increment", "settings": { "foreground": "#994cc3" } },
-    { "name": "Keyword Operator Ternary", "scope": "keyword.operator.ternary", "settings": { "foreground": "#994cc3" } },
-    { "name": "Double-Slashed Comment", "scope": "comment.line.double-slash", "settings": { "foreground": "#939dbb" } },
-    { "name": "Object", "scope": "object", "settings": { "foreground": "#cdebf7" } },
-    { "name": "Null", "scope": "constant.language.null", "settings": { "foreground": "#bc5454" } },
-    { "name": "Meta Brace", "scope": "meta.brace", "settings": { "foreground": "#2C2C2B" } },
-    { "name": "Meta Delimiter Period", "scope": "meta.delimiter.period", "settings": { "foreground": "#994cc3", "fontStyle": "italic" } },
-    { "name": "Punctuation Definition String", "scope": "punctuation.definition.string", "settings": { "foreground": "#111111" } },
-    { "name": "Punctuation Definition String Markdown", "scope": "punctuation.definition.string.begin.markdown", "settings": { "foreground": "#bc5454" } },
-    { "name": "Boolean", "scope": "constant.language.boolean", "settings": { "foreground": "#bc5454" } },
-    { "name": "Object Comma", "scope": "object.comma", "settings": { "foreground": "#ffffff" } },
-    { "name": "Variable Parameter Function", "scope": "variable.parameter.function", "settings": { "foreground": "#0c969b", "fontStyle": "" } },
-    { "name": "Support Type Property Name & entity name tags", "scope": [ "support.type.vendor.property-name", "support.constant.vendor.property-value", "support.type.property-name", "meta.property-list entity.name.tag" ], "settings": { "foreground": "#0c969b", "fontStyle": "" } },
-    { "name": "Entity Name tag reference in stylesheets", "scope": "meta.property-list entity.name.tag.reference", "settings": { "foreground": "#57eaf1" } },
-    { "name": "Constant Other Color RGB Value Punctuation Definition Constant", "scope": "constant.other.color.rgb-value punctuation.definition.constant", "settings": { "foreground": "#aa0982" } },
-    { "name": "Constant Other Color", "scope": "constant.other.color", "settings": { "foreground": "#aa0982" } },
-    { "name": "Keyword Other Unit", "scope": "keyword.other.unit", "settings": { "foreground": "#aa0982" } },
-    { "name": "Meta Selector", "scope": "meta.selector", "settings": { "foreground": "#994cc3", "fontStyle": "italic" } },
-    { "name": "Entity Other Attribute Name Id", "scope": "entity.other.attribute-name.id", "settings": { "foreground": "#aa0982" } },
-    { "name": "Meta Property Name", "scope": "meta.property-name", "settings": { "foreground": "#0c969b" } },
-    { "name": "Doctypes", "scope": ["entity.name.tag.doctype", "meta.tag.sgml.doctype"], "settings": { "foreground": "#994cc3", "fontStyle": "italic" } },
-    { "name": "Punctuation Definition Parameters", "scope": "punctuation.definition.parameters", "settings": { "foreground": "#111111" } },
-    { "name": "Keyword Control Operator", "scope": "keyword.control.operator", "settings": { "foreground": "#0c969b" } },
-    { "name": "Keyword Operator Logical", "scope": "keyword.operator.logical", "settings": { "foreground": "#994cc3", "fontStyle": "" } },
-    { "name": "Variable Instances", "scope": [ "variable.instance", "variable.other.instance", "variable.readwrite.instance", "variable.other.readwrite.instance", "variable.other.property" ], "settings": { "foreground": "#0c969b" } },
-    { "name": "Variable Property Other object property", "scope": ["variable.other.object.property"], "settings": { "foreground": "#111111", "fontStyle": "italic" } },
-    { "name": "Variable Property Other object", "scope": ["variable.other.object.js"], "settings": { "fontStyle": "" } },
-    { "name": "Entity Name Function", "scope": ["entity.name.function"], "settings": { "foreground": "#4876d6", "fontStyle": "italic" } },
-    { "name": "Keyword Operator Comparison, imports, returns and Keyword Operator Ruby", "scope": [ "keyword.operator.comparison", "keyword.control.flow.js", "keyword.control.flow.ts", "keyword.control.flow.tsx", "keyword.control.ruby", "keyword.control.module.ruby", "keyword.control.class.ruby", "keyword.control.def.ruby", "keyword.control.loop.js", "keyword.control.loop.ts", "keyword.control.import.js", "keyword.control.import.ts", "keyword.control.import.tsx", "keyword.control.from.js", "keyword.control.from.ts", "keyword.control.from.tsx", "keyword.operator.instanceof.js", "keyword.operator.expression.instanceof.ts", "keyword.operator.expression.instanceof.tsx" ], "settings": { "foreground": "#994cc3", "fontStyle": "italic" } },
-    { "name": "Keyword Control Conditional", "scope": [ "keyword.control.conditional.js", "keyword.control.conditional.ts", "keyword.control.switch.js", "keyword.control.switch.ts" ], "settings": { "foreground": "#994cc3", "fontStyle": "" } },
-    { "name": "Support Constant, `new` keyword, Special Method Keyword, `debugger`, other keywords", "scope": [ "support.constant", "keyword.other.special-method", "keyword.other.new", "keyword.other.debugger", "keyword.control" ], "settings": { "foreground": "#0c969b" } },
-    { "name": "Support Function", "scope": "support.function", "settings": { "foreground": "#4876d6" } },
-    { "name": "Invalid Broken", "scope": "invalid.broken", "settings": { "foreground": "#aa0982" } },
-    { "name": "Invalid Unimplemented", "scope": "invalid.unimplemented", "settings": { "foreground": "#8BD649" } },
-    { "name": "Invalid Illegal", "scope": "invalid.illegal", "settings": { "foreground": "#c96765" } },
-    { "name": "Language Variable", "scope": "variable.language", "settings": { "foreground": "#0c969b" } },
-    { "name": "Support Variable Property", "scope": "support.variable.property", "settings": { "foreground": "#0c969b" } },
-    { "name": "Variable Function", "scope": "variable.function", "settings": { "foreground": "#4876d6" } },
-    { "name": "Variable Interpolation", "scope": "variable.interpolation", "settings": { "foreground": "#ec5f67" } },
-    { "name": "Meta Function Call", "scope": "meta.function-call", "settings": { "foreground": "#4876d6" } },
-    { "name": "Punctuation Section Embedded", "scope": "punctuation.section.embedded", "settings": { "foreground": "#d3423e" } },
-    { "name": "Punctuation Tweaks", "scope": [ "punctuation.terminator.expression", "punctuation.definition.arguments", "punctuation.definition.array", "punctuation.section.array", "meta.array" ], "settings": { "foreground": "#2C2C2B" } },
-    { "name": "More Punctuation Tweaks", "scope": [ "punctuation.definition.list.begin", "punctuation.definition.list.end", "punctuation.separator.arguments", "punctuation.definition.list" ], "settings": { "foreground": "#111111" } },
-    { "name": "Template Strings", "scope": "string.template meta.template.expression", "settings": { "foreground": "#d3423e" } },
-    { "name": "Backtics(``) in Template Strings", "scope": "string.template punctuation.definition.string", "settings": { "foreground": "#2C2C2B" } },
-    { "name": "Italics", "scope": "italic", "settings": { "foreground": "#994cc3", "fontStyle": "italic" } },
-    { "name": "Bold", "scope": "bold", "settings": { "foreground": "#4876d6", "fontStyle": "bold" } },
-    { "name": "Quote", "scope": "quote", "settings": { "foreground": "#697098", "fontStyle": "italic" } },
-    { "name": "Raw Code", "scope": "raw", "settings": { "foreground": "#0c969b" } },
-    { "name": "CoffeScript Variable Assignment", "scope": "variable.assignment.coffee", "settings": { "foreground": "#31e1eb" } },
-    { "name": "CoffeScript Parameter Function", "scope": "variable.parameter.function.coffee", "settings": { "foreground": "#2C2C2B" } },
-    { "name": "CoffeeScript Assignments", "scope": "variable.assignment.coffee", "settings": { "foreground": "#0c969b" } },
-    { "name": "C# Readwrite Variables", "scope": "variable.other.readwrite.cs", "settings": { "foreground": "#2C2C2B" } },
-    { "name": "C# Classes & Storage types", "scope": ["entity.name.type.class.cs", "storage.type.cs"], "settings": { "foreground": "#4876d6" } },
-    { "name": "C# Namespaces", "scope": "entity.name.type.namespace.cs", "settings": { "foreground": "#0c969b" } },
-    { "name": "Tag names in Stylesheets", "scope": [ "entity.name.tag.css", "entity.name.tag.less", "entity.name.tag.custom.css", "support.constant.property-value.css" ], "settings": { "foreground": "#c96765", "fontStyle": "" } },
-    { "name": "Wildcard(*) selector in Stylesheets", "scope": [ "entity.name.tag.wildcard.css", "entity.name.tag.wildcard.less", "entity.name.tag.wildcard.scss", "entity.name.tag.wildcard.sass" ], "settings": { "foreground": "#0c969b" } },
-    { "name": "CSS Keyword Other Unit", "scope": "keyword.other.unit.css", "settings": { "foreground": "#4876d6" } },
-    { "name": "Attribute Name for CSS", "scope": [ "meta.attribute-selector.css entity.other.attribute-name.attribute", "variable.other.readwrite.js" ], "settings": { "foreground": "#aa0982" } },
-    { "name": "Elixir Classes", "scope": [ "source.elixir support.type.elixir", "source.elixir meta.module.elixir entity.name.class.elixir" ], "settings": { "foreground": "#4876d6" } },
-    { "name": "Elixir Functions", "scope": "source.elixir entity.name.function", "settings": { "foreground": "#4876d6" } },
-    { "name": "Elixir Constants", "scope": [ "source.elixir constant.other.symbol.elixir", "source.elixir constant.other.keywords.elixir" ], "settings": { "foreground": "#4876d6" } },
-    { "name": "Elixir String Punctuations", "scope": "source.elixir punctuation.definition.string", "settings": { "foreground": "#4876d6" } },
-    { "name": "Elixir", "scope": [ "source.elixir variable.other.readwrite.module.elixir", "source.elixir variable.other.readwrite.module.elixir punctuation.definition.variable.elixir" ], "settings": { "foreground": "#4876d6" } },
-    { "name": "Elixir Binary Punctuations", "scope": "source.elixir .punctuation.binary.elixir", "settings": { "foreground": "#994cc3", "fontStyle": "italic" } },
-    { "name": "Closure Constant Keyword", "scope": "constant.keyword.clojure", "settings": { "foreground": "#0c969b" } },
-    { "name": "Go Function Calls", "scope": "source.go meta.function-call.go", "settings": { "foreground": "#0c969b" } },
-    { "name": "Go Keywords", "scope": [ "source.go keyword.package.go", "source.go keyword.import.go", "source.go keyword.function.go", "source.go keyword.type.go", "source.go keyword.struct.go", "source.go keyword.interface.go", "source.go keyword.const.go", "source.go keyword.var.go", "source.go keyword.map.go", "source.go keyword.channel.go", "source.go keyword.control.go" ], "settings": { "foreground": "#994cc3", "fontStyle": "italic" } },
-    { "name": "Go Constants e.g. nil, string format (%s, %d, etc.)", "scope": [ "source.go constant.language.go", "source.go constant.other.placeholder.go" ], "settings": { "foreground": "#bc5454" } },
-    { "name": "C++ Functions", "scope": [ "entity.name.function.preprocessor.cpp", "entity.scope.name.cpp" ], "settings": { "foreground": "#0c969bff" } },
-    { "name": "C++ Meta Namespace", "scope": ["meta.namespace-block.cpp"], "settings": { "foreground": "#111111" } },
-    { "name": "C++ Language Primitive Storage", "scope": ["storage.type.language.primitive.cpp"], "settings": { "foreground": "#bc5454" } },
-    { "name": "C++ Preprocessor Macro", "scope": ["meta.preprocessor.macro.cpp"], "settings": { "foreground": "#2C2C2B" } },
-    { "name": "C++ Variable Parameter", "scope": ["variable.parameter"], "settings": { "foreground": "#111111" } },
-    { "name": "Powershell Variables", "scope": ["variable.other.readwrite.powershell"], "settings": { "foreground": "#4876d6" } },
-    { "name": "Powershell Function", "scope": ["support.function.powershell"], "settings": { "foreground": "#0c969bff" } },
-    { "name": "ID Attribute Name in HTML", "scope": "entity.other.attribute-name.id.html", "settings": { "foreground": "#4876d6" } },
-    { "name": "HTML Punctuation Definition Tag", "scope": "punctuation.definition.tag.html", "settings": { "foreground": "#994cc3" } },
-    { "name": "HTML Doctype", "scope": "meta.tag.sgml.doctype.html", "settings": { "foreground": "#994cc3", "fontStyle": "italic" } },
-    { "name": "JavaScript Classes", "scope": "meta.class entity.name.type.class.js", "settings": { "foreground": "#111111" } },
-    { "name": "JavaScript Method Declaration e.g. `constructor`", "scope": "meta.method.declaration storage.type.js", "settings": { "foreground": "#4876d6" } },
-    { "name": "JavaScript Terminator", "scope": "terminator.js", "settings": { "foreground": "#2C2C2B" } },
-    { "name": "JavaScript Meta Punctuation Definition", "scope": "meta.js punctuation.definition.js", "settings": { "foreground": "#2C2C2B" } },
-    { "name": "Entity Names in Code Documentations", "scope": [ "entity.name.type.instance.jsdoc", "entity.name.type.instance.phpdoc" ], "settings": { "foreground": "#5f7e97" } },
-    { "name": "Other Variables in Code Documentations", "scope": ["variable.other.jsdoc", "variable.other.phpdoc"], "settings": { "foreground": "#78ccf0" } },
-    { "name": "JavaScript module imports and exports", "scope": [ "variable.other.meta.import.js", "meta.import.js variable.other", "variable.other.meta.export.js", "meta.export.js variable.other" ], "settings": { "foreground": "#2C2C2B" } },
-    { "name": "JavaScript Variable Parameter Function", "scope": "variable.parameter.function.js", "settings": { "foreground": "#7986E7" } },
-    { "name": "JavaScript[React] Variable Other Object", "scope": [ "variable.other.object.js", "variable.other.object.jsx", "variable.object.property.js", "variable.object.property.jsx" ], "settings": { "foreground": "#2C2C2B" } },
-    { "name": "JavaScript Variables", "scope": ["variable.js", "variable.other.js"], "settings": { "foreground": "#2C2C2B" } },
-    { "name": "JavaScript Entity Name Type", "scope": ["entity.name.type.js", "entity.name.type.module.js"], "settings": { "foreground": "#111111", "fontStyle": "" } },
-    { "name": "JavaScript Support Classes", "scope": "support.class.js", "settings": { "foreground": "#2C2C2B" } },
-    { "name": "JSON Property Names", "scope": "support.type.property-name.json", "settings": { "foreground": "#0c969b" } },
-    { "name": "JSON Support Constants", "scope": "support.constant.json", "settings": { "foreground": "#4876d6" } },
-    { "name": "JSON Property values (string)", "scope": "meta.structure.dictionary.value.json string.quoted.double", "settings": { "foreground": "#c789d6" } },
-    { "name": "Strings in JSON values", "scope": "string.quoted.double.json punctuation.definition.string.json", "settings": { "foreground": "#0c969b" } },
-    { "name": "Specific JSON Property values like null", "scope": "meta.structure.dictionary.json meta.structure.dictionary.value constant.language", "settings": { "foreground": "#bc5454" } },
-    { "name": "JavaScript Other Variable", "scope": "variable.other.object.js", "settings": { "foreground": "#0c969b", "fontStyle": "italic" } },
-    { "name": "Ruby Variables", "scope": ["variable.other.ruby"], "settings": { "foreground": "#2C2C2B" } },
-    { "name": "Ruby Class", "scope": ["entity.name.type.class.ruby"], "settings": { "foreground": "#c96765" } },
-    { "name": "Ruby Hashkeys", "scope": "constant.language.symbol.hashkey.ruby", "settings": { "foreground": "#0c969b" } },
-    { "name": "Ruby Symbols", "scope": "constant.language.symbol.ruby", "settings": { "foreground": "#0c969b" } },
-    { "name": "LESS Tag names", "scope": "entity.name.tag.less", "settings": { "foreground": "#994cc3" } },
-    { "name": "LESS Keyword Other Unit", "scope": "keyword.other.unit.css", "settings": { "foreground": "#0c969b" } },
-    { "name": "Attribute Name for LESS", "scope": "meta.attribute-selector.less entity.other.attribute-name.attribute", "settings": { "foreground": "#aa0982" } },
-    { "name": "Markdown Headings", "scope": [ "markup.heading", "markup.heading.setext.1", "markup.heading.setext.2" ], "settings": { "foreground": "#4876d6" } },
-    { "name": "Markdown Italics", "scope": "markup.italic", "settings": { "fontStyle": "italic" } },
-    { "name": "Markdown Bold", "scope": "markup.bold", "settings": { "fontStyle": "bold" } },
-    { "name": "Markdown Quote + others", "scope": "markup.quote", "settings": { "foreground": "#697098", "fontStyle": "italic" } },
-    { "name": "Markdown Raw Code + others", "scope": "markup.inline.raw", "settings": { "foreground": "#0c969b" } },
-    { "name": "Markdown Links", "scope": [ "markup.underline.link", "markup.underline.link.image" ], "settings": { "foreground": "#ff869a" } },
-    { "name": "Markdown Link Title and Description", "scope": [ "string.other.link.title.markdown", "string.other.link.description.markdown" ], "settings": { "foreground": "#2C2C2B" } },
-    { "name": "Markdown Punctuation", "scope": [ "punctuation.definition.string.markdown", "punctuation.definition.string.begin.markdown", "punctuation.definition.string.end.markdown", "meta.link.inline.markdown punctuation.definition.string" ], "settings": { "foreground": "#4876d6" } },
-    { "name": "Markdown MetaData Punctuation", "scope": ["punctuation.definition.metadata.markdown"], "settings": { "foreground": "#0c969b" } },
-    { "name": "Markdown List Punctuation", "scope": ["beginning.punctuation.definition.list.markdown"], "settings": { "foreground": "#4876d6" } },
-    { "name": "Markdown Inline Raw String", "scope": "markup.inline.raw.string.markdown", "settings": { "foreground": "#4876d6" } },
-    { "name": "PHP Variables", "scope": ["variable.other.php", "variable.other.property.php"], "settings": { "foreground": "#111111" } },
-    { "name": "Support Classes in PHP", "scope": "support.class.php", "settings": { "foreground": "#111111" } },
-    { "name": "Punctuations in PHP function calls", "scope": "meta.function-call.php punctuation", "settings": { "foreground": "#2C2C2B" } },
-    { "name": "PHP Global Variables", "scope": "variable.other.global.php", "settings": { "foreground": "#4876d6" } },
-    { "name": "Declaration Punctuation in PHP Global Variables", "scope": "variable.other.global.php punctuation.definition.variable", "settings": { "foreground": "#4876d6" } },
-    { "name": "Language Constants in Python", "scope": "constant.language.python", "settings": { "foreground": "#bc5454" } },
-    { "name": "Python Function Parameter and Arguments", "scope": [ "variable.parameter.function.python", "meta.function-call.arguments.python" ], "settings": { "foreground": "#4876d6" } },
-    { "name": "Python Function Call", "scope": [ "meta.function-call.python", "meta.function-call.generic.python" ], "settings": { "foreground": "#0c969b" } },
-    { "name": "Punctuations in Python", "scope": "punctuation.python", "settings": { "foreground": "#2C2C2B" } },
-    { "name": "Decorator Functions in Python", "scope": "entity.name.function.decorator.python", "settings": { "foreground": "#4876d6" } },
-    { "name": "Python Language Variable", "scope": "source.python variable.language.special", "settings": { "foreground": "#aa0982" } },
-    { "name": "Python import control keyword", "scope": "keyword.control", "settings": { "foreground": "#994cc3", "fontStyle": "italic" } },
-    { "name": "SCSS Variable", "scope": [ "variable.scss", "variable.sass", "variable.parameter.url.scss", "variable.parameter.url.sass" ], "settings": { "foreground": "#4876d6" } },
-    { "name": "Variables in SASS At-Rules", "scope": [ "source.css.scss meta.at-rule variable", "source.css.sass meta.at-rule variable" ], "settings": { "foreground": "#4876d6" } },
-    { "name": "Variables in SASS At-Rules", "scope": [ "source.css.scss meta.at-rule variable", "source.css.sass meta.at-rule variable" ], "settings": { "foreground": "#111111" } },
-    { "name": "Attribute Name for SASS", "scope": [ "meta.attribute-selector.scss entity.other.attribute-name.attribute", "meta.attribute-selector.sass entity.other.attribute-name.attribute" ], "settings": { "foreground": "#aa0982" } },
-    { "name": "Tag names in SASS", "scope": ["entity.name.tag.scss", "entity.name.tag.sass"], "settings": { "foreground": "#0c969b" } },
-    { "name": "SASS Keyword Other Unit", "scope": ["keyword.other.unit.scss", "keyword.other.unit.sass"], "settings": { "foreground": "#994cc3" } },
-    { "name": "TypeScript[React] Variables and Object Properties", "scope": [ "variable.other.readwrite.alias.ts", "variable.other.readwrite.alias.tsx", "variable.other.readwrite.ts", "variable.other.readwrite.tsx", "variable.other.object.ts", "variable.other.object.tsx", "variable.object.property.ts", "variable.object.property.tsx", "variable.other.ts", "variable.other.tsx", "variable.tsx", "variable.ts" ], "settings": { "foreground": "#2C2C2B" } },
-    { "name": "TypeScript[React] Entity Name Types", "scope": ["entity.name.type.ts", "entity.name.type.tsx"], "settings": { "foreground": "#111111" } },
-    { "name": "TypeScript[React] Node Classes", "scope": ["support.class.node.ts", "support.class.node.tsx"], "settings": { "foreground": "#4876d6" } },
-    { "name": "TypeScript[React] Entity Name Types as Parameters", "scope": [ "meta.type.parameters.ts entity.name.type", "meta.type.parameters.tsx entity.name.type" ], "settings": { "foreground": "#5f7e97" } },
-    { "name": "TypeScript[React] Import/Export Punctuations", "scope": [ "meta.import.ts punctuation.definition.block", "meta.import.tsx punctuation.definition.block", "meta.export.ts punctuation.definition.block", "meta.export.tsx punctuation.definition.block" ], "settings": { "foreground": "#2C2C2B" } },
-    { "name": "TypeScript[React] Punctuation Decorators", "scope": [ "meta.decorator punctuation.decorator.ts", "meta.decorator punctuation.decorator.tsx" ], "settings": { "foreground": "#4876d6" } },
-    { "name": "TypeScript[React] Punctuation Decorators", "scope": "meta.tag.js meta.jsx.children.tsx", "settings": { "foreground": "#4876d6" } },
-    { "name": "YAML Entity Name Tags", "scope": "entity.name.tag.yaml", "settings": { "foreground": "#111111" } },
-    { "name": "JavaScript Variable Other ReadWrite", "scope": ["variable.other.readwrite.js", "variable.parameter"], "settings": { "foreground": "#2C2C2B" } },
-    { "name": "Support Class Component", "scope": ["support.class.component.js", "support.class.component.tsx"], "settings": { "foreground": "#aa0982", "fontStyle": "" } },
-    { "name": "Text nested in React tags", "scope": [ "meta.jsx.children", "meta.jsx.children.js", "meta.jsx.children.tsx" ], "settings": { "foreground": "#2C2C2B" } },
-    { "name": "TypeScript Classes", "scope": "meta.class entity.name.type.class.tsx", "settings": { "foreground": "#111111" } },
-    { "name": "TypeScript Entity Name Type", "scope": ["entity.name.type.tsx", "entity.name.type.module.tsx"], "settings": { "foreground": "#111111" } },
-    { "name": "TypeScript Class Variable Keyword", "scope": [ "meta.class.ts meta.var.expr.ts storage.type.ts", "meta.class.tsx meta.var.expr.tsx storage.type.tsx" ], "settings": { "foreground": "#994CC3" } },
-    { "name": "TypeScript Method Declaration e.g. `constructor`", "scope": [ "meta.method.declaration storage.type.ts", "meta.method.declaration storage.type.tsx" ], "settings": { "foreground": "#4876d6" } },
-    { "name": "normalize font style of certain components", "scope": [ "meta.property-list.css meta.property-value.css variable.other.less", "meta.property-list.scss variable.scss", "meta.property-list.sass variable.sass", "meta.brace", "keyword.operator.operator", "keyword.operator.or.regexp", "keyword.operator.expression.in", "keyword.operator.relational", "keyword.operator.assignment", "keyword.operator.comparison", "keyword.operator.type", "keyword.operator", "keyword", "punctuation.definintion.string", "punctuation", "variable.other.readwrite.js", "storage.type", "source.css", "string.quoted" ], "settings": { "fontStyle": "" } },
-	{ "name": "header1", "scope": ["header1", "markup.heading1"], "settings": { "foreground": "#448361", "fontStyle": "" } },
-  { "name": "header2", "scope": ["header2", "markup.heading2"], "settings": { "foreground": "#CB912F", "fontStyle": "" } },
-  { "name": "header3", "scope": ["header3", "markup.heading3"], "settings": { "foreground": "#D44C47", "fontStyle": "" } },
-  { "name": "header4", "scope": ["header4", "markup.heading4"], "settings": { "foreground": "#C14C8A", "fontStyle": "" } },
-  { "name": "header5", "scope": ["header5", "markup.heading5"], "settings": { "foreground": "#9065B0", "fontStyle": "" } },
-  { "name": "header6", "scope": ["header6", "markup.heading6"], "settings": { "foreground": "#337EA9", "fontStyle": "" } },
- { "name": "dialog", "scope": ["dialog"], "settings": { "foreground": "#337EA9" } },
-  { "name": "list", "scope": ["listItem"], "settings": {} },
-  { "name": "notes", "scope": ["notes"], "settings": { "fontStyle": "italic", "foreground": "#9B9B9B" } },
-  { "name": "alt", "scope": ["altNotes"], "settings": { "fontStyle": "italic", "foreground": "#D27B2D" } },
-  { "name": "italics", "scope": ["italics"], "settings": { "fontStyle": "italic", "foreground": "#337EA9" } },
-  { "name": "bold", "scope": ["bold"], "settings": { "fontStyle": "bold", "foreground": "#2C2C2B" } },
-  { "name": "comment", "scope": ["comment.line.double-slash.js"], "settings": { "foreground": "#CD5048" } },
-  { "scope": "cut", "settings": { "foreground": "#F00", "fontStyle": "strikethrough" }}
-  ]
+async function convertToStraightQuotation() {
+    await run(toStraight);
 }
+
+module.exports = {
+    convertToCurlyQuotation,
+    convertToStraightQuotation
+};
+
+==== src\commands\editDialog.js ====
+
+const vscode = require('vscode');
+
+function editDialog() {
+  const editor = vscode.window.activeTextEditor;
+  if (!editor) return;
+  const doc = editor.document;
+  const pos = editor.selection.active;
+  const line = doc.lineAt(pos.line).text;
+  const regex = /["“”‘’]/g;
+  const quoteIndices = [];
+  let m;
+  while ((m = regex.exec(line))) quoteIndices.push(m.index);
+
+  if (quoteIndices.length === 0) {
+    const mm = line.match(/^(\s*)(\d{4}:\s)?(.*)$/);
+    const indent = mm ? mm[1] || '' : '';
+    const prefix = mm ? mm[2] || '' : '';
+    const rest = mm ? mm[3] : line;
+    const wrapped = indent + prefix + '"' + rest.trimEnd() + '"';
+    editor.edit(b => b.replace(doc.lineAt(pos.line).range, wrapped)).then(() => {
+      const end = new vscode.Position(pos.line, wrapped.length);
+      editor.selection = new vscode.Selection(end, end);
+    });
+    return;
+  }
+
+  if (quoteIndices.length === 2) {
+    const [open, close] = quoteIndices;
+    if (!(open < pos.character && pos.character < close)) {
+      const nl = line.replace(regex, '');
+      const removedLeft = quoteIndices.filter(i => i < pos.character).length;
+      editor.edit(b => b.replace(doc.lineAt(pos.line).range, nl)).then(() => {
+        const nc = Math.max(0, pos.character - removedLeft);
+        const np = new vscode.Position(pos.line, nc);
+        editor.selection = new vscode.Selection(np, np);
+      });
+      return;
+    }
+  }
+
+  const pairs = [];
+  for (let i = 0; i + 1 < quoteIndices.length; i += 2) {
+    pairs.push({ open: quoteIndices[i], close: quoteIndices[i+1] });
+  }
+
+  for (let i = 0; i + 1 < pairs.length; i++) {
+    const f = pairs[i], s = pairs[i+1];
+    if (f.close < pos.character && pos.character < s.open) {
+      const r1 = line.substring(f.open+1, f.close);
+      const r2 = line.substring(s.open+1, s.close);
+      const t1 = r1.trim().replace(/[\.,!?;:]+$/, '');
+      const jp = /[\.,!?;:]$/.test(r1.trim()) ? r1.trim().slice(-1) : ',';
+      const t2 = r2.trim();
+      const pfx = line.slice(0, f.open);
+      const sfx = line.slice(s.close+1);
+      const joined = '"' + t1 + jp + ' ' + t2 + '"';
+      const nl = pfx + joined + sfx;
+      editor.edit(b => b.replace(doc.lineAt(pos.line).range, nl)).then(() => {
+        const col = pfx.length + 1 + t1.length + 1;
+        const cp = new vscode.Position(pos.line, col);
+        editor.selection = new vscode.Selection(cp, cp);
+      });
+      return;
+    }
+  }
+
+  for (const {open, close} of pairs) {
+    if (open < pos.character && pos.character < close) {
+      const bef = line.substring(0, pos.character);
+      const aft = line.substring(pos.character);
+      const tb = bef.trimEnd();
+      const needC = !/[\.,!?;:]$/.test(tb);
+      const left = tb + (needC ? ',"' : '"');
+      const right = ' "' + aft.trimStart();
+      const nl = left + right;
+      editor.edit(b => b.replace(doc.lineAt(pos.line).range, nl)).then(() => {
+        const np = new vscode.Position(pos.line, left.length+1);
+        editor.selection = new vscode.Selection(np, np);
+      });
+      return;
+    }
+  }
+
+  vscode.window.showInformationMessage('No dialog action available');
+}
+
+
+
+
+
+
+module.exports = { editDialog };
+
+
+==== src\commands\insertSpace.js ====
+
+const vscode = require('vscode');
+
+function insertSpace() {
+  const editor = vscode.window.activeTextEditor;
+  if (!editor) return;
+
+  const originalSelections = editor.selections.map(sel => sel.active);
+
+  editor.edit(editBuilder => {
+    for (const pos of originalSelections) {
+      editBuilder.insert(pos, ' ');
+    }
+  }).then(() => {
+    // Reset cursor to original position(s)
+    editor.selections = originalSelections.map(pos => new vscode.Selection(pos, pos));
+  });
+}
+
+module.exports = { insertSpace };
+
+
+==== src\commands\joinLines.js ====
+
+const vscode = require('vscode');
+
+const reUnicodeWS =
+  /[\t \u00A0\u1680\u2000-\u200A\u2028\u2029\u202F\u205F\u3000\uFEFF]+/g;
+const reLeadingWS =
+  /^[\t \u00A0\u1680\u2000-\u200A\u2028\u2029\u202F\u205F\u3000\uFEFF]+/;
+
+function clean(text) {
+  return text.replace(reLeadingWS, '').trimEnd().replace(reUnicodeWS, ' ');
+}
+
+/**
+ * Collect line ranges from all selections, expanding single-line cursors
+ * in the given direction, then merge overlapping/adjacent ranges.
+ *
+ * @param {'above'|'below'|null} direction  — expand direction for cursors
+ *        (null means only multiline selections get joined, cursors are skipped)
+ */
+function collectRanges(editor, direction) {
+  const doc = editor.document;
+  const lastLine = doc.lineCount - 1;
+  const raw = [];
+
+  for (const sel of editor.selections) {
+    const top = Math.min(sel.anchor.line, sel.active.line);
+    const bot = Math.max(sel.anchor.line, sel.active.line);
+
+    if (top !== bot) {
+      // Multiline selection — always join all lines regardless of direction.
+      raw.push({ start: top, end: bot });
+    } else if (direction === 'above' && top > 0) {
+      raw.push({ start: top - 1, end: top });
+    } else if (direction === 'below' && top < lastLine) {
+      raw.push({ start: top, end: top + 1 });
+    }
+  }
+
+  if (raw.length === 0) return [];
+
+  // Sort ascending, then merge overlapping / adjacent.
+  raw.sort((a, b) => a.start - b.start || a.end - b.end);
+  const merged = [{ ...raw[0] }];
+  for (let i = 1; i < raw.length; i++) {
+    const prev = merged[merged.length - 1];
+    if (raw[i].start <= prev.end) {          // overlapping or touching
+      prev.end = Math.max(prev.end, raw[i].end);
+    } else {
+      merged.push({ ...raw[i] });
+    }
+  }
+  return merged;
+}
+
+/**
+ * Run the join for a set of merged line ranges (bottom-up to keep indices stable).
+ */
+function executeJoin(editor, ranges) {
+  const doc = editor.document;
+
+  // Process bottom-up.
+  const sorted = [...ranges].sort((a, b) => b.start - a.start);
+
+  const edits = sorted.map(r => {
+    const indent = doc.lineAt(r.start).text.match(reLeadingWS)?.[0] ?? '';
+    const parts = [];
+    for (let i = r.start; i <= r.end; i++) {
+      parts.push(clean(doc.lineAt(i).text));
+    }
+    const text = indent + parts.join(' ');
+    return {
+      range: new vscode.Range(
+        doc.lineAt(r.start).range.start,
+        doc.lineAt(r.end).range.end
+      ),
+      text,
+      resultLine: r.start,
+      linesRemoved: r.end - r.start,
+      cursorCol: indent.length + parts[0].length + (parts.length > 1 ? 1 : 0),
+    };
+  });
+
+  editor.edit(
+    eb => { for (const e of edits) eb.replace(e.range, e.text); },
+    { undoStopBefore: true, undoStopAfter: true }
+  ).then(ok => {
+    if (!ok) return;
+
+    // Walk ascending, accumulating line-shift from earlier joins.
+    const ascending = [...edits].reverse();
+    let shift = 0;
+    const positions = ascending.map(e => {
+      const pos = new vscode.Position(e.resultLine - shift, e.cursorCol);
+      shift += e.linesRemoved;
+      return pos;
+    });
+
+    editor.selections = positions.map(p => new vscode.Selection(p, p));
+  });
+}
+
+function joinLineAbove() {
+  const editor = vscode.window.activeTextEditor;
+  if (!editor) return;
+  const ranges = collectRanges(editor, 'above');
+  if (ranges.length) executeJoin(editor, ranges);
+}
+
+function joinLineBelow() {
+  const editor = vscode.window.activeTextEditor;
+  if (!editor) return;
+  const ranges = collectRanges(editor, 'below');
+  if (ranges.length) executeJoin(editor, ranges);
+}
+
+module.exports = { joinLineAbove, joinLineBelow };
+
+==== src\commands\SmartDelete.js ====
+
+const vscode = require('vscode');
+
+// Decoration for flash animation
+const flashDecoration = vscode.window.createTextEditorDecorationType({
+  backgroundColor: 'rgba(255,0,0,0.3)'
+});
+
+/**
+ * Flash a range red, then delete it.
+ */
+async function flashThenDelete(editor, range) {
+  editor.setDecorations(flashDecoration, [range]);
+  await new Promise(resolve => setTimeout(resolve, 50));
+  editor.setDecorations(flashDecoration, []);
+  await editor.edit(e => e.delete(range));
+}
+
+/**
+ * Collapse multiple adjacent spaces around cursor to one.
+ */
+async function normalizeWhitespace(editor) {
+  const doc = editor.document;
+  const pos = editor.selection.active;
+  const lineText = doc.lineAt(pos.line).text;
+
+  let wsStart = pos.character;
+  while (wsStart > 0 && lineText[wsStart - 1] === ' ') wsStart--;
+  let wsEnd = pos.character;
+  while (wsEnd < lineText.length && lineText[wsEnd] === ' ') wsEnd++;
+
+  if (wsEnd - wsStart > 1) {
+    const range = new vscode.Range(pos.line, wsStart, pos.line, wsEnd);
+    await editor.edit(edit => edit.replace(range, ' '));
+    const newPos = new vscode.Position(pos.line, wsStart + 1);
+    editor.selection = new vscode.Selection(newPos, newPos);
+  }
+}
+
+/**
+ * Collapse adjacent punctuation run around cursor to single leftmost char.
+ */
+async function normalizePunctuation(editor) {
+  const doc = editor.document;
+  const pos = editor.selection.active;
+  const lineText = doc.lineAt(pos.line).text;
+
+  let start = pos.character;
+  while (start > 0 && /[^\w\s]/.test(lineText[start - 1])) start--;
+  let end = pos.character;
+  while (end < lineText.length && /[^\w\s]/.test(lineText[end])) end++;
+
+  if (end - start > 1) {
+    const keep = lineText[start];
+    const range = new vscode.Range(pos.line, start, pos.line, end);
+    await editor.edit(edit => edit.replace(range, keep));
+    const newPos = new vscode.Position(pos.line, start + 1);
+    editor.selection = new vscode.Selection(newPos, newPos);
+  }
+}
+
+/**
+ * SmartDelete command.
+ *
+ * Cases:
+ * 1. Selection or multi-cursor → default delete, then normalize
+ * 2. Empty line at col 0 → join with next line (skip indentation)
+ * 3. Cursor inside a word → delete whole word
+ * 4. Cursor at end-of-word →
+ *      (a) strip trailing punctuation from token, check suffix on alpha core first
+ *      (b) if no suffix match, delete one trailing punctuation char
+ *      (c) else delete whole word left + leftward whitespace
+ * 5. Cursor at start-of-word → delete word-right + one whitespace
+ * 6. Cursor on whitespace / EOL → delete contiguous whitespace toward nearest word
+ * 7. Fallback → nothing to delete
+ */
+async function smartDelete() {
+  const editor = vscode.window.activeTextEditor;
+  if (!editor) return;
+  const doc = editor.document;
+  const selections = editor.selections;
+  const nothing = () => vscode.window.showInformationMessage('Nothing to delete');
+
+  // 1. Selection or multi-cursor → default delete
+  if (selections.length > 1 || !selections[0].isEmpty) {
+    await vscode.commands.executeCommand('deleteRight');
+    await normalizeWhitespace(editor);
+    await normalizeWhitespace(editor);
+    await normalizePunctuation(editor);
+    return;
+  }
+
+  const sel = selections[0];
+  const pos = sel.active;
+  const line = doc.lineAt(pos.line);
+  const text = line.text;
+  const offset = pos.character;
+
+  // 2. Empty line at col 0 → join lines
+  if (offset === 0 && text.length === 0 && pos.line < doc.lineCount - 1) {
+    const nextLine = doc.lineAt(pos.line + 1);
+    const indentEnd = nextLine.firstNonWhitespaceCharacterIndex;
+    const range = new vscode.Range(
+      new vscode.Position(pos.line, 0),
+      new vscode.Position(pos.line + 1, indentEnd)
+    );
+    await flashThenDelete(editor, range);
+    return;
+  }
+
+  // Compute word boundaries (whitespace-delimited token)
+  let start = offset;
+  while (start > 0 && !/\s/.test(text[start - 1])) start--;
+  let end = offset;
+  while (end < text.length && !/\s/.test(text[end])) end++;
+
+  const atStart = offset === start;
+  const atEnd = offset === end;
+  const inside = offset > start && offset < end;
+
+  // 3. Inside a word → delete whole word
+  if (inside) {
+    const range = new vscode.Range(pos.line, start, pos.line, end);
+    await flashThenDelete(editor, range);
+    return;
+  }
+
+  // 4. At end-of-word → suffix first, then punctuation, then whole-word-left
+  if (atEnd && offset > start) {
+    const token = text.slice(start, end);
+
+    // Find where trailing punctuation begins
+    let alphaEnd = end;
+    while (alphaEnd > start && /[^\w]/.test(text[alphaEnd - 1])) alphaEnd--;
+    const alphaCore = text.slice(start, alphaEnd);
+    const hasTrailingPunct = alphaEnd < end;
+
+    // (a) Suffix check — test against alpha core (ignoring trailing punctuation)
+    if (alphaCore.length > 0) {
+      const cfg = vscode.workspace.getConfiguration('smartDelete');
+      const suffixes = (cfg.get('suffixes') || [])
+        .slice().sort((a, b) => b.length - a.length);
+      const lowerCore = alphaCore.toLowerCase();
+
+      for (const suf of suffixes) {
+        if (lowerCore.endsWith(suf.toLowerCase()) && suf.length < alphaCore.length) {
+          // Delete the suffix portion (between alphaEnd - suf.length and alphaEnd)
+          const range = new vscode.Range(pos.line, alphaEnd - suf.length, pos.line, alphaEnd);
+          await flashThenDelete(editor, range);
+          return;
+        }
+      }
+    }
+
+    // (b) Punctuation — delete one trailing punctuation char
+    if (hasTrailingPunct) {
+      const charBefore = text[offset - 1];
+      if (/[^\w\s]/.test(charBefore)) {
+        const range = new vscode.Range(pos.line, offset - 1, pos.line, offset);
+        await flashThenDelete(editor, range);
+        return;
+      }
+    }
+
+    // Also handle punctuation when cursor is right after it (no trailing punct scenario)
+    const charBefore = text[offset - 1];
+    if (/[^\w\s]/.test(charBefore)) {
+      const range = new vscode.Range(pos.line, offset - 1, pos.line, offset);
+      await flashThenDelete(editor, range);
+      return;
+    }
+
+    // (c) Whole-word-left + leftward whitespace
+    let wsStart = start;
+    while (wsStart > 0 && text[wsStart - 1] === ' ') wsStart--;
+    const range = new vscode.Range(pos.line, wsStart, pos.line, offset);
+    await flashThenDelete(editor, range);
+    return;
+  }
+
+  // 5. At start-of-word → delete word-right + one whitespace
+  if (atStart && offset < end) {
+    const includeWS = (end < text.length && /\s/.test(text[end])) ? 1 : 0;
+    const range = new vscode.Range(pos.line, start, pos.line, end + includeWS);
+    await flashThenDelete(editor, range);
+    return;
+  }
+
+  // 6. Cursor on whitespace or at EOL → delete contiguous whitespace toward nearest word
+  if (/\s/.test(text[offset] || '') || offset === text.length) {
+    let wsStart = offset;
+    while (wsStart > 0 && /\s/.test(text[wsStart - 1])) wsStart--;
+    let wsEnd = offset;
+    while (wsEnd < text.length && /\s/.test(text[wsEnd])) wsEnd++;
+
+    // EOL: include next-line indent
+    if (offset === text.length && pos.line < doc.lineCount - 1) {
+      const nextLine = doc.lineAt(pos.line + 1);
+      const indentEnd = nextLine.firstNonWhitespaceCharacterIndex;
+      const range = new vscode.Range(
+        new vscode.Position(pos.line, wsStart),
+        new vscode.Position(pos.line + 1, indentEnd)
+      );
+      await flashThenDelete(editor, range);
+      return;
+    }
+
+    const distLeft = offset - wsStart;
+    const distRight = wsEnd - offset;
+
+    if (wsStart < offset && distLeft <= distRight) {
+      const range = new vscode.Range(pos.line, wsStart, pos.line, offset);
+      await flashThenDelete(editor, range);
+      return;
+    }
+    if (wsEnd > offset) {
+      const range = new vscode.Range(pos.line, offset, pos.line, wsEnd);
+      await flashThenDelete(editor, range);
+      return;
+    }
+    nothing();
+    return;
+  }
+
+  // 7. Fallback
+  nothing();
+
+  await normalizeWhitespace(editor);
+}
+
+module.exports = { smartDelete };
+
+==== src\commands\smartSelect.js ====
+
+const vscode = require('vscode');
+
+const proseLanguages = new Set(['jav', 'plaintext', 'markdown']);
+
+const clauseChars = new Set(['.', '!', '?', ',', ';', ':', '\u2014', '\u2013', '(', ')', '[', ']', '"', '\u201C', '\u201D']);
+const sentenceChars = new Set(['.', '!', '?']);
+
+// ── Line parser ──────────────────────────────────────────────────────
+
+function parseLine(lineText) {
+  const words = parseWords(lineText);
+  const clauses = splitAt(lineText, clauseChars);
+  const sentences = splitAt(lineText, sentenceChars);
+  return { words, clauses, sentences };
+}
+
+function parseWords(lineText) {
+  const words = [];
+  const re = /\w+/g;
+  let m;
+  while ((m = re.exec(lineText)) !== null) {
+    words.push({ start: m.index, end: m.index + m[0].length });
+  }
+  return words;
+}
+
+function splitAt(lineText, boundarySet) {
+  const segs = [];
+  let segStart = 0;
+  for (let i = 0; i < lineText.length; i++) {
+    if (boundarySet.has(lineText[i])) {
+      segs.push({ start: segStart, end: i + 1 });
+      segStart = i + 1;
+    }
+  }
+  if (segStart < lineText.length) {
+    segs.push({ start: segStart, end: lineText.length });
+  }
+  return segs.filter(s => /\S/.test(lineText.slice(s.start, s.end)));
+}
+
+// ── Span helpers ─────────────────────────────────────────────────────
+
+function containingSpan(segments, selStart, selEnd, lineText) {
+  if (segments.length === 0) return null;
+
+  let left = 0;
+  for (let i = 0; i < segments.length; i++) {
+    if (segments[i].end > selStart) { left = i; break; }
+  }
+
+  let right = segments.length - 1;
+  for (let i = segments.length - 1; i >= 0; i--) {
+    if (segments[i].start < selEnd) { right = i; break; }
+  }
+
+  let start = segments[left].start;
+  let end = segments[right].end;
+
+  while (start < selStart && lineText[start] === ' ') start++;
+  while (end > selEnd && lineText[end - 1] === ' ') end--;
+
+  if (start < selStart || end > selEnd) {
+    return { start, end };
+  }
+  return null;
+}
+
+/**
+ * Find the word the cursor is in or nearest to (bare word, no whitespace).
+ */
+function wordAt(words, col) {
+  if (words.length === 0) return null;
+
+  let best = 0;
+  let bestDist = Infinity;
+  for (let i = 0; i < words.length; i++) {
+    const w = words[i];
+    if (col >= w.start && col <= w.end) {
+      return { start: w.start, end: w.end };
+    }
+    const dist = col < w.start ? w.start - col : col - w.end;
+    if (dist < bestDist) {
+      bestDist = dist;
+      best = i;
+    }
+  }
+  return { start: words[best].start, end: words[best].end };
+}
+
+/**
+ * Find the word at/near col, then absorb surrounding whitespace.
+ */
+function wordSpanAt(words, col, lineText) {
+  const w = wordAt(words, col);
+  if (!w) return null;
+
+  let start = w.start;
+  let end = w.end;
+  const hasLeft = start > 0 && lineText[start - 1] === ' ';
+  const hasRight = end < lineText.length && lineText[end] === ' ';
+
+  if (hasLeft) {
+    while (start > 0 && lineText[start - 1] === ' ') start--;
+  }
+  if (hasRight && !hasLeft) {
+    while (end < lineText.length && lineText[end] === ' ') end++;
+  }
+
+  return { start, end };
+}
+
+// ── Command ──────────────────────────────────────────────────────────
+
+/**
+ * Smart Select: Expand
+ *
+ * .jav / plaintext / markdown:
+ *   No selection → word (bare)
+ *   Word selected → word + surrounding whitespace
+ *   Then → clause → sentence → trimmed line → full line
+ *
+ * Other languages → built-in smartSelect.expand
+ */
+async function smartSelect() {
+  const editor = vscode.window.activeTextEditor;
+  if (!editor) return;
+
+  if (!proseLanguages.has(editor.document.languageId)) {
+    return vscode.commands.executeCommand('editor.action.smartSelect.expand');
+  }
+
+  const doc = editor.document;
+  const sel = editor.selection;
+  const lineNum = sel.active.line;
+  const lineText = doc.lineAt(lineNum).text;
+  if (lineText.length === 0) return;
+
+  const parsed = parseLine(lineText);
+
+  // ── No selection: pick word only (no whitespace) ──
+  if (sel.isEmpty) {
+    const word = wordAt(parsed.words, sel.active.character);
+    if (word) {
+      editor.selection = new vscode.Selection(
+        new vscode.Position(lineNum, word.start),
+        new vscode.Position(lineNum, word.end)
+      );
+    }
+    return;
+  }
+
+  // ── Has selection: walk up the hierarchy ──
+  const selStart = sel.start.character;
+  const selEnd = sel.end.character;
+
+  // Level 0: word → word + surrounding whitespace
+  // Only applies when selection is exactly a bare word
+  const exactWord = parsed.words.find(w => w.start === selStart && w.end === selEnd);
+  if (exactWord) {
+    const wsSpan = wordSpanAt(parsed.words, selStart, lineText);
+    if (wsSpan && (wsSpan.start < selStart || wsSpan.end > selEnd)) {
+      editor.selection = new vscode.Selection(
+        new vscode.Position(lineNum, wsSpan.start),
+        new vscode.Position(lineNum, wsSpan.end)
+      );
+      return;
+    }
+  }
+
+  // Level 1: clause
+  const clause = containingSpan(parsed.clauses, selStart, selEnd, lineText);
+  if (clause) {
+    editor.selection = new vscode.Selection(
+      new vscode.Position(lineNum, clause.start),
+      new vscode.Position(lineNum, clause.end)
+    );
+    return;
+  }
+
+  // Level 2: sentence
+  const sentence = containingSpan(parsed.sentences, selStart, selEnd, lineText);
+  if (sentence) {
+    editor.selection = new vscode.Selection(
+      new vscode.Position(lineNum, sentence.start),
+      new vscode.Position(lineNum, sentence.end)
+    );
+    return;
+  }
+
+  // Level 3: trimmed line
+  const trimStart = lineText.search(/\S/);
+  let trimEnd = lineText.length;
+  while (trimEnd > 0 && /\s/.test(lineText[trimEnd - 1])) trimEnd--;
+  if (trimStart >= 0 && (trimStart < selStart || trimEnd > selEnd)) {
+    editor.selection = new vscode.Selection(
+      new vscode.Position(lineNum, trimStart),
+      new vscode.Position(lineNum, trimEnd)
+    );
+    return;
+  }
+
+  // Level 4: full line
+  if (selStart > 0 || selEnd < lineText.length) {
+    editor.selection = new vscode.Selection(
+      new vscode.Position(lineNum, 0),
+      new vscode.Position(lineNum, lineText.length)
+    );
+  }
+}
+
+module.exports = { smartSelect };
+
+
+==== src\commands\surroundingPairs.js ====
+
+const vscode = require('vscode');
+
+function getDelimiters() {
+  const config = vscode.workspace.getConfiguration('JavEditorHelper');
+  return config.get('surroundingPairs') || [
+    ['[', ']'],
+    ['{', '}'],
+    ['(', ')'],
+    ["'", "'"],
+    ['"', '"'],
+    ['*', '*']
+  ];
+}
+
+function selectSurround() {
+  const editor = vscode.window.activeTextEditor;
+  if (!editor) return;
+
+  const delimiters = getDelimiters();
+  const doc = editor.document;
+  const selections = editor.selections;
+  let newSelections = [];
+
+  for (const sel of selections) {
+    let newSel = null;
+
+    if (!sel.isEmpty) {
+      const line = doc.lineAt(sel.start.line).text;
+      let isExpanded = false;
+
+      for (const [open, close] of delimiters) {
+        const selText = doc.getText(sel);
+        if (selText.startsWith(open) && selText.endsWith(close) && selText.length > open.length + close.length) {
+          isExpanded = true;
+          break;
+        }
+      }
+
+      if (isExpanded) {
+        // Jump to next pair content
+        const startLine = sel.end.line;
+        const startChar = sel.end.character;
+        let selectedPair = findNextPair(doc, delimiters, startLine, startChar);
+
+        // Wrap to beginning if none found
+        if (!selectedPair) {
+          selectedPair = findNextPair(doc, delimiters, 0, 0, startLine);
+        }
+
+        if (selectedPair) {
+          newSel = pairToSelection(selectedPair);
+        }
+      } else {
+        // Check if selection matches content inside a pair — expand to include delimiters
+        let expandedPair = null;
+
+        for (const [open, close] of delimiters) {
+          const beforeStart = sel.start.character - open.length;
+          const afterEnd = sel.end.character + close.length;
+
+          if (beforeStart >= 0 && afterEnd <= line.length) {
+            const beforeText = line.substring(beforeStart, sel.start.character);
+            const afterText = line.substring(sel.end.character, afterEnd);
+
+            if (beforeText === open && afterText === close) {
+              expandedPair = {
+                start: new vscode.Position(sel.start.line, beforeStart),
+                end: new vscode.Position(sel.end.line, afterEnd)
+              };
+              break;
+            }
+          }
+        }
+
+        if (expandedPair) {
+          newSel = new vscode.Selection(expandedPair.start, expandedPair.end);
+        }
+      }
+    }
+
+    // No expansion/jump or no selection — find next pair
+    if (!newSel) {
+      const startLine = sel.active.line;
+      const startChar = sel.isEmpty ? sel.active.character : sel.end.character;
+      const selectedPair = findNextPair(doc, delimiters, startLine, startChar);
+
+      if (selectedPair) {
+        newSel = pairToSelection(selectedPair);
+      }
+    }
+
+    newSelections.push(newSel || sel);
+  }
+
+  editor.selections = newSelections;
+}
+
+function removeSurround() {
+  const editor = vscode.window.activeTextEditor;
+  if (!editor) return;
+
+  const delimiters = getDelimiters();
+  const doc = editor.document;
+
+  editor.edit(editBuilder => {
+    for (const sel of editor.selections) {
+      const line = doc.lineAt(sel.active.line).text;
+      const cursor = sel.active.character;
+      let found = null;
+
+      for (const [open, close] of delimiters) {
+        const leftIndex = line.lastIndexOf(open, cursor);
+        const rightSearchStart = Math.max(cursor - open.length + 1, 0);
+        const rightIndex = line.indexOf(close, rightSearchStart);
+
+        if (
+          leftIndex !== -1 &&
+          rightIndex !== -1 &&
+          leftIndex + open.length <= rightIndex
+        ) {
+          if (
+            !found ||
+            leftIndex > found.leftIndex ||
+            (leftIndex === found.leftIndex && rightIndex < found.rightIndex)
+          ) {
+            found = { open, close, leftIndex, rightIndex };
+          }
+        }
+      }
+
+      if (found) {
+        const content = line.slice(found.leftIndex + found.open.length, found.rightIndex);
+        editBuilder.replace(
+          new vscode.Range(sel.active.line, found.leftIndex, sel.active.line, found.rightIndex + found.close.length),
+          content
+        );
+      }
+    }
+  });
+}
+
+// ── Helpers ──
+
+function findNextPair(doc, delimiters, fromLine, fromChar, maxLine) {
+  const limit = maxLine !== undefined ? maxLine : doc.lineCount - 1;
+
+  for (let lineNum = fromLine; lineNum <= limit; lineNum++) {
+    const text = doc.lineAt(lineNum).text;
+    let pairs = [];
+
+    for (const [open, close] of delimiters) {
+      let idx = 0;
+      while (true) {
+        const openIdx = text.indexOf(open, idx);
+        if (openIdx === -1) break;
+        const closeIdx = text.indexOf(close, openIdx + open.length);
+        if (closeIdx === -1) break;
+        if (lineNum === fromLine && openIdx + open.length <= fromChar && closeIdx <= fromChar) {
+          idx = openIdx + open.length;
+          continue;
+        }
+        pairs.push({ open, close, openIdx, closeIdx, lineNum });
+        idx = openIdx + open.length;
+      }
+    }
+
+    if (pairs.length) {
+      pairs.sort((a, b) => a.lineNum - b.lineNum || a.openIdx - b.openIdx);
+      return pairs[0];
+    }
+  }
+  return null;
+}
+
+function pairToSelection(pair) {
+  const start = new vscode.Position(pair.lineNum, pair.openIdx + pair.open.length);
+  const end = new vscode.Position(pair.lineNum, pair.closeIdx);
+  return new vscode.Selection(start, end);
+}
+
+module.exports = { selectSurround, removeSurround };
+
+==== src\commands\textCleanup.js ====
+
+// src/commands/textCleanup.js
+const vscode = require('vscode');
+const { getGlossary } = require('../config');
+
+
+const flashDecoration = vscode.window.createTextEditorDecorationType({
+    color: '#f00',
+    isWholeLine: true
+
+});
+
+// pass 1: normalize case to glossary (uses pre-compiled normRe)
+function normalizeCase(text, entries) {
+  let out = text;
+  for (const { key, normRe, hasSuffix } of entries) {
+    normRe.lastIndex = 0;
+    out = out.replace(normRe, function () {
+      const args = Array.from(arguments);
+      const lead = args[1] || '';
+      const suf = hasSuffix ? (args[3] || '') : '';
+      const trail = hasSuffix ? (args[4] || '') : (args[3] || '');
+      return `${lead}${key}${suf}${trail}`;
+    });
+  }
+  return out;
+}
+
+// pass 2: enforce single-star wrapping (uses pre-compiled starRe)
+function enforceStars(text, entries) {
+  let out = text;
+  for (const { key, starred, starRe } of entries) {
+    if (!starred) continue;
+    starRe.lastIndex = 0;
+    out = out.replace(starRe, function () {
+      const args = Array.from(arguments);
+      const suf = args[2] || '';
+      return `*${key}${suf}*`;
+    });
+  }
+  return out;
+}
+
+// sentence-start capitalization
+function capitalizeSentenceStarts(text) {
+  // start of text / line: first non-letter then first [a-z]
+  text = text.replace(/(^|\n)([^A-Za-z]*)([a-z])/g, function () {
+    const args = Array.from(arguments);
+    const prefix = args[1] || '';
+    const gap = args[2] || '';
+    const c = args[3] || '';
+    return prefix + gap + c.toUpperCase();
+  });
+
+  // after period: always capitalize
+  text = text.replace(/(\.)([^A-Za-z]*)([a-z])/g, function () {
+    const args = Array.from(arguments);
+    const p = args[1] || '';
+    const gap = args[2] || '';
+    const c = args[3] || '';
+    return p + gap + c.toUpperCase();
+  });
+
+  // after ? or !: always capitalize
+  return text.replace(/([?!])([^A-Za-z]*)([a-z])/g, function () {
+    const args = Array.from(arguments);
+    const p = args[1] || '';
+    const gap = args[2] || '';
+    const c = args[3] || '';
+    return p + gap + c.toUpperCase();
+  });
+}
+
+// capitalize first word in quotes only if it starts a new sentence
+function capitalizeDialogue(text) {
+  return text.replace(/(["""])(\s*)([a-z])/g, function() {
+    const args = Array.from(arguments);
+    const quote = args[1] || '';
+    const space = args[2] || '';
+    const firstChar = args[3] || '';
+    const offset = args[args.length - 2];
+
+    const beforeQuote = text.substring(0, offset);
+    const quoteCount = (beforeQuote.match(/["""]/g) || []).length;
+
+    // closing quote - skip
+    if (quoteCount % 2 === 1) {
+      return quote + space + firstChar;
+    }
+
+    // find matching closing quote (same type or equivalent)
+    const afterStart = offset + quote.length + space.length + 1;
+    const afterQuote = text.substring(afterStart);
+
+    // match content up to closing quote, check if ends with sentence punctuation
+    const closingMatch = afterQuote.match(/^[^"""]*?([.?!])\s*["""]/);
+
+    if (closingMatch) {
+      // punctuation immediately before closing quote = complete sentence
+      return quote + space + firstChar.toUpperCase();
+    }
+
+    // incomplete quote - don't capitalize
+    const beforeText = beforeQuote.trimEnd();
+    if (/,\s*$/.test(beforeText)) {
+      return quote + space + firstChar;
+    }
+
+    // no dialogue tag, but also not a complete sentence - check if at sentence start
+    if (/^$|[.?!]\s*$/.test(beforeText)) {
+      return quote + space + firstChar.toUpperCase();
+    }
+
+    return quote + space + firstChar;
+  });
+}
+
+async function textCleanup() {
+  const editor = vscode.window.activeTextEditor;
+  if (!editor) return;
+
+  const glossary = getGlossary();
+
+  const doc = editor.document;
+  const edits = [];
+
+  for (const sel of editor.selections) {
+    let range;
+    let leadingWhitespace = '';
+
+    if (sel.isEmpty) {
+      // For empty selection, get the full line but preserve leading whitespace
+      const line = doc.lineAt(sel.start.line);
+      const lineText = line.text;
+
+      // Find where the actual content starts (first non-whitespace)
+      const contentStart = lineText.search(/\S/);
+
+      if (contentStart === -1) {
+        // Line is all whitespace, skip it
+        continue;
+      }
+
+      // Extract leading whitespace
+      leadingWhitespace = lineText.substring(0, contentStart);
+
+      // Create range from first non-whitespace to end of line
+      range = new vscode.Range(
+        new vscode.Position(line.lineNumber, contentStart),
+        line.range.end
+      );
+    } else {
+      // For non-empty selection, use it as-is
+      range = sel;
+
+      // Check if selection starts at beginning of line
+      if (sel.start.character === 0) {
+        const lineText = doc.getText(new vscode.Range(
+          new vscode.Position(sel.start.line, 0),
+          sel.end
+        ));
+        const contentStart = lineText.search(/\S/);
+        if (contentStart > 0) {
+          leadingWhitespace = lineText.substring(0, contentStart);
+          // Adjust range to exclude leading whitespace
+          range = new vscode.Range(
+            new vscode.Position(sel.start.line, contentStart),
+            sel.end
+          );
+        }
+      }
+    }
+
+    let text = doc.getText(range);
+
+    // normalize base case: lowercase entire selection
+    text = text.toLowerCase();
+
+    // minimal baseline cleanup
+    text = text.replace(/[ \t]+$/gm, '');               // trim trailing spaces/tabs
+    text = text.replace(/\s+([.,!?;:])/g, '$1');        // no space before punctuation
+    text = text.replace(/([.,!?;:])([A-Za-z])/g, '$1 $2'); // space after punctuation before letter
+
+    // dash + ellipsis normalization (match longer sequences first)
+    text = text.replace(/--/g, '\u2014');    // em dash
+    // text = text.replace(/\.{3}/g, '\u2026'); // ellipsis
+
+    // strip unicode em quad and em space
+    text = text.replace(/[\u2001\u2003]/g, ' ');
+
+    // collapse internal runs of spaces/tabs
+    text = text.replace(/[ \t]{2,}/g, ' ');
+
+    // trim inner space in *...*
+    text = text.replace(/\*(\s*)([^*]*?)(\s*)\*/g, function () {
+      const args = Array.from(arguments);
+      const content = args[2] || '';
+      return `*${content.trim()}*`;
+    });
+
+    // trim inner space in quotes
+    text = text.replace(/(["""])(\s*)(.*?)(\s*)(\1)/g, function () {
+      const args = Array.from(arguments);
+      const quote = args[1] || '"';
+      const content = args[3] || '';
+      return quote + content.trim() + quote;
+    });
+
+    // pass 1: case
+    text = normalizeCase(text, glossary);
+
+    // pass 2: stars
+    text = enforceStars(text, glossary);
+
+    // quoted dialogue
+    text = capitalizeDialogue(text);
+
+    // sentence starts
+    text = capitalizeSentenceStarts(text);
+
+
+
+    // If we preserved leading whitespace, prepend it back
+    if (leadingWhitespace && range.start.character > 0) {
+      // We need to extend the range to include the leading whitespace position
+      const fullRange = new vscode.Range(
+        new vscode.Position(range.start.line, 0),
+        range.end
+      );
+      edits.push({ range: fullRange, text: leadingWhitespace + text });
+    } else {
+      edits.push({ range, text });
+    }
+  }
+
+const applied = await editor.edit(b => {
+  for (const e of edits) {
+    const oldText = doc.getText(e.range);
+    if (oldText.trim() === e.text.trim()) continue;
+    b.replace(e.range, e.text);
+  }
+});
+
+if (applied) {
+  const ranges = edits.map(e => e.range);
+  editor.setDecorations(flashDecoration, ranges);
+  setTimeout(() => editor.setDecorations(flashDecoration, []), 150);
+}
+
+}
+
+module.exports = { textCleanup };
+
+==== src\commands\toggleCase.js ====
+
+const vscode = require('vscode');
+
+/**
+ * Toggle case. Supports multiple cursors.
+ *
+ * With selection:  lower → UPPER → Title → lower
+ * Without selection: word under cursor, lower → Sentence → lower
+ *
+ * All cursors cycle based on the state of the FIRST selection/word.
+ */
+function toggleCase() {
+  const editor = vscode.window.activeTextEditor;
+  if (!editor) return;
+
+  const doc = editor.document;
+  const sels = editor.selections;
+
+  // Build list of { range, text } for each cursor
+  const items = [];
+  for (const sel of sels) {
+    if (!sel.isEmpty) {
+      items.push({ range: sel, text: doc.getText(sel) });
+    } else {
+      const wordRange = doc.getWordRangeAtPosition(sel.active);
+      if (wordRange) {
+        items.push({ range: wordRange, text: doc.getText(wordRange) });
+      }
+    }
+  }
+  if (items.length === 0) return;
+
+  // Determine cycle state from first item
+  const hasSelection = !sels[0].isEmpty;
+  const ref = items[0].text;
+  const nextFn = hasSelection ? cycleThreeState(ref) : cycleTwoState(ref);
+
+  editor.edit(editBuilder => {
+    for (const { range, text } of items) {
+      editBuilder.replace(range, nextFn(text));
+    }
+  });
+}
+
+/**
+ * 3-state for selections: lower → UPPER → Title Case → lower
+ * Returns a transform function based on the reference text's current state.
+ */
+function cycleThreeState(ref) {
+  const lower = ref.toLowerCase();
+  const upper = ref.toUpperCase();
+
+  if (ref === lower) return t => t.toUpperCase();
+  if (ref === upper) return t => toTitleCase(t);
+  return t => t.toLowerCase();
+}
+
+/**
+ * 2-state for no-selection (word): lower → Sentence → lower
+ */
+function cycleTwoState(ref) {
+  const lower = ref.toLowerCase();
+  if (ref === lower) {
+    return t => t.charAt(0).toUpperCase() + t.slice(1).toLowerCase();
+  }
+  return t => t.toLowerCase();
+}
+
+function toTitleCase(str) {
+  return str.replace(/\S+/g, w =>
+    w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()
+  );
+}
+
+module.exports = { toggleCase };
+
+==== src\config.js ====
+
+const vscode = require('vscode');
+const { loadList, resolvePath } = require('./utils/fileLoader');
+
+const capListKey = 'JavEditorHelper.capitalizationFilePaths';
+const punctKey = 'JavEditorHelper.punctuationCharacters';
+
+// ── glossary cache ──────────────────────────────────────────────
+
+let glossaryCache = null;
+
+function escapeRegex(s) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function compileGlossary(raw) {
+  const entries = [];
+  for (const t of raw || []) {
+    const term = String(t || '').trim();
+    if (!term) continue;
+    const starred = term.startsWith('*') && term.endsWith('*');
+    const inner = term.replace(/^\*|\*$/g, '');
+    if (!inner) continue;
+
+    const pat = escapeRegex(inner).replace(/\s+/g, '\\s+');
+    const isI = inner.toLowerCase() === 'i';
+
+    // pre-compiled regex for normalizeCase
+    let normRe;
+    if (isI) {
+      normRe = new RegExp(
+        String.raw`(?<!\p{L})(\*+)?(${pat})(\*+)?(?!\p{L})`, 'giu'
+      );
+    } else {
+      normRe = new RegExp(
+        String.raw`(?<!\p{L})(\*+)?(${pat})(?:('s|s))?(\*+)?(?!\p{L})`, 'giu'
+      );
+    }
+
+    // pre-compiled regex for enforceStars (only used when starred)
+    let starRe = null;
+    if (starred) {
+      starRe = new RegExp(
+        String.raw`(?<!\p{L})(?:\*+)?(${pat})(?:('s|s))?(?:\*+)?(?!\p{L})`, 'giu'
+      );
+    }
+
+    entries.push({ key: inner, starred, normRe, starRe, hasSuffix: !isI });
+  }
+  entries.sort((a, b) => b.key.length - a.key.length);
+  return entries;
+}
+
+function getGlossary() {
+  if (glossaryCache) return glossaryCache;
+  const paths = vscode.workspace.getConfiguration().get(capListKey, []);
+  const rawList = Array.isArray(paths)
+    ? paths.flatMap(p => loadList(p))
+    : loadList(paths);
+  glossaryCache = compileGlossary(rawList);
+  return glossaryCache;
+}
+
+function glossaryCacheInvalidate() {
+  glossaryCache = null;
+}
+
+// ── file watchers ───────────────────────────────────────────────
+
+let watchers = [];
+
+function watchersSetup(context) {
+  watchersTeardown();
+  const paths = vscode.workspace.getConfiguration().get(capListKey, []);
+  const list = Array.isArray(paths) ? paths : [paths];
+  for (const p of list) {
+    if (!p) continue;
+    try {
+      const resolved = resolvePath(p);
+      if (!resolved) continue;
+
+      let pattern;
+      const fs = require('fs');
+      if (fs.existsSync(resolved) && fs.statSync(resolved).isDirectory()) {
+        // directory → watch all files inside
+        pattern = new vscode.RelativePattern(vscode.Uri.file(resolved), '**');
+      } else {
+        // file → watch that specific file
+        const dir = require('path').dirname(resolved);
+        const base = require('path').basename(resolved);
+        pattern = new vscode.RelativePattern(vscode.Uri.file(dir), base);
+      }
+
+      const watcher = vscode.workspace.createFileSystemWatcher(pattern);
+      watcher.onDidChange(() => glossaryCacheInvalidate());
+      watcher.onDidCreate(() => glossaryCacheInvalidate());
+      watcher.onDidDelete(() => glossaryCacheInvalidate());
+      context.subscriptions.push(watcher);
+      watchers.push(watcher);
+    } catch (_) {}
+  }
+}
+
+function watchersTeardown() {
+  for (const w of watchers) {
+    try { w.dispose(); } catch (_) {}
+  }
+  watchers = [];
+}
+
+// ── punctuation (unchanged) ─────────────────────────────────────
+
+function getCustomList() {
+  const paths = vscode.workspace.getConfiguration().get(capListKey, []);
+  if (!Array.isArray(paths)) return loadList(paths);
+  return paths.flatMap(p => loadList(p));
+}
+
+function getPunctuationCharacters() {
+  const def = `,\.!\?'";:""''`;
+  const raw = vscode.workspace.getConfiguration().get(punctKey, def);
+  const escaped = raw.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
+  return new RegExp(`[${escaped}]`, 'gu');
+}
+
+module.exports = {
+  capListKey,
+  getCustomList,
+  getGlossary,
+  glossaryCacheInvalidate,
+  watchersSetup,
+  punctKey,
+  getPunctuationCharacters
+};
+
+==== src\extension.js ====
+
+const vscode = require('vscode');
+const { capListKey, glossaryCacheInvalidate, watchersSetup } = require('./config');
+const { editDialog } = require('./commands/editDialog');
+const { convertToCurlyQuotation, convertToStraightQuotation } = require('./commands/convertQuotes');
+const { textCleanup } = require('./commands/textCleanup');
+const { insertSpace } = require('./commands/insertSpace');
+const { joinLineAbove, joinLineBelow } = require('./commands/joinLines');
+const { toggleCase } = require('./commands/toggleCase');
+const { smartDelete } = require('./commands/SmartDelete');
+const { smartSelect } = require('./commands/smartSelect');
+const { selectSurround, removeSurround } = require('./commands/surroundingPairs');
+
+
+function activate(context) {
+
+  // set up file watchers for glossary source files
+  watchersSetup(context);
+
+  context.subscriptions.push(
+    vscode.workspace.onDidChangeConfiguration(e => {
+      if (e.affectsConfiguration(capListKey)) {
+        glossaryCacheInvalidate();
+        watchersSetup(context);
+      }
+    }),
+
+    // Editing
+    vscode.commands.registerCommand('JavEditorHelper.toggleCase', toggleCase),
+    vscode.commands.registerCommand('JavEditorHelper.editDialog', editDialog),
+    vscode.commands.registerCommand('JavEditorHelper.insertSpace', insertSpace),
+    vscode.commands.registerCommand('JavEditorHelper.joinLineAbove', joinLineAbove),
+    vscode.commands.registerCommand('JavEditorHelper.joinLineBelow', joinLineBelow),
+    vscode.commands.registerCommand('JavEditorHelper.smartDelete', smartDelete),
+    vscode.commands.registerCommand('JavEditorHelper.smartSelect', smartSelect),
+    vscode.commands.registerCommand('JavEditorHelper.selectSurround', selectSurround),
+    vscode.commands.registerCommand('JavEditorHelper.removeSurround', removeSurround),
+
+
+    // Quotes & cleanup
+    vscode.commands.registerCommand('JavEditorHelper.convertToCurlyQuotation', convertToCurlyQuotation),
+    vscode.commands.registerCommand('JavEditorHelper.convertToStraightQuotation', convertToStraightQuotation),
+    vscode.commands.registerCommand('JavEditorHelper.textCleanup', textCleanup),
+  );
+}
+
+function deactivate() {}
+
+module.exports = { activate, deactivate };
+
+==== src\utils\fileLoader.js ====
+
+// fileLoader.js
+const fs = require('fs');
+const path = require('path');
+const vscode = require('vscode');
+
+function resolvePath(p) {
+  if (!p) return p;
+
+  // ${execDir} prefix → resolve from executable location
+  if (p.includes('${execDir}')) {
+    const execDir = path.dirname(process.execPath);
+    return p.replace(/\$\{execDir\}/g, execDir);
+  }
+
+  // absolute → use as-is
+  if (path.isAbsolute(p)) return p;
+
+  // plain relative → resolve from workspace root
+  const folders = vscode.workspace.workspaceFolders;
+  if (folders && folders.length) {
+    return path.join(folders[0].uri.fsPath, p);
+  }
+
+  return p;
+}
+
+function loadList(targetPath) {
+  targetPath = resolvePath(targetPath);
+  const out = [];
+  try {
+    if (targetPath && fs.existsSync(targetPath)) {
+      const stat = fs.statSync(targetPath);
+      if (stat.isDirectory()) {
+        for (const entry of fs.readdirSync(targetPath)) {
+          out.push(...loadList(require('path').join(targetPath, entry)));
+        }
+      } else {
+        out.push(
+          ...fs
+            .readFileSync(targetPath, 'utf8')
+            .split(/\r?\n/)
+            .map(line => line.trim())
+            .filter(Boolean)
+            .map(line => line.split(':')[0].trim())
+            .filter(term => /^[\p{L}]/u.test(term.replace(/^\*|\*$/g, '')))
+        );
+      }
+    }
+  } catch (_) {}
+  return out;
+}
+
+
+module.exports = { loadList, resolvePath };

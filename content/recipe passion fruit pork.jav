@@ -1,7 +1,7 @@
 NOTES [
 	• Passion Fruit Braised Pork Butt
 	• Slow-braised pork shoulder with a sweet-tangy passion fruit glaze. Caribbean/Brazilian-inspired.
-	• Substitutes for passion fruit jam: guava paste thinned with lime juice, mango chutney with extra vinegar, or apricot jam plus fresh passion fruit pulp. For grilled/smoked pork butt, use the same glaze ingredients (reduced by half) as a mop sauce during the last hour. Leftovers make excellent Cuban-style sandwiches.
+	• Substitutes for passion fruit jam: guava paste thinned with lime juice, mango chutney with extra vinegar, or apricot jam plus fresh passion fruit pulp. For grilled/smoked pork butt, use the same glaze ingredients (reduced by half) as a mop sauce during the last hour. Leftovers make excellent Cuban-style sandwiches
 ]
  
 INGREDIENTS [
